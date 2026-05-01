@@ -1,0 +1,17 @@
+{
+  "name": "inventory-management-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "server": "cd Backend && nodemon index.js",
+  "client": "npm run dev --prefix Frontend",
+  "dev": "concurrently --kill-others --prefix \"[{name}]\" --names \"BACKEND,FRONTEND\" --prefix-colors \"red,blue\" \"npm run server\" \"npm run client\""
+},
+  "author": "Waslla",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0"
+  }
+}

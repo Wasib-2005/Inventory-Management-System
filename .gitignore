@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+Frontend/node_modules/
+Backend/node_modules/
+
+# Environment variables
+.env
+Backend/.env
+Frontend/.env
+
+# Build outputs
+dist/
+Frontend/dist/
+Backend/dist/
+
+# Logs
+*.log
+logs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+.tmp/
+temp/
+
+# package-lock.json
+package-lock.json
+Backend/package-lock.json
+Frontend/package-lock.json
+
+# Keys
+Backend/keys/private.pem
+Backend/keys/public.pem

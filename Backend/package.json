@@ -1,0 +1,22 @@
+{
+  "name": "inventory-management-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Waslla",
+  "license": "ISC",
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.5.0",
+    "pino": "^10.3.1"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.1.3"
+  }
+}
