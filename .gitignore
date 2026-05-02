@@ -38,3 +38,6 @@ Frontend/package-lock.json
 # Keys
 Backend/keys/private.pem
 Backend/keys/public.pem
+
+#Local https
+certs/

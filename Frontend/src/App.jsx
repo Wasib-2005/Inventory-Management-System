@@ -16,7 +16,7 @@ import './App.css'
 //       Server: unwraps AES key with private key → decrypts payload
 // ══════════════════════════════════════════════════════════════════════════════
 
-const PUBLIC_KEY_URL = 'http://localhost:5000/api/publickey'
+const PUBLIC_KEY_URL = 'https://localhost:5000/api/publickey'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 // Loop instead of spread — avoids call-stack overflow on large buffers
@@ -265,8 +265,8 @@ export default function App() {
 
       // 3. Send to server
       const url = mode === 'signup'
-        ? 'http://localhost:5000/api/auth/singup'
-        : 'http://localhost:5000/api/auth/singin'
+        ? 'https://localhost:5000/api/auth/singup'
+        : 'https://localhost:5000/api/auth/singin'
 
       const res = await fetch(url, {
         method: 'POST',
