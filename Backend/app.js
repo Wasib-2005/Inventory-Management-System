@@ -1,7 +1,10 @@
 require('dotenv').config();
-const express = require("express");
 const cors = require("cors");
+const express = require("express");
+const cookieParser = require('cookie-parser');
+
 const connectMongoDB = require('./src/config/connectMongoDB.js');
+
 const healthRoute = require("./src/routes/health.route.js");
 const singInSingUpRoute = require("./src/routes/Auth/SingInSingUp.route.js");
 const PublicKeyGeneratorRoute = require('./src/routes/PublicKeyGenerator.route.js');
@@ -18,15 +21,20 @@ const allowedOrigins = process.env.ALLOWED_ORIGINE
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    // Allow requests with no origin (like mobile apps or Postman)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error(`CORS Blocked for origin: ${origin}`);
       callback(new Error(`CORS blocked: ${origin}`));
     }
   },
+  credentials: true, // <--- THIS IS THE FIX
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Routes

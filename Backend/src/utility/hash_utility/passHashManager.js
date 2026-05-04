@@ -1,4 +1,5 @@
-import argon2 from "argon2"
+import argon2 from "argon2";
+
 
 export const hashPass = async (password) => {
     try {
@@ -11,13 +12,18 @@ export const hashPass = async (password) => {
         });
         return hash;
     } catch (err) {
-        // Handle error (e.g., logging)
         console.error("Hashing failed:", err);
+        throw new Error("Password encryption failed");
     }
 };
-// To verify 
-export const verifyUserPass = async (password, storedHash) => {
-    // argon2 looks at the 'storedHash', extracts the embedded salt,
-    // and checks if the password matches.
-    return await argon2.verify(storedHash, password); 
+
+
+export const compHashPass = async (password, storedHash) => {
+    try {
+        return await argon2.verify(storedHash, password);
+    } catch (err) {
+        console.error("Verification failed:", err);
+        return false;
+    }
 };
+
