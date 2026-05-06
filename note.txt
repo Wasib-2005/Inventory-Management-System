@@ -1,9 +1,1 @@
-
-local https setup
-    sudo dnf install nss-tools
-    sudo dnf install mkcert
-    mkdir certs
-    cd certs
-    mkcert localhost
-
-
+auth system done ✅
