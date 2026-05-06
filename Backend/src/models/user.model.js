@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     phone:    { type: String, default: null },
     role:     { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
-    password: { type: String, required: true },
+    password: { type: String, required: true, },
 
     // ── Brute-force protection ────────────────────────────────
     loginAttempts: { type: Number, default: 0 },

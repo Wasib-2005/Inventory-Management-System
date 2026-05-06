@@ -1,8 +1,11 @@
-import crypto    from "crypto";
-import User      from "../../models/user.model.js";
+import crypto from "crypto";
+import User from "../../models/user.model.js";
 import RefreshToken from "../../models/refreshToken.model.js";
-import logger    from "../../config/logger.js";
-import { hashPass, compHashPass } from "../../utility/hash_utility/passHashManager.js";
+import logger from "../../config/logger.js";
+import {
+  hashPass,
+  compHashPass,
+} from "../../utility/hash_utility/passHashManager.js";
 import { hybridDecryption } from "../../utility/ecryptionDecryption.js";
 import {
   generateAccessToken,
@@ -38,8 +41,8 @@ export const signUpLogic = async (req, res) => {
     const newUser = await User.create({ ...plain, password: hashedPassword });
 
     // Issue tokens
-    const family       = crypto.randomUUID();           // one family per session
-    const accessToken  = generateAccessToken(newUser._id.toString());
+    const family = crypto.randomUUID(); // one family per session
+    const accessToken = generateAccessToken(newUser._id.toString());
     const refreshToken = generateRefreshToken(newUser._id.toString(), family);
     await saveRefreshToken(newUser._id.toString(), refreshToken, family);
 
@@ -55,6 +58,7 @@ export const signUpLogic = async (req, res) => {
 export const signInLogic = async (req, res) => {
   try {
     const plain = hybridDecryption(req.body);
+
     const { email, password } = plain;
 
     const user = await User.findOne({ email });
@@ -72,23 +76,26 @@ export const signInLogic = async (req, res) => {
       });
     }
 
+    console.log("afdsg iojsdfghfdihertyoijh ryt", password, user.password);
+    
     const passwordOk = await compHashPass(password, user.password);
 
     if (!passwordOk) {
       await user.incLoginAttempts();
       const attemptsLeft = Math.max(0, 5 - (user.loginAttempts + 1));
       return res.status(401).json({
-        message: attemptsLeft > 0
-          ? `Invalid email or password. ${attemptsLeft} attempt(s) remaining.`
-          : "Account locked for 5 minutes due to too many failed attempts.",
+        message:
+          attemptsLeft > 0
+            ? `Invalid email or password. ${attemptsLeft} attempt(s) remaining.`
+            : "Account locked for 5 minutes due to too many failed attempts.",
       });
     }
 
     // Success — reset counter and issue fresh tokens
     await user.resetLoginAttempts();
 
-    const family       = crypto.randomUUID();
-    const accessToken  = generateAccessToken(user._id.toString());
+    const family = crypto.randomUUID();
+    const accessToken = generateAccessToken(user._id.toString());
     const refreshToken = generateRefreshToken(user._id.toString(), family);
     await saveRefreshToken(user._id.toString(), refreshToken, family);
 
@@ -136,7 +143,7 @@ export const logout = async (req, res) => {
       // Best-effort: delete this specific token family from DB
       // rotateRefreshToken would verify first, but on logout we just nuke it
       const crypto = await import("crypto");
-      const hash   = crypto.createHash("sha256").update(rawRefresh).digest("hex");
+      const hash = crypto.createHash("sha256").update(rawRefresh).digest("hex");
       await RefreshToken.deleteOne({ tokenHash: hash });
     }
 
