@@ -6,8 +6,8 @@ const cookieParser = require('cookie-parser');
 const connectMongoDB = require('./src/config/connectMongoDB.js');
 
 const healthRoute = require("./src/routes/health.route.js");
-const singInSingUpRoute = require("./src/routes/Auth/SingInSingUp.route.js");
-const PublicKeyGeneratorRoute = require('./src/routes/PublicKeyGenerator.route.js');
+const singInSingUpRoute = require("./src/routes/Auth/auth.route.js");
+const PublicKeyGeneratorRoute = require('./src/routes/publicKey.route.js');
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.use(cors({
     } else {
       console.error(`CORS Blocked for origin: ${origin}`);
       callback(new Error(`CORS blocked: ${origin}`));
-    }
+    } 
   },
   credentials: true, // <--- THIS IS THE FIX
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

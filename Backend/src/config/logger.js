@@ -14,13 +14,37 @@ const baseLogger = pino({
   },
 });
 
-// Create a proxy/wrapper to handle (message, ...args)
+function buildCtx(args) {
+  if (!args.length) return { ctx: {}, suffix: '' };
+
+  const ctx = {};
+  const strings = [];
+
+  for (const arg of args) {
+    if (arg instanceof Error) {
+      ctx.err = arg;
+    } else if (arg && typeof arg === 'object') {
+      Object.assign(ctx, arg);
+    } else {
+      strings.push(String(arg));
+    }
+  }
+
+  return { ctx, suffix: strings.join(' ') };
+}
+
+function makeLog(level) {
+  return (msg, ...args) => {
+    const { ctx, suffix } = buildCtx(args);
+    baseLogger[level](ctx, suffix ? `${msg} ${suffix}` : msg);
+  };
+}
+
 const logger = {
-  // This captures all arguments
-  info: (msg, ...args) => baseLogger.info(args.length ? { extra: args } : {}, msg, ...args),
-  debug: (msg, ...args) => baseLogger.debug(args.length ? { extra: args } : {}, msg, ...args),
-  error: (msg, ...args) => baseLogger.error(args.length ? { extra: args } : {}, msg, ...args),
-  warn: (msg, ...args) => baseLogger.warn(args.length ? { extra: args } : {}, msg, ...args),
+  info:  makeLog('info'),
+  debug: makeLog('debug'),
+  warn:  makeLog('warn'),
+  error: makeLog('error'),
 };
 
 module.exports = logger;
