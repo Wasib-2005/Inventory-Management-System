@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const connectMongoDB = require('./src/config/connectMongoDB.js');
 
 const healthRoute = require("./src/routes/health.route.js");
-const singInSingUpRoute = require("./src/routes/Auth/auth.route.js");
+const authRoute = require("./src/routes/auth.route.js");
 const PublicKeyGeneratorRoute = require('./src/routes/publicKey.route.js');
 
 const app = express();
@@ -39,7 +39,7 @@ app.use(cors({
 
 // Routes
 app.use("/", healthRoute);
-app.use("/api/auth/", singInSingUpRoute);
+app.use("/api/auth/", authRoute);
 app.use("/api/", PublicKeyGeneratorRoute);
 
 module.exports = app;

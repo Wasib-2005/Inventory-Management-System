@@ -16,16 +16,8 @@ import {
   setAuthCookies,
   clearAuthCookies,
 } from "../../utility/tokenService.js";
-
-// ── Shared: strip sensitive fields and send clean user object ─────────────────
-const sendResponse = (res, statusCode, accessToken, refreshToken, user) => {
-  setAuthCookies(res, accessToken, refreshToken);
-
-  const { password, _id, __v, loginAttempts, lockUntil, ...cleanedUser } =
-    user.toObject();
-
-  return res.status(statusCode).json({ user: cleanedUser });
-};
+import Role from "../../models/role.model.js";
+import { sendResponse } from "./helper/sendResponse.js";
 
 // ── SIGN UP ───────────────────────────────────────────────────────────────────
 export const signUpLogic = async (req, res) => {
@@ -37,8 +29,20 @@ export const signUpLogic = async (req, res) => {
       return res.status(409).json({ message: "An account already exists" });
     }
 
+    const defaultRole = await Role.findOne({ userType: "user" });
+
+    if (!defaultRole) {
+      return res.status(500).json({ message: "Default role not configured" });
+    }
+
     const hashedPassword = await hashPass(password);
-    const newUser = await User.create({ ...plain, password: hashedPassword });
+    const newUser = await User.create({
+      ...plain,
+      password: hashedPassword,
+      role: defaultRole._id,
+    });
+
+    await newUser.populate("role");
 
     // Issue tokens
     const family = crypto.randomUUID(); // one family per session
@@ -61,7 +65,7 @@ export const signInLogic = async (req, res) => {
 
     const { email, password } = plain;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("role");
 
     // Unknown email — don't hint which field was wrong
     if (!user) {
@@ -76,8 +80,6 @@ export const signInLogic = async (req, res) => {
       });
     }
 
-    console.log("afdsg iojsdfghfdihertyoijh ryt", password, user.password);
-    
     const passwordOk = await compHashPass(password, user.password);
 
     if (!passwordOk) {
@@ -104,33 +106,6 @@ export const signInLogic = async (req, res) => {
   } catch (err) {
     logger.error("SignIn Error:", err);
     return res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// ── REFRESH ───────────────────────────────────────────────────────────────────
-export const refreshAuth = async (req, res) => {
-  try {
-    const rawRefresh = req.cookies?.refresh_token;
-    if (!rawRefresh) {
-      return res.status(401).json({ message: "No refresh token" });
-    }
-
-    const { userId, newRefreshToken } = await rotateRefreshToken(rawRefresh);
-
-    const user = await User.findById(userId);
-    if (!user) {
-      clearAuthCookies(res);
-      return res.status(401).json({ message: "User not found" });
-    }
-
-    const newAccessToken = generateAccessToken(userId);
-
-    logger.debug(`Session refreshed: ${user.email}`);
-    return sendResponse(res, 200, newAccessToken, newRefreshToken, user);
-  } catch (err) {
-    logger.error("Refresh Error:", err.message);
-    clearAuthCookies(res); // force re-login on any rotation failure
-    return res.status(401).json({ message: "Session expired" });
   }
 };
 

@@ -1,16 +1,26 @@
 import mongoose from "mongoose";
+import Role from "./role.model.js";
 
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, trim: true },
-    email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
-    phone:    { type: String, default: null },
-    role:     { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
-    password: { type: String, required: true, },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    phone: { type: String, default: null },
+    role: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+    },
+    password: { type: String, required: true },
 
     // ── Brute-force protection ────────────────────────────────
     loginAttempts: { type: Number, default: 0 },
-    lockUntil:     { type: Date,   default: null },
+    lockUntil: { type: Date, default: null },
   },
   { timestamps: true },
 );
@@ -22,7 +32,7 @@ userSchema.virtual("isLocked").get(function () {
 
 // Increment failed attempt; lock after 5th failure for 5 minutes
 userSchema.methods.incLoginAttempts = async function () {
-  const MAX_ATTEMPTS  = 5;
+  const MAX_ATTEMPTS = 5;
   const LOCK_DURATION = 5 * 60 * 1000; // 5 min in ms
 
   // If a previous lock has expired, reset and start fresh
