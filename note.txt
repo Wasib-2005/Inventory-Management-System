@@ -1,1 +1,9 @@
 auth system done ✅
+    url : "--/api/singin" for singin 
+    url : "--/api/singup" for singup
+    url : "--/api/refresh" refresh or relogin without pass if already logged in (todo: store something in LS so not go there if not login)
+    url : "--/api/logout" for logout
+
+role model added also added some basic permitions ✅
+    data : "userType" for what type of user (eg, admin, manager, ceo, user etc)\
+    data : "permitions"  for controling permitions
