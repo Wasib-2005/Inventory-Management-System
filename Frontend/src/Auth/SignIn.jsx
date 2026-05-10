@@ -1,0 +1,101 @@
+const SignIn = ({ onSwitch, userData, setUserData, handleSubmit }) => {
+  return (
+    <div className="w-full">
+      <div className="mb-7">
+        <h2 className="text-[1.75rem] text-[#40514E] leading-tight mb-1 font-bold">
+          Welcome back
+        </h2>
+        <p className="text-sm text-[#40514E]/50">Sign in to your account</p>
+      </div>
+
+      <form className="flex flex-col gap-4" onSubmit={(e) => handleSubmit(e)}>
+        {/* Email */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
+            Email
+          </label>
+          <div className="relative flex items-center">
+            <svg
+              className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <rect x="2" y="4" width="20" height="16" rx="3" />
+              <path d="m2 7 10 6 10-6" />
+            </svg>
+            <input
+            name="email"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              className="w-full pl-9 pr-3 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Password */}
+        <div className="flex flex-col gap-1.5">
+          <label className="flex justify-between items-center text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
+            Password
+            <a
+              href="#"
+              className="text-[#11999E] text-[0.72rem] font-medium normal-case tracking-normal hover:text-[#30E3CA] transition-colors"
+            >
+              Forgot?
+            </a>
+          </label>
+          <div className="relative flex items-center">
+            <svg
+              className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="3" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <input
+            name="password"
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              className="w-full pl-9 pr-3 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          className="mt-1 flex items-center justify-center gap-2.5 py-3.5 bg-[#40514E] text-[#30E3CA] rounded-2xl text-sm font-semibold tracking-wide shadow-lg shadow-[#40514E]/25 hover:bg-[#2d3f3c] hover:-translate-y-px hover:shadow-xl hover:shadow-[#40514E]/30 active:translate-y-0 transition-all duration-200 group cursor-pointer"
+        >
+          <span>Sign In</span>
+          <svg
+            className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </form>
+
+      <p className="text-center text-[0.82rem] text-[#40514E]/50 mt-5">
+        Don't have an account?{" "}
+        <button
+          onClick={onSwitch}
+          className="text-[#11999E] font-semibold hover:text-[#30E3CA] transition-colors bg-transparent border-none cursor-pointer p-0"
+        >
+          Create one
+        </button>
+      </p>
+    </div>
+  );
+};
+
+export default SignIn;

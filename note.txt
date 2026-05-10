@@ -1,3 +1,4 @@
+!!! need https for work !!!
 auth system done ✅
     url : "--/api/singin" for singin 
     url : "--/api/singup" for singup
@@ -7,3 +8,5 @@ auth system done ✅
 role model added also added some basic permitions ✅
     data : "userType" for what type of user (eg, admin, manager, ceo, user etc)\
     data : "permitions"  for controling permitions
+
+!! colour schma for fontend https://colorhunt.co/palette/e4f9f530e3ca11999e40514e  !!
