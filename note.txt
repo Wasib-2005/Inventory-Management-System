@@ -9,4 +9,9 @@ role model added also added some basic permitions ✅
     data : "userType" for what type of user (eg, admin, manager, ceo, user etc)\
     data : "permitions"  for controling permitions
 
+Auth done in both Fontend and Backend (Just Login)
+    func : "signInFunc" for singin
+    func : "signUpFunc" for singup
+    func : "refresh_auth" for refresh auth
+
 !! colour schma for fontend https://colorhunt.co/palette/e4f9f530e3ca11999e40514e  !!
