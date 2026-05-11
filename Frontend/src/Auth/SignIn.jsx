@@ -1,3 +1,5 @@
+import PasswordInput from "./PasswordInput";
+
 const SignIn = ({ onSwitch, userData, setUserData, handleSubmit }) => {
   return (
     <div className="w-full">
@@ -26,7 +28,7 @@ const SignIn = ({ onSwitch, userData, setUserData, handleSubmit }) => {
               <path d="m2 7 10 6 10-6" />
             </svg>
             <input
-            name="email"
+              name="email"
               type="email"
               placeholder="you@example.com"
               autoComplete="email"
@@ -46,25 +48,12 @@ const SignIn = ({ onSwitch, userData, setUserData, handleSubmit }) => {
               Forgot?
             </a>
           </label>
-          <div className="relative flex items-center">
-            <svg
-              className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="3" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <input
+          <PasswordInput
             name="password"
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              className="w-full pl-9 pr-3 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
-            />
-          </div>
+            placeholder="••••••••"
+            autoComplete="current-password"
+            iconVariant="lock"
+          />
         </div>
 
         {/* Submit */}

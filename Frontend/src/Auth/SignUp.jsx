@@ -1,3 +1,5 @@
+import PasswordInput from "./PasswordInput";
+
 const SignUp = ({ onSwitch, userData, setUserData, handleSubmit }) => {
   return (
     <div className="w-full">
@@ -28,7 +30,7 @@ const SignUp = ({ onSwitch, userData, setUserData, handleSubmit }) => {
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
             <input
-              name="name"
+              name="username"
               type="text"
               placeholder="Jane Smith"
               autoComplete="name"
@@ -94,50 +96,24 @@ const SignUp = ({ onSwitch, userData, setUserData, handleSubmit }) => {
             <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
               Password
             </label>
-            <div className="relative flex items-center">
-              <svg
-                className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="3" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <input
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="new-password"
-                className="w-full pl-9 pr-2 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
-              />
-            </div>
+            <PasswordInput
+              name="password"
+              placeholder="••••••••"
+              autoComplete="new-password"
+              iconVariant="lock"
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
               Confirm
             </label>
-            <div className="relative flex items-center">
-              <svg
-                className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="3" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4M9 16l2 2 4-3" />
-              </svg>
-              <input
-                name="cpassword"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="new-password"
-                className="w-full pl-9 pr-2 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
-              />
-            </div>
+            <PasswordInput
+              name="cpassword"
+              placeholder="••••••••"
+              autoComplete="new-password"
+              iconVariant="check"
+            />
           </div>
         </div>
 
