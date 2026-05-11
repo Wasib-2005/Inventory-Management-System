@@ -72,7 +72,8 @@ const PasswordInput = ({
         type={show ? "text" : "password"}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="w-full pl-9 pr-9 py-3 rounded-xl border border-[#40514E]/15 bg-white/70 text-[#40514E] text-sm placeholder:text-[#40514E]/30 outline-none focus:border-[#11999E] focus:ring-2 focus:ring-[#11999E]/15 focus:bg-white transition-all"
+        className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-[#11999E]/10 bg-white/75 backdrop-blur-md text-[#40514E] text-sm placeholder:text-[#40514E]/35 outline-none transition-all duration-300 focus:border-[#30E3CA] focus:ring-4 focus:ring-[#30E3CA]/15 focus:bg-white shadow-sm hover:border-[#11999E]/20"
+        
       />
 
       {/* Eye toggle */}
