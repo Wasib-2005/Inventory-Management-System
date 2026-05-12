@@ -1,6 +1,6 @@
 export const PALETTE = {
-  bg: "#F5F5F5",
-  mint: "#DFF1F1",
-  steel: "#BBD5DA",
-  steelDark: "#2a4a52",
+  bg: "#6FCF97",
+  mint: "#2FA084",
+  steel: "#2FA084",
+  steelDark: "#1F6F5F",
 };

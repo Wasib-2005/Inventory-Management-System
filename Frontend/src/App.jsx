@@ -10,7 +10,7 @@ const App = () => {
       </Helmet>
       <div>
         <Nav />
-        <div className="ml-[72px]">
+        <div className="md:ml-[98px] ml-[78px] md:mt-5">
           <Outlet />
         </div>
       </div>

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import App from "./App";
 import Home from "./Pages/Home/Home";
 import AuthPage from "./Pages/AuthPage";
+import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
 
 const MainRouter = createBrowserRouter([
   {
@@ -12,7 +13,9 @@ const MainRouter = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      {path:"/accounts"}
+      {path:"/accounts-and-permissions",
+        element:<AccountsAndPermissions/>
+      }
     ],
   },
   {
