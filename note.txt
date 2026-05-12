@@ -14,4 +14,4 @@ Auth done in both Fontend and Backend (Just Login)
     func : "signUpFunc" for singup
     func : "refresh_auth" for refresh auth
 
-!! colour schma for fontend https://colorhunt.co/palette/e4f9f530e3ca11999e40514e  !!
+!! colour schma for fontend https://colorhunt.co/palette/f5f5f5dff1f1bbd5daff0000  !!

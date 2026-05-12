@@ -2,8 +2,8 @@ import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import SignIn from "./SignIn";
-import SignUp from "./SignUp";
+import SignIn from "../Components/Auth/SignIn";
+import SignUp from "../Components/Auth/SignUp";
 
 const AuthPage = () => {
   const [view, setView] = useState("signin");
@@ -18,7 +18,7 @@ const AuthPage = () => {
       toast.success(
         view === "signin"
           ? "Signed in successfully!"
-          : "Account created successfully!"
+          : "Account created successfully!",
       );
 
       setIsLoading(false);
@@ -27,7 +27,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#E4F9F5] via-[#d9f8f3] to-[#c5f3eb] flex items-center justify-center relative px-4 py-10">
-
       {/* Glow blobs */}
       <div className="absolute top-[-150px] left-[-150px] w-[350px] h-[350px] bg-[#30E3CA]/30 rounded-full blur-3xl" />
 
@@ -36,10 +35,8 @@ const AuthPage = () => {
       <ToastContainer position="top-right" theme="colored" />
 
       <div className="w-full max-w-[1150px] min-h-[700px] rounded-[38px] overflow-hidden shadow-2xl shadow-[#11999E]/15 grid lg:grid-cols-2 backdrop-blur-xl bg-white/40 border border-white/40">
-
         {/* LEFT SIDE */}
         <div className="hidden lg:flex flex-col justify-between p-14 bg-gradient-to-br from-[#40514E] to-[#2d3f3c] relative overflow-hidden">
-
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-10 left-10 w-72 h-72 bg-[#30E3CA] rounded-full blur-3xl" />
             <div className="absolute bottom-10 right-10 w-72 h-72 bg-[#11999E] rounded-full blur-3xl" />
@@ -83,8 +80,8 @@ const AuthPage = () => {
             </h1>
 
             <p className="mt-7 text-[#E4F9F5]/60 text-base leading-relaxed max-w-[420px]">
-              Manage inventory, monitor sales, and track your entire
-              business from one beautiful dashboard.
+              Manage inventory, monitor sales, and track your entire business
+              from one beautiful dashboard.
             </p>
           </div>
 
@@ -95,9 +92,7 @@ const AuthPage = () => {
 
         {/* RIGHT SIDE */}
         <div className="flex items-center justify-center p-6 md:p-12">
-
           <div className="w-full max-w-md">
-
             {/* Tabs */}
             <div className="grid grid-cols-2 bg-[#40514E]/5 p-1.5 rounded-2xl mb-8">
               <button
@@ -139,7 +134,6 @@ const AuthPage = () => {
                 />
               )}
             </div>
-
           </div>
         </div>
       </div>

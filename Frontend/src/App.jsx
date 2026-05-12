@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Outlet } from "react-router";
+import Nav from "./Components/Nav";
 
 const App = () => {
   return (
@@ -7,7 +8,12 @@ const App = () => {
       <Helmet>
         <title>{import.meta.env.VITE_APP_NAME}</title>
       </Helmet>
-      <Outlet />
+      <div>
+        <Nav />
+        <div className="ml-[72px]">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 };
