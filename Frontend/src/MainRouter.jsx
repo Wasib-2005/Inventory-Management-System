@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import App from "./App";
 import Home from "./Pages/Home/Home";
-import AuthPage from "./Pages/AuthPage";
+import AuthPage from "./Pages/Auth/AuthPage";
 import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
 
 const MainRouter = createBrowserRouter([

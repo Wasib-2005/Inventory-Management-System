@@ -16,7 +16,11 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Role",
     },
-    
+    photoUrl: {
+      type: String,
+      trim: true,
+    },
+
     password: { type: String, required: true },
 
     // ── Brute-force protection ────────────────────────────────

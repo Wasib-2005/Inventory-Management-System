@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/singin", signInLogic);
 router.post("/singup", signUpLogic);
-router.post("/refresh", refreshAuth); // renamed from refresh_auth
+router.post("/refresh", refreshAuth); 
 router.post("/logout", logout);
 
 module.exports = router;

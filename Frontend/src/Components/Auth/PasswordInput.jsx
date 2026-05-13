@@ -40,18 +40,16 @@ const PasswordInput = ({
   placeholder = "••••••••",
   autoComplete = "current-password",
   iconVariant = "lock",
+  value,        // ← add
+  onChange,     // ← add
+  disabled,     // ← add
 }) => {
   const [show, setShow] = useState(false);
-
   return (
     <div className="relative flex items-center">
-      {/* Left icon */}
       <svg
         className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
       >
         {iconVariant === "check" ? (
           <>
@@ -66,20 +64,19 @@ const PasswordInput = ({
         )}
       </svg>
 
-      {/* Input */}
       <input
         name={name}
         type={show ? "text" : "password"}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-[#11999E]/10 bg-white/75 backdrop-blur-md text-[#40514E] text-sm placeholder:text-[#40514E]/35 outline-none transition-all duration-300 focus:border-[#30E3CA] focus:ring-4 focus:ring-[#30E3CA]/15 focus:bg-white shadow-sm hover:border-[#11999E]/20"
-        
+        value={value}          // ← add
+        onChange={onChange}    // ← add
+        disabled={disabled}    // ← add
+        className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-[#11999E]/10 bg-white/75 backdrop-blur-md text-[#40514E] text-sm placeholder:text-[#40514E]/35 outline-none transition-all duration-300 focus:border-[#30E3CA] focus:ring-4 focus:ring-[#30E3CA]/15 focus:bg-white shadow-sm hover:border-[#11999E]/20 disabled:opacity-60"
       />
 
-      {/* Eye toggle */}
       <button
-        type="button"
-        tabIndex={-1}
+        type="button" tabIndex={-1}
         aria-label={show ? "Hide password" : "Show password"}
         onClick={() => setShow((s) => !s)}
         className="absolute right-3 flex items-center text-[#40514E]/35 hover:text-[#11999E] transition-colors"

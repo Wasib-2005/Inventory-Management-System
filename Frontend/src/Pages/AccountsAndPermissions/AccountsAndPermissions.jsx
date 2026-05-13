@@ -1,6 +1,9 @@
+import { useState } from "react";
 import AccountsFilterForm from "../../Components/AccountsAndPermissions/AccountsFilterForm";
+import AccountsList from "../../Components/AccountsAndPermissions/AccountsList";
 
 const AccountsAndPermissions = () => {
+  const [accountsData, setAccountsData] = useState([]);
   return (
     <div className="">
       <div className=" flex">
@@ -10,9 +13,11 @@ const AccountsAndPermissions = () => {
       </div>
       <div className="md:flex gap-2">
         <AccountsFilterForm />
-        // here i will add the result
+        <AccountsList
+          accountsData={accountsData}
+          setAccountsData={setAccountsData}
+        />
       </div>
-      <p>lorem*1000</p>
     </div>
   );
 };
