@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { PALETTE } from "../Service/palette";
 import { FaHome } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import { NavLink } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { PALETTE } from "../Theme/palette";
 
 const navLinks = [
   { label: <FaHome size={18} />, path: "/", name: "Home" },
@@ -27,24 +27,22 @@ const Nav = () => {
       {/* Overlay: Closes the sidebar when tapping outside on mobile */}
       {expanded && (
         <div
-          className="fixed inset-0 z-40 bg-black/5 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/10 lg:hidden"
           onClick={() => setExpanded(false)}
         />
       )}
 
       <nav
-        className="fixed md:top-5 md:left-5 h-screen z-50 p-2 md:rounded-l-2xl"
+        className={`fixed ${!expanded && "md:top-5"} md:left-5 h-full  ${expanded ? "md:h-[calc(100vh)]" : "md:h-[calc(100vh-40px)]"} z-50 p-2 md:rounded-l-2xl`}
         style={{
           width: expanded ? "200px" : "78px",
           backgroundColor: PALETTE.bg,
-          borderRight: `1px solid ${PALETTE.steel}`,
           boxShadow: "2px 0 16px rgba(187,213,218,0.3)",
           cursor: "pointer", // Indicates it's interactive
         }}
       >
         <div
-          className=" h-screen flex flex-col py-5
-                   transition-all duration-300 ease-in-out overflow-hidden bg-gray-300/30 md:rounded-l-xl"
+          className={`h-full ${expanded ? "md:h-[calc(100vh-15px)]" : "md:h-[calc(100vh-57px)]"} flex flex-col py-5 transition-all duration-300 ease-in-out overflow-hidden bg-gray-300/30 md:rounded-l-xl`}
           // Desktop Hover
           onMouseEnter={() => setExpanded(true)}
           onMouseLeave={() => setExpanded(false)}

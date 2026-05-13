@@ -1,0 +1,1 @@
+export const primaryButton = "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold text-white"
