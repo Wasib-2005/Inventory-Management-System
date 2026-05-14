@@ -6,7 +6,8 @@ const connectMongoDB = require("./src/config/connectMongoDB.js");
 const healthRoute = require("./src/routes/health.route.js");
 const authRoute = require("./src/routes/auth.route.js");
 const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
-const AccountsAndPermissionsRoute = require("./src/routes/AccountsAndPermissions.route.js");
+const AccountsAndPermissionsRoute = require("./src/routes/accountsAndPermissions.route.js");
+const RoleRoute = require("./src/routes/roles.route.js");
 
 const app = express();
 
@@ -28,7 +29,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
@@ -75,5 +76,5 @@ app.use("/", healthRoute);
 app.use("/api/auth/", authRoute);
 app.use("/api/", PublicKeyGeneratorRoute);
 app.use("/api/", AccountsAndPermissionsRoute);
-
+app.use("/api", RoleRoute);
 module.exports = app;

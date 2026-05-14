@@ -2,7 +2,7 @@ const express = require("express");
 const logger = require("../config/logger.js");
 const {
   getAccountsAndPermissions,
-} = require("../controllers/AccountsAndPermissions.Controller.js");
+} = require("../controllers/accountsAndPermissions.Controller.js");
 
 const router = express.Router();
 
