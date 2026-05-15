@@ -115,38 +115,12 @@ const AuthPage = () => {
         {/* RIGHT SIDE - Forms */}
         <div className="flex items-center justify-center p-6 md:p-12">
           <div className="w-full max-w-md">
-            {/* Tabs */}
-            <div className="grid grid-cols-2 bg-[#40514E]/5 p-1.5 rounded-2xl mb-8">
-              {["signin", "signup"].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`py-3 rounded-xl font-semibold transition-all duration-300 ${
-                    view === v
-                      ? "bg-gradient-to-r from-[#11999E] to-[#30E3CA] text-white shadow-lg"
-                      : "text-[#40514E]/45 hover:text-[#40514E]"
-                  }`}
-                >
-                  {v === "signin" ? "Sign In" : "Sign Up"}
-                </button>
-              ))}
-            </div>
-
-            {/* Forms Container */}
+            {/* Sign In Form Only */}
             <div className="animate-fadeIn">
-              {view === "signin" ? (
-                <SignIn
-                  onSwitch={() => setView("signup")}
-                  onSubmit={handleSubmit}
-                  isLoading={isLoading}
-                />
-              ) : (
-                <SignUp
-                  onSwitch={() => setView("signin")}
-                  onSubmit={handleSubmit}
-                  isLoading={isLoading}
-                />
-              )}
+              <SignIn
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </div>

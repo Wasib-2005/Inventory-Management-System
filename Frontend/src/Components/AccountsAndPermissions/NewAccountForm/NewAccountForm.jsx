@@ -1,21 +1,10 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
 import NewAccountFormInnerElement from "./NewAccountFormInnerElement";
 import useGetRole from "../../../Service/useGetRoles";
 
-const DEPARTMENTS = [
-  { _id: "dept-engineering", name: "Engineering" },
-  { _id: "dept-design", name: "Design" },
-  { _id: "dept-hr", name: "Human Resources" },
-  { _id: "dept-sales", name: "Sales" },
-];
-
-const MANAGERS = [
-  { _id: "mgr-001", name: "Alice Johnson" },
-  { _id: "mgr-002", name: "Bob Smith" },
-];
-
+/* ── Static Options ─────────────────────────────────────────────── */
 const GENDERS = [
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
@@ -40,21 +29,17 @@ const EMPLOYMENT_STATUSES = [
 ];
 
 const INITIAL_FORM = {
-  // Account
   username: "",
   email: "",
   phone: "",
   password: "",
   confirmPassword: "",
-  // Profile
   firstName: "",
   lastName: "",
   photoUrl: "",
   dateOfBirth: "",
   gender: "",
-  // Address
   address: { street: "", city: "", state: "", postalCode: "", country: "" },
-  // Employment
   department: "",
   jobTitle: "",
   employmentType: "full-time",
@@ -62,32 +47,66 @@ const INITIAL_FORM = {
   hireDate: "",
   manager: "",
   role: "",
-  // Emergency
   emergencyContact: { name: "", relationship: "", phone: "" },
 };
 
+/* ── Reusable Select Component ────────────────────────────────── */
+const SelectField = ({ label, name, value, onChange, error, options, placeholder = "Select…" }) => (
+  <div className="flex flex-col gap-1">
+    <label htmlFor={name} className="text-xs font-bold uppercase tracking-widest text-gray-500">
+      {label}
+    </label>
+    <div className="relative">
+      <select
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`border-2 ${
+          error ? "border-red-500" : "border-black"
+        } px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 transition-all appearance-none cursor-pointer w-full`}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt.value || opt._id} value={opt.value || opt._id}>
+            {opt.label || opt.name}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">▼</span>
+    </div>
+    {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
+  </div>
+);
+
+/* ── Section Header ───────────────────────────────────────────── */
+const Section = ({ title }) => (
+  <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
+    {title}
+  </h3>
+);
+
+/* ── Main Form Component ──────────────────────────────────────── */
 const NewAccountForm = ({
   setNewUserFormModel,
-  newUserData,
   setNewUserData,
-  departments = DEPARTMENTS,
-  managers = MANAGERS,
+  departments = [],
+  managers = [],
 }) => {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { roles } = useGetRole();
+  const { roles, loading: rolesLoading } = useGetRole();
 
+  /* ── Validation ───────────────────────────────────────────── */
   const validate = () => {
     const errs = {};
 
-    // Account
     if (!formData.username.trim()) errs.username = "Username is required";
     else if (!/^[a-z0-9_]{3,20}$/.test(formData.username))
-      errs.username =
-        "3–20 chars, lowercase letters, numbers, underscores only";
+      errs.username = "3–20 chars: lowercase, numbers, underscores only";
 
     if (!formData.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
@@ -97,37 +116,34 @@ const NewAccountForm = ({
 
     if (!formData.password) errs.password = "Password is required";
     else if (formData.password.length < 8)
-      errs.password = "Password must be at least 8 characters";
+      errs.password = "Must be at least 8 characters";
 
-    if (!formData.confirmPassword)
-      errs.confirmPassword = "Please confirm your password";
+    if (!formData.confirmPassword) errs.confirmPassword = "Confirm your password";
     else if (formData.password !== formData.confirmPassword)
       errs.confirmPassword = "Passwords do not match";
 
-    // Profile
     if (!formData.firstName.trim()) errs.firstName = "First name is required";
     if (!formData.lastName.trim()) errs.lastName = "Last name is required";
 
     if (formData.phone && !/^\+?[\d\s\-().]{7,20}$/.test(formData.phone))
-      errs.phone = "Enter a valid phone number";
+      errs.phone = "Invalid phone number";
 
     if (formData.photoUrl && !/^https?:\/\/.+/.test(formData.photoUrl))
-      errs.photoUrl = "Enter a valid URL";
+      errs.photoUrl = "Must be a valid URL";
 
-    // Employment
     if (formData.hireDate && isNaN(new Date(formData.hireDate).getTime()))
-      errs.hireDate = "Enter a valid date";
+      errs.hireDate = "Invalid date";
 
-    // Emergency
     if (
       formData.emergencyContact.phone &&
       !/^\+?[\d\s\-().]{7,20}$/.test(formData.emergencyContact.phone)
     )
-      errs["emergencyContact.phone"] = "Enter a valid phone number";
+      errs["emergencyContact.phone"] = "Invalid phone number";
 
     return errs;
   };
 
+  /* ── Handlers ─────────────────────────────────────────────── */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -146,7 +162,6 @@ const NewAccountForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -156,8 +171,8 @@ const NewAccountForm = ({
     setLoading(true);
     try {
       const payload = {
-        username: formData.username.trim(),
-        email: formData.email.trim(),
+        username: formData.username.trim().toLowerCase(),
+        email: formData.email.trim().toLowerCase(),
         phone: formData.phone.trim() || null,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -187,31 +202,20 @@ const NewAccountForm = ({
         },
       };
 
-      // Strip empty objects so Mongoose defaults / omit work cleanly
-      if (
-        !payload.address.street &&
-        !payload.address.city &&
-        !payload.address.state &&
-        !payload.address.postalCode &&
-        !payload.address.country
-      ) {
-        delete payload.address;
-      }
-      if (!payload.emergencyContact.name && !payload.emergencyContact.phone) {
-        delete payload.emergencyContact;
-      }
+      const hasAddress = Object.values(payload.address).some((v) => v);
+      if (!hasAddress) delete payload.address;
 
-      // Replace with your actual API call:
-      // await createUser(payload);
-      await new Promise((r) => setTimeout(r, 800)); // simulate request
+      const hasEmergency = Object.values(payload.emergencyContact).some((v) => v);
+      if (!hasEmergency) delete payload.emergencyContact;
+
+      await new Promise((r) => setTimeout(r, 800));
       console.log("Creating user:", payload);
 
-      setNewUserData(payload);
-
+      setNewUserData?.(payload);
       setSubmitted(true);
       setTimeout(() => setNewUserFormModel(false), 1200);
     } catch (err) {
-      setErrors({ form: "Something went wrong. Please try again." });
+      setErrors({ form: err?.message || "Failed to create account. Try again." });
     } finally {
       setLoading(false);
     }
@@ -221,32 +225,22 @@ const NewAccountForm = ({
     if (e.target === e.currentTarget) setNewUserFormModel(false);
   };
 
-  const selectClass = (err) =>
-    `border-2 ${err ? "border-red-500" : "border-black"} px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 transition-all appearance-none cursor-pointer w-full`;
-
-  const labelClass =
-    "text-xs font-bold uppercase tracking-widest text-gray-500";
-
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 bg-gray-900/60 backdrop-blur-[2px] z-50 flex items-center justify-center "
+      className="fixed inset-0 bg-gray-900/60 backdrop-blur-[2px] z-50 flex items-center justify-center"
     >
       <div className="bg-white/60 rounded-xl w-full max-w-2xl">
         <div
-          className={` ${commonComponentBG} max-h-[90vh] overflow-y-auto`}
+          className={`${commonComponentBG} max-h-[90vh] overflow-y-auto`}
           style={{ padding: 0, animation: "slideUp 0.2s ease-out" }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b-2 border-dashed border-gray-400 px-5 py-4 sticky top-0 bg-white z-10">
             <div>
-              <h2 className="font-black text-lg uppercase tracking-tight">
-                New Account
-              </h2>
-              <p className="text-xs text-gray-500 font-mono">
-                Fill in the details below to create a user
-              </p>
+              <h2 className="font-black text-lg uppercase tracking-tight">New Account</h2>
+              <p className="text-xs text-gray-500 font-mono">Fill in the details below to create a user</p>
             </div>
             <button
               onClick={() => setNewUserFormModel(false)}
@@ -265,7 +259,6 @@ const NewAccountForm = ({
                   {errors.form}
                 </div>
               )}
-
               {submitted && (
                 <div className="bg-green-50 border-2 border-green-600 px-3 py-2 text-sm text-green-700 font-bold text-center">
                   ✓ Account created successfully!
@@ -274,9 +267,7 @@ const NewAccountForm = ({
 
               {/* ── Account ─────────────────────────── */}
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
-                  Account
-                </h3>
+                <Section title="Account" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 sm:col-span-1">
                     <NewAccountFormInnerElement
@@ -334,9 +325,7 @@ const NewAccountForm = ({
 
               {/* ── Profile ─────────────────────────── */}
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
-                  Profile
-                </h3>
+                <Section title="Profile" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 sm:col-span-1">
                     <NewAccountFormInnerElement
@@ -388,7 +377,7 @@ const NewAccountForm = ({
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <div className="flex flex-col gap-1">
-                      <label htmlFor="dateOfBirth" className={labelClass}>
+                      <label htmlFor="dateOfBirth" className="text-xs font-bold uppercase tracking-widest text-gray-500">
                         Date of Birth
                       </label>
                       <input
@@ -402,46 +391,26 @@ const NewAccountForm = ({
                         } px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 transition-all`}
                       />
                       {errors.dateOfBirth && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.dateOfBirth}
-                        </span>
+                        <span className="text-xs text-red-500 font-medium">{errors.dateOfBirth}</span>
                       )}
                     </div>
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="gender" className={labelClass}>
-                        Gender
-                      </label>
-                      <select
-                        id="gender"
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                        className={selectClass(errors.gender)}
-                      >
-                        <option value="">Select…</option>
-                        {GENDERS.map((g) => (
-                          <option key={g.value} value={g.value}>
-                            {g.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.gender && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.gender}
-                        </span>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Gender"
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      error={errors.gender}
+                      options={GENDERS}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* ── Address ─────────────────────────── */}
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
-                  Address
-                </h3>
+                <Section title="Address" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
                     <NewAccountFormInnerElement
@@ -508,35 +477,18 @@ const NewAccountForm = ({
 
               {/* ── Employment ──────────────────────── */}
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
-                  Employment
-                </h3>
+                <Section title="Employment" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="department" className={labelClass}>
-                        Department
-                      </label>
-                      <select
-                        id="department"
-                        name="department"
-                        value={formData.department}
-                        onChange={handleChange}
-                        className={selectClass(errors.department)}
-                      >
-                        <option value="">Select department…</option>
-                        {departments.map((d) => (
-                          <option key={d._id} value={d._id}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.department && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.department}
-                        </span>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      error={errors.department}
+                      options={departments}
+                      placeholder="Select department…"
+                    />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <NewAccountFormInnerElement
@@ -551,58 +503,28 @@ const NewAccountForm = ({
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="employmentType" className={labelClass}>
-                        Employment Type
-                      </label>
-                      <select
-                        id="employmentType"
-                        name="employmentType"
-                        value={formData.employmentType}
-                        onChange={handleChange}
-                        className={selectClass(errors.employmentType)}
-                      >
-                        {EMPLOYMENT_TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.employmentType && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.employmentType}
-                        </span>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Employment Type"
+                      name="employmentType"
+                      value={formData.employmentType}
+                      onChange={handleChange}
+                      error={errors.employmentType}
+                      options={EMPLOYMENT_TYPES}
+                    />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <SelectField
+                      label="Employment Status"
+                      name="employmentStatus"
+                      value={formData.employmentStatus}
+                      onChange={handleChange}
+                      error={errors.employmentStatus}
+                      options={EMPLOYMENT_STATUSES}
+                    />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <div className="flex flex-col gap-1">
-                      <label htmlFor="employmentStatus" className={labelClass}>
-                        Employment Status
-                      </label>
-                      <select
-                        id="employmentStatus"
-                        name="employmentStatus"
-                        value={formData.employmentStatus}
-                        onChange={handleChange}
-                        className={selectClass(errors.employmentStatus)}
-                      >
-                        {EMPLOYMENT_STATUSES.map((s) => (
-                          <option key={s.value} value={s.value}>
-                            {s.label}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.employmentStatus && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.employmentStatus}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="hireDate" className={labelClass}>
+                      <label htmlFor="hireDate" className="text-xs font-bold uppercase tracking-widest text-gray-500">
                         Hire Date
                       </label>
                       <input
@@ -616,72 +538,38 @@ const NewAccountForm = ({
                         } px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 transition-all`}
                       />
                       {errors.hireDate && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.hireDate}
-                        </span>
+                        <span className="text-xs text-red-500 font-medium">{errors.hireDate}</span>
                       )}
                     </div>
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="manager" className={labelClass}>
-                        Manager
-                      </label>
-                      <select
-                        id="manager"
-                        name="manager"
-                        value={formData.manager}
-                        onChange={handleChange}
-                        className={selectClass(errors.manager)}
-                      >
-                        <option value="">Select manager…</option>
-                        {managers.map((m) => (
-                          <option key={m._id} value={m._id}>
-                            {m.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.manager && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.manager}
-                        </span>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Manager"
+                      name="manager"
+                      value={formData.manager}
+                      onChange={handleChange}
+                      error={errors.manager}
+                      options={managers}
+                      placeholder="Select manager…"
+                    />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="role" className={labelClass}>
-                        Role
-                      </label>
-                      <select
-                        id="role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        className={selectClass(errors.role)}
-                      >
-                        <option value="">Select a role…</option>
-                        {roles?.map((r, i) => (
-                          <option key={`newformRole${r}${i}`} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.role && (
-                        <span className="text-xs text-red-500 font-medium">
-                          {errors.role}
-                        </span>
-                      )}
-                    </div>
+                    <SelectField
+                      label="Role"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      error={errors.role}
+                      options={(roles || []).map((r) => ({ value: r._id || r, label: r.name || r }))}
+                      placeholder={rolesLoading ? "Loading roles…" : "Select a role…"}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* ── Emergency Contact ───────────────── */}
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider border-b border-black pb-1 mb-3">
-                  Emergency Contact
-                </h3>
+                <Section title="Emergency Contact" />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 sm:col-span-1">
                     <NewAccountFormInnerElement
@@ -703,10 +591,7 @@ const NewAccountForm = ({
                       type="text"
                       placeholder="Spouse"
                       value={formData.emergencyContact.relationship}
-                      onChange={handleNestedChange(
-                        "emergencyContact",
-                        "relationship",
-                      )}
+                      onChange={handleNestedChange("emergencyContact", "relationship")}
                       error={errors["emergencyContact.relationship"]}
                     />
                   </div>
