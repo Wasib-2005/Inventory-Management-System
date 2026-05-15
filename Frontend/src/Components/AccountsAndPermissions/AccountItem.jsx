@@ -7,9 +7,13 @@ import {
   FiCalendar,
   FiChevronDown,
   FiCheck,
+  FiBriefcase,
+  FiMapPin,
+  FiAlertCircle,
+  FiUser,
 } from "react-icons/fi";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
-import axios from "axios";
+import useGetRole from "../../Service/useGetRoles";
 
 // Configuration for UI colors based on role
 const META = {
@@ -19,12 +23,23 @@ const META = {
   guest: { color: "#64748b", bg: "#f8fafc" },
 };
 
-const fmt = (iso) =>
-  new Date(iso).toLocaleDateString("en-US", {
+// Map status variants to specific styling rules
+const STATUS_META = {
+  active: "bg-green-50 text-green-700 border-green-200",
+  onboarding: "bg-blue-50 text-blue-700 border-blue-200",
+  on_leave: "bg-amber-50 text-amber-700 border-amber-200",
+  suspended: "bg-orange-50 text-orange-700 border-orange-200",
+  terminated: "bg-red-50 text-red-700 border-red-200",
+};
+
+const fmt = (iso) => {
+  if (!iso) return "N/A";
+  return new Date(iso).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
+};
 
 const AccountListItem = ({ account, onRoleChange }) => {
   const { user } = useContext(UserContext);
@@ -33,31 +48,13 @@ const AccountListItem = ({ account, onRoleChange }) => {
   const [expanded, setExpanded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [open, setOpen] = useState(false);
-  const [roles, setRoles] = useState([]);
-  const [loadingRoles, setLoadingRoles] = useState(false);
+
+  const { roles, loading: loadingRoles } = useGetRole();
 
   const dropRef = useRef(null);
-  
-  // Fallback to guest style if the userType isn't in our META object
+
   const m = META[account.userType] || META.guest;
 
-  // Optimized Fetch: Only called when the dropdown is opened
-  const fetchRoles = async () => {
-    if (roles.length > 0 || loadingRoles) return;
-    setLoadingRoles(true);
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles`
-      );
-      setRoles(data);
-    } catch (error) {
-      console.error("Failed to fetch roles", error);
-    } finally {
-      setLoadingRoles(false);
-    }
-  };
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const close = (e) => {
       if (!dropRef.current?.contains(e.target)) setOpen(false);
@@ -77,7 +74,7 @@ const AccountListItem = ({ account, onRoleChange }) => {
     >
       {/* Main Row */}
       <div
-        className="md:flex items-center gap-3 px-3.5 py-3 cursor-pointer select-none"
+        className="md:flex items-center gap-4 px-4 py-3.5 cursor-pointer select-none"
         onClick={() => setExpanded((v) => !v)}
       >
         {/* Profile Image/Icon */}
@@ -98,17 +95,39 @@ const AccountListItem = ({ account, onRoleChange }) => {
           </div>
         )}
 
-        <div className="flex flex-1 justify-between items-center gap-4">
-          <div className="min-w-0">
-            <p className="text-[14px] font-semibold text-slate-900 truncate">
-              {account.username}
-            </p>
-            <p className="text-[12px] text-slate-400 truncate mt-0.5">
-              {account.email}
-            </p>
+        <div className="flex flex-1 flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 min-w-0">
+          {/* Identity & Basic Employment Info */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-[14px] font-bold text-slate-900 truncate">
+                {account.displayName || account.username}
+              </p>
+              {account.employeeId && (
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                  {account.employeeId}
+                </span>
+              )}
+              {account.employmentStatus && (
+                <span
+                  className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full border ${STATUS_META[account.employmentStatus] || "bg-gray-100 text-gray-700"}`}
+                >
+                  {account.employmentStatus}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-x-3 gap-y-0.5 flex-wrap text-[12px] text-slate-400 mt-1">
+              <span className="font-medium text-slate-600">
+                {account.jobTitle || "No Title assigned"}
+              </span>
+              <span className="text-slate-300">•</span>
+              <span>@{account.username}</span>
+              <span className="text-slate-300">•</span>
+              <span className="truncate">{account.email}</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Controls & Actions */}
+          <div className="flex items-center justify-end gap-2 flex-shrink-0 self-end sm:self-auto">
             {/* Role Dropdown */}
             <div className="relative" ref={dropRef}>
               <button
@@ -116,11 +135,10 @@ const AccountListItem = ({ account, onRoleChange }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   if (canManage) {
-                    fetchRoles(); // Trigger lazy load
                     setOpen((v) => !v);
                   }
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold capitalize transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold capitalize transition-all shadow-sm"
                 style={{
                   background: m.bg,
                   color: m.color,
@@ -150,7 +168,9 @@ const AccountListItem = ({ account, onRoleChange }) => {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {loadingRoles ? (
-                      <div className="px-4 py-2 text-[11px] text-slate-400">Loading...</div>
+                      <div className="px-4 py-2 text-[11px] text-slate-400">
+                        Loading...
+                      </div>
                     ) : (
                       roles.map((role) => {
                         const rm = META[role] || META.guest;
@@ -174,7 +194,9 @@ const AccountListItem = ({ account, onRoleChange }) => {
                               style={{ background: rm.color }}
                             />
                             {role}
-                            {active && <FiCheck size={11} className="ml-auto" />}
+                            {active && (
+                              <FiCheck size={11} className="ml-auto" />
+                            )}
                           </button>
                         );
                       })
@@ -184,26 +206,108 @@ const AccountListItem = ({ account, onRoleChange }) => {
               </AnimatePresence>
             </div>
 
-            <motion.div animate={{ rotate: expanded ? 180 : 0 }} className="text-slate-300">
+            <motion.div
+              animate={{ rotate: expanded ? 180 : 0 }}
+              className="text-slate-300 p-1"
+            >
               <FiChevronDown size={14} />
             </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Expanded Details */}
+      {/* Expanded Details Display Grid */}
       <AnimatePresence>
         {expanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-slate-100"
+            className="overflow-hidden border-t border-slate-100 bg-slate-50/40"
           >
-            <div className="px-4 pb-3 pt-2.5 flex flex-col gap-2">
-              <DetailRow icon={FiMail} label={account.email} m={m} />
-              <DetailRow icon={FiPhone} label={account.phone || "No phone provided"} m={m} />
-              <DetailRow icon={FiCalendar} label={`Joined ${fmt(account.createdAt)}`} m={m} />
+            <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Column 1: Employment Details */}
+              <div className="flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-1">
+                  Employment Details
+                </p>
+                <DetailRow
+                  icon={FiBriefcase}
+                  label={`${account.employmentType || "N/A"} employee`}
+                  m={m}
+                />
+                <DetailRow
+                  icon={FiCalendar}
+                  label={`Hired: ${fmt(account.hireDate)}`}
+                  m={m}
+                />
+                <DetailRow
+                  icon={FiUser}
+                  label={`Gender: ${account.gender || "Not specified"}`}
+                  m={m}
+                />
+                {account.dateOfBirth && (
+                  <DetailRow
+                    icon={FiCalendar}
+                    label={`DOB: ${fmt(account.dateOfBirth)}`}
+                    m={m}
+                  />
+                )}
+              </div>
+
+              {/* Column 2: Contact & Location */}
+              <div className="flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-1">
+                  Contact & Location
+                </p>
+                <DetailRow icon={FiMail} label={account.email} m={m} />
+                <DetailRow
+                  icon={FiPhone}
+                  label={account.phone || "No phone on file"}
+                  m={m}
+                />
+                {account.address?.street ? (
+                  <DetailRow
+                    icon={FiMapPin}
+                    label={`${account.address.street}, ${account.address.city}, ${account.address.country}`}
+                    m={m}
+                  />
+                ) : (
+                  <DetailRow
+                    icon={FiMapPin}
+                    label="No address registered"
+                    m={m}
+                  />
+                )}
+              </div>
+
+              {/* Column 3: Emergency Contact & Operations */}
+              <div className="flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-1">
+                  Emergency Contact
+                </p>
+                {account.emergencyContact?.name ? (
+                  <>
+                    <DetailRow
+                      icon={FiAlertCircle}
+                      label={account.emergencyContact.name}
+                      m={m}
+                    />
+                    <p className="text-[11px] text-slate-400 pl-9 -mt-1 capitalize">
+                      Relationship: {account.emergencyContact.relationship}
+                    </p>
+                    <DetailRow
+                      icon={FiPhone}
+                      label={account.emergencyContact.phone}
+                      m={m}
+                    />
+                  </>
+                ) : (
+                  <p className="text-[12px] italic text-slate-400 my-auto pl-2">
+                    No emergency information on file.
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -212,13 +316,17 @@ const AccountListItem = ({ account, onRoleChange }) => {
   );
 };
 
-// Sub-component for clean expanded rows
 const DetailRow = ({ icon: Icon, label, m }) => (
-  <div className="flex items-center gap-3">
-    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: m.bg }}>
+  <div className="flex items-center gap-3 min-w-0">
+    <div
+      className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+      style={{ background: m.bg }}
+    >
       <Icon size={12} style={{ color: m.color }} />
     </div>
-    <span className="text-[12px] text-slate-500 truncate">{label}</span>
+    <span className="text-[12px] text-slate-600 truncate font-medium text-wrap">
+      {label}
+    </span>
   </div>
 );
 

@@ -39,37 +39,37 @@ app.use(cors(corsOptions));
 app.options("/{*path}", cors(corsOptions));
 
 // ─── Request Logger ───────────────────────────────────────────────────────────
-app.use((req, res, next) => {
-  const start = Date.now();
+// app.use((req, res, next) => {
+//   const start = Date.now();
 
-  const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
-    req.socket.remoteAddress;
+//   const ip =
+//     req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+//     req.socket.remoteAddress;
 
-  console.log("─".repeat(60));
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  console.log(`  IP      : ${ip}`);
-  console.log(`  Origin  : ${req.headers.origin || "—"}`);
-  console.log(`  UA      : ${req.headers["user-agent"] || "—"}`);
+//   console.log("─".repeat(60));
+//   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+//   console.log(`  IP      : ${ip}`);
+//   console.log(`  Origin  : ${req.headers.origin || "—"}`);
+//   console.log(`  UA      : ${req.headers["user-agent"] || "—"}`);
 
-  if (Object.keys(req.query).length) {
-    console.log(`  Query   :`, req.query);
-  }
+//   if (Object.keys(req.query).length) {
+//     console.log(`  Query   :`, req.query);
+//   }
 
-  if (req.body && Object.keys(req.body).length) {
-    const { password, confirmPassword, ...safeBody } = req.body; // strip sensitive fields
-    console.log(`  Body    :`, safeBody);
-  }
+//   if (req.body && Object.keys(req.body).length) {
+//     const { password, confirmPassword, ...safeBody } = req.body; // strip sensitive fields
+//     console.log(`  Body    :`, safeBody);
+//   }
 
-  res.on("finish", () => {
-    const ms = Date.now() - start;
-    const statusIcon = res.statusCode < 400 ? "✅" : "❌";
-    console.log(`  ${statusIcon} Status : ${res.statusCode} (${ms}ms)`);
-    console.log("─".repeat(60));
-  });
+//   res.on("finish", () => {
+//     const ms = Date.now() - start;
+//     const statusIcon = res.statusCode < 400 ? "✅" : "❌";
+//     console.log(`  ${statusIcon} Status : ${res.statusCode} (${ms}ms)`);
+//     console.log("─".repeat(60));
+//   });
 
-  next();
-});
+//   next();
+// });
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.use("/", healthRoute);

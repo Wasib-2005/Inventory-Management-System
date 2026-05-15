@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUser,
@@ -9,15 +9,16 @@ import {
   FiRotateCcw,
   FiChevronDown,
 } from "react-icons/fi";
-import axios from "axios";
+
 import { PALETTE } from "../../Theme/palette";
 import Field from "../Common/Field";
 import { commonInputField } from "../../Theme/commonInputField";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { primaryButton } from "../../Theme/primaryButton";
 import { secondaryButton } from "../../Theme/secondaryButton";
+import useGetRole from "../../Service/useGetRoles";
 
-const API = import.meta.env.VITE_BACKEND_API_HEADER;
+
 const DEFAULT = {
   username: "",
   email: "",
@@ -35,14 +36,9 @@ const SORT_OPTS = [
 const AccountsFilterForm = ({ onApply }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState(DEFAULT);
-  const [roles, setRoles] = useState([]);
 
-  useEffect(() => {
-    axios
-      .get(`${API}/api/roles`)
-      .then((res) => setRoles(res.data))
-      .catch(console.error);
-  }, []);
+  const { roles } = useGetRole();
+
 
   const set = (e) =>
     setFilters((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -53,7 +49,7 @@ const AccountsFilterForm = ({ onApply }) => {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full md:w-1/3 flex-shrink-0 mt-3"
+      className="w-full flex-shrink-0 mt-3"
     >
       <div className={commonComponentBG}>
         {/* Header */}

@@ -14,7 +14,7 @@ const roleSchema = new mongoose.Schema(
         // product related permissions
         hasReadProductPermission: { type: Boolean, default: true },
         hasAddProductPermission: { type: Boolean, default: false },
-        hasProductChangePermission: { type: Boolean, default: false },
+        hasProductChangeermission: { type: Boolean, default: false },
         hasProductDeletePermission: { type: Boolean, default: false },
 
         // role related permissions
