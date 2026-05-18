@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import PasswordInput from "./PasswordInput";
-import { getName } from "../../Service/GetAppName";
+import { useGetName } from "../../Hooks/userGetAppName";
+
 
 const INITIAL = { username: "", email: "", phone: "", password: "", cpassword: "" };
 
@@ -33,7 +34,7 @@ const SignUp = ({ onSwitch, onSubmit, isLoading }) => {
 
   return (
     <>
-      <Helmet><title>{`Sign Up | ${getName}`}</title></Helmet>
+      <Helmet><title>{`Sign Up | ${useGetName}`}</title></Helmet>
 
       <div className="w-full">
         <div className="mb-7">

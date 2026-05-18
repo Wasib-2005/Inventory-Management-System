@@ -1,9 +1,8 @@
 import { Helmet } from "react-helmet-async";
-import { getName } from "../../Service/GetAppName";
-
+import { useGetName } from "../../Hooks/userGetAppName";
 const Home = () => {
-      const pageName = `Home | ${getName}`;
-    
+  const pageName = `Home | ${useGetName}`;
+
   return (
     <div>
       <Helmet>

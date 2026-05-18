@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import PasswordInput from "./PasswordInput";
-import { getName } from "../../Service/GetAppName";
+import { useGetName } from "../../Hooks/userGetAppName";
 
 const INITIAL = { email: "", password: "" };
 
 const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
-  const [form, setForm]   = useState(INITIAL);
+  const [form, setForm] = useState(INITIAL);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -26,22 +26,36 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
 
   return (
     <>
-      <Helmet><title>{`Sign In | ${getName}`}</title></Helmet>
+      <Helmet>
+        <title>{`Sign In | ${useGetName}`}</title>
+      </Helmet>
 
       <div className="w-full">
         <div className="mb-7">
-          <h2 className="text-[1.75rem] text-[#40514E] leading-tight mb-1 font-bold">Welcome back</h2>
+          <h2 className="text-[1.75rem] text-[#40514E] leading-tight mb-1 font-bold">
+            Welcome back
+          </h2>
           <p className="text-sm text-[#40514E]/50">Sign in to your account</p>
         </div>
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {/* Email */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
               Email
             </label>
             <div className="relative flex items-center">
-              <svg className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <svg
+                className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
                 <rect x="2" y="4" width="20" height="16" rx="3" />
                 <path d="m2 7 10 6 10-6" />
               </svg>
@@ -62,7 +76,10 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
           <div className="flex flex-col gap-1.5">
             <label className="flex justify-between items-center text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
               Password
-              <a href="#" className="text-[#11999E] text-[0.72rem] font-medium normal-case tracking-normal hover:text-[#30E3CA] transition-colors">
+              <a
+                href="#"
+                className="text-[#11999E] text-[0.72rem] font-medium normal-case tracking-normal hover:text-[#30E3CA] transition-colors"
+              >
                 Forgot?
               </a>
             </label>
@@ -92,7 +109,13 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
           >
             {isLoading ? (
               <>
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                 </svg>
                 <span>Signing in...</span>
@@ -100,7 +123,13 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
             ) : (
               <>
                 <span>Sign In</span>
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </>
@@ -110,7 +139,10 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
 
         <p className="text-center text-[0.82rem] text-[#40514E]/50 mt-5">
           Don't have an account?{" "}
-          <button onClick={onSwitch} className="text-[#11999E] font-semibold hover:text-[#30E3CA] transition-colors bg-transparent border-none cursor-pointer p-0">
+          <button
+            onClick={onSwitch}
+            className="text-[#11999E] font-semibold hover:text-[#30E3CA] transition-colors bg-transparent border-none cursor-pointer p-0"
+          >
             Create one
           </button>
         </p>
