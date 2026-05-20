@@ -1,3 +1,4 @@
+import { IoPersonAddOutline } from "react-icons/io5";
 import { commonComponentBG } from "../../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../../Theme/palette";
 import Field from "../../../Common/Field";
@@ -57,10 +58,14 @@ const AccountsCreateForm = ({ page }) => {
     <div
       className={`
         ${commonComponentBG} 
-        transition-all duration-300 ease-in-out overflow-hidden
-        ${isVisible ? "h-[70vh] border p-2" : "h-0 border-none p-0"}
+        transition-all duration-500 ease-in-out overflow-hidden
+        ${isVisible ? "h-[83vh] border p-3" : "h-0 border-none p-0"}
       `}
     >
+      <h1 className="ml-1 flex items-center gap-1 font-bold">
+        <IoPersonAddOutline size={16} />
+        <span>Create User</span>
+      </h1>
       <div
         className="w-full h-full rounded-lg shadow p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"
         style={{ background: PALETTE.bg }}

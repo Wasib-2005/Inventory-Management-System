@@ -15,7 +15,7 @@ const FilterCreateIndex = () => {
         It shifts left by 100% when 'page' changes, creating a hardware-accelerated slide.
       */}
       <div
-        className={`flex w-[200%] transition-transform duration-500 ease-in-out ${
+        className={`flex w-[200%] transition-transform duration-700 ease-in-out ${
           page === "createAccount" ? "-translate-x-1/2" : "translate-x-0"
         }`}
       >
