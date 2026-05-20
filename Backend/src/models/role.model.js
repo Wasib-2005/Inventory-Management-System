@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const roleSchema = new mongoose.Schema(
   {
-    userType: {
+    jobTitle: {
       type: String,
       required: true,
       unique: true,

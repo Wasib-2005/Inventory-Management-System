@@ -21,6 +21,7 @@ import { sendResponse } from "./helper/sendResponse.js";
 
 // ── SIGN UP ───────────────────────────────────────────────────────────────────
 export const signUpLogic = async (req, res) => {
+  return res.status(404).send("");
   try {
     const plain = hybridDecryption(req.body);
     const { email, password } = plain;

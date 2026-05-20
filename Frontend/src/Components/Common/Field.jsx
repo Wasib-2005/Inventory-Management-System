@@ -1,13 +1,11 @@
 import { commonFieldColour } from "../../Theme/commonFieldColour";
 
-const Field = ({ icon: Icon, label, children }) => {
+const Field = ({ label, children, icon: Icon = "" }) => {
   return (
     <div className="flex flex-col gap-1 w-full">
       <label className={commonFieldColour.label}>{label}</label>
       <div className="relative flex items-center">
-        <span className={commonFieldColour.icon}>
-          <Icon size={12} />
-        </span>
+        {Icon && <span className={commonFieldColour.icon}>{Icon}</span>}
         {children}
       </div>
     </div>

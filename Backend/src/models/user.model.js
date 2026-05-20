@@ -51,8 +51,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
     },
-    department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
-    jobTitle: { type: String, trim: true },
     employmentType: {
       type: String,
       enum: ["full-time", "part-time", "contract", "intern", "consultant"],

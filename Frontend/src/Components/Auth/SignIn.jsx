@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import PasswordInput from "./PasswordInput";
+import PasswordInput from "../Common/PasswordInput";
 import { useGetName } from "../../Hooks/userGetAppName";
 
 const INITIAL = { email: "", password: "" };
@@ -136,16 +136,6 @@ const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
             )}
           </button>
         </form>
-
-        <p className="text-center text-[0.82rem] text-[#40514E]/50 mt-5">
-          Don't have an account?{" "}
-          <button
-            onClick={onSwitch}
-            className="text-[#11999E] font-semibold hover:text-[#30E3CA] transition-colors bg-transparent border-none cursor-pointer p-0"
-          >
-            Create one
-          </button>
-        </p>
       </div>
     </>
   );

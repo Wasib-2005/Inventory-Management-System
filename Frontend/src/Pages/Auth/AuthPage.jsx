@@ -2,8 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SignIn from "../../Components/Auth/SignIn";
-import SignUp from "../../Components/Auth/SignUp";
-import { signInFunc, signUpFunc } from "../../Service/auth/auth";
+import { signInFunc } from "../../Service/auth/auth";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
 
@@ -13,7 +12,7 @@ const AuthPage = () => {
 
   const { user, setUser } = useContext(UserContext);
 
-  const location = useLocation(); 
+  const location = useLocation();
   const navigate = useNavigate();
 
   // 1. Identify where the user was trying to go.
@@ -38,7 +37,7 @@ const AuthPage = () => {
             }
           : { ...formData, email: formData.email.trim().toLowerCase() };
 
-      const fn = view === "signin" ? signInFunc : signUpFunc;
+      const fn = view === "signin" ? signInFunc : "";
       const body = await fn(payload);
 
       // 3. Update state and notify user
@@ -117,10 +116,7 @@ const AuthPage = () => {
           <div className="w-full max-w-md">
             {/* Sign In Form Only */}
             <div className="animate-fadeIn">
-              <SignIn
-                onSubmit={handleSubmit}
-                isLoading={isLoading}
-              />
+              <SignIn onSubmit={handleSubmit} isLoading={isLoading} />
             </div>
           </div>
         </div>
