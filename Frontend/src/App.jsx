@@ -24,7 +24,7 @@ const App = () => {
           }}
         >
 
-          <div className="flex-1 min-h-0 flex flex-col px-1 md:px-3 py-2 md:py-4 transition-all duration-300 ease-in-out  bg-gray-300/30 md:rounded-xl">
+          <div className="flex-1 min-h-0 flex flex-col px-1 md:px-3 py-2 md:py-4 transition-all duration-300 ease-in-out  bg-gray-300/30 md:rounded-xl overflow-hidden">
             <Outlet />
           </div>
         </div>
