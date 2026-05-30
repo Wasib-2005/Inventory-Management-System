@@ -168,7 +168,7 @@ const Nav = () => {
           ) : (
             <NavLink to={"/auth"} className="mt-auto flex justify-center">
               <button
-                className={`m-1 ${primaryButton}`}
+                className={`m-1 ${primaryButton} text-white`}
                 style={{
                   background: `linear-gradient(135deg, ${PALETTE.mint}, ${PALETTE.steelDark})`,
                   boxShadow: "0 3px 10px rgba(47,160,132,0.35)",

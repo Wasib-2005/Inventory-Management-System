@@ -1,11 +1,13 @@
-import { CiFilter } from "react-icons/ci";
+import { IoPersonAddOutline } from "react-icons/io5";
 import { commonComponentBG } from "../../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../../Theme/palette";
 import Field from "../../../Common/Field";
 import Input from "../../../Common/Input";
+import { primaryButton } from "../../../../Theme/primaryButton";
+import { IoPersonAddSharp } from "react-icons/io5";
 
-const AccountsFiltersForm = ({ page }) => {
-  const isVisible = page === "filter";
+const AccountsCreateForm = ({ page }) => {
+  const isVisible = page === "createAccount";
 
   const fields = {
     username: "jdoe_tech",
@@ -55,16 +57,16 @@ const AccountsFiltersForm = ({ page }) => {
   });
 
   return (
-    <div
+    <form
       className={`
         ${commonComponentBG} 
         transition-all duration-500 ease-in-out overflow-hidden
         ${isVisible ? "h-[83vh] border p-3" : "h-0 border-none p-0"}
       `}
     >
-      <h1 className="ml-1 flex items-center font-bold">
-        <CiFilter size={18} />
-        <span>Filters</span>
+      <h1 className="ml-1 flex items-center gap-1 font-bold">
+        <IoPersonAddOutline size={16} />
+        <span>Create User</span>
       </h1>
       <div
         className="w-full h-full rounded-lg shadow p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -87,8 +89,19 @@ const AccountsFiltersForm = ({ page }) => {
           );
         })}
       </div>
-    </div>
+      <button
+        className={`${primaryButton} border border-dotted mt-4`}
+        style={{
+          // background: "linear-gradient(135deg, #2FA084, #1F6F5F)",
+          boxShadow: "0 1px 3px rgba(31, 111, 95, 0.3)",
+          letterSpacing: "0.01em",
+        }}
+      >
+        <IoPersonAddSharp size={16} />
+        Create Account
+      </button>
+    </form>
   );
 };
 
-export default AccountsFiltersForm;
+export default AccountsCreateForm;

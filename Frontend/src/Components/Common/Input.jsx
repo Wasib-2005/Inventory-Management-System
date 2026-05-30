@@ -1,18 +1,35 @@
 import { useState } from "react";
 import { commonInputField } from "../../Theme/commonInputField";
-import PasswordInput from "./PasswordInput"; // Adjust this path to your password file
+import PasswordInput from "./PasswordInput"; 
 
-const Input = ({ label, value: initialValue }) => {
-  // 1. Maintain local state so the fields can be typed into without 'readOnly' lockouts
-  const [currentValue, setCurrentValue] = useState(initialValue);
+const Input = ({ label, value: initialValue = "", showValue = false }) => {
+  // 1. Maintain local state initialized with type safety
+  const [currentValue, setCurrentValue] = useState(() => {
+    if (typeof initialValue === "number" && isNaN(initialValue)) return "";
+    return initialValue ?? "";
+  });
 
   const handleChange = (e) => {
-    // Handles both normal inputs and checkbox toggles
-    const val =
-      e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setCurrentValue(val);
+    const target = e.target;
+    
+    // Checkbox boolean logic
+    if (target.type === "checkbox") {
+      setCurrentValue(target.checked);
+      return;
+    }
+
+    // Strict Number Validation: Ensures a string doesn't sneak into a number state
+    if (target.type === "number") {
+      const parsedValue = target.value === "" ? "" : Number(target.value);
+      setCurrentValue(parsedValue);
+      return;
+    }
+
+    // Default String handling
+    setCurrentValue(target.value);
   };
 
+  // Determine the type strictly based on the current state's variable type
   switch (typeof currentValue) {
     case "boolean":
       return (
@@ -29,16 +46,27 @@ const Input = ({ label, value: initialValue }) => {
         </div>
       );
 
+    case "number":
+      return (
+        <input
+          type="number"
+          // If showValue is false, we mask it by clearing the display value
+          value={showValue ? currentValue : ""}
+          onChange={handleChange}
+          className={`${commonInputField} w-full`}
+        />
+      );
+
     case "string":
     default:
-      // Passwords → Now uses your custom interactive PasswordInput component
-      if (label.toLowerCase() === "password") {
+      // Passwords
+      if (label.toLowerCase().includes("password")) {
         return (
           <div className="w-full">
             <PasswordInput
               name={label}
               placeholder="Enter password..."
-              value={currentValue ?? ""}
+              value={showValue ? currentValue : ""}
               onChange={handleChange}
             />
           </div>
@@ -50,13 +78,11 @@ const Input = ({ label, value: initialValue }) => {
         label.toLowerCase().includes("date") ||
         label.toLowerCase().includes("at")
       ) {
-        // Strip down ISO timestamp strings ("YYYY-MM-DDTHH:mm...") to clean date strings ("YYYY-MM-DD")
-        const dateString =
-          typeof currentValue === "string" ? currentValue.substring(0, 10) : "";
+        const dateString = typeof currentValue === "string" ? currentValue.substring(0, 10) : "";
         return (
           <input
             type="date"
-            value={dateString}
+            value={showValue ? dateString : ""}
             onChange={handleChange}
             className={`${commonInputField} w-full`}
           />
@@ -67,7 +93,7 @@ const Input = ({ label, value: initialValue }) => {
       return (
         <input
           type="text"
-          value={currentValue ?? ""}
+          value={showValue ? currentValue : ""}
           onChange={handleChange}
           className={`${commonInputField} w-full`}
         />

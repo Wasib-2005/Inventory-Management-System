@@ -6,13 +6,13 @@ const AccountsCreateButton = () => {
   return (
     <div>
       <button
-        className={primaryButton + ""}
+        className={primaryButton + " text-white "}
         style={{
           background: `linear-gradient(135deg, ${PALETTE.mint}, ${PALETTE.steelDark})`,
         }}
       >
         <IoPersonAddSharp />
-        Create
+        Go to Create Account
       </button>
     </div>
   );

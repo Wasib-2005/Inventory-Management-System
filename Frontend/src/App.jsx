@@ -2,12 +2,13 @@ import { Helmet } from "react-helmet-async";
 import { Outlet } from "react-router";
 import Nav from "./Components/Nav/Nav";
 import { PALETTE } from "./Theme/palette";
+import { useGetName } from "./Hooks/userGetAppName";
 
 const App = () => {
   return (
     <div className="h-screen w-full">
       <Helmet>
-        <title>{import.meta.env.VITE_APP_NAME}</title>
+        <title>{useGetName}</title>
       </Helmet>
       
       <Nav />
@@ -20,7 +21,7 @@ const App = () => {
             backgroundColor: PALETTE.bg,
             borderRight: `1px solid ${PALETTE.steel}`,
             boxShadow: "2px 0 16px rgba(187,213,218,0.3)",
-            cursor: "pointer", 
+            cursor: "pointer",  
           }}
         >
 

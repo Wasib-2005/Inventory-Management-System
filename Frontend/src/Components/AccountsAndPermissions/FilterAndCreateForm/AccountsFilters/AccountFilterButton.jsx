@@ -5,12 +5,12 @@ const AccountFilterButton = () => {
   return (
     <div>
       <button
-        className={primaryButton + ""}
+        className={primaryButton + " text-white"}
         style={{
           background: `linear-gradient(135deg, ${PALETTE.mint}, ${PALETTE.steelDark})`,
         }}
       >
-        <FaFilter /> Filter
+        <FaFilter /> Go to Filter
       </button>
     </div>
   );
