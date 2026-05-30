@@ -8,6 +8,7 @@ const authRoute = require("./src/routes/auth.route.js");
 const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
 const AccountsAndPermissionsRoute = require("./src/routes/accountsAndPermissions.route.js");
 const RoleRoute = require("./src/routes/roles.route.js");
+const ManageAccountsRoute = require("./src/routes/manageAccounts.route.js");
 
 const app = express();
 
@@ -76,5 +77,6 @@ app.use("/", healthRoute);
 app.use("/api/auth/", authRoute);
 app.use("/api/", PublicKeyGeneratorRoute);
 app.use("/api/", AccountsAndPermissionsRoute);
-app.use("/api", RoleRoute);
+app.use("/api/", RoleRoute);
+app.use("/api/",ManageAccountsRoute);
 module.exports = app;

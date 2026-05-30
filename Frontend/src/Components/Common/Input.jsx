@@ -1,104 +1,127 @@
 import { useState } from "react";
 import { commonInputField } from "../../Theme/commonInputField";
-import PasswordInput from "./PasswordInput"; 
+import PasswordInput from "./PasswordInput";
 
-const Input = ({ label, value: initialValue = "", showValue = false }) => {
-  // 1. Maintain local state initialized with type safety
-  const [currentValue, setCurrentValue] = useState(() => {
-    if (typeof initialValue === "number" && isNaN(initialValue)) return "";
-    return initialValue ?? "";
-  });
+const Input = ({
+  label,
+  value: initialValue = "",
+  showValue = false,
+  editable = true,
+  disabled = false,
+}) => {
+  const [currentValue, setCurrentValue] = useState(
+    showValue
+      ? (initialValue ?? "")
+      : typeof initialValue === "boolean"
+        ? false
+        : "",
+  );
 
   const handleChange = (e) => {
-    const target = e.target;
-    
-    // Checkbox boolean logic
-    if (target.type === "checkbox") {
-      setCurrentValue(target.checked);
-      return;
-    }
-
-    // Strict Number Validation: Ensures a string doesn't sneak into a number state
-    if (target.type === "number") {
-      const parsedValue = target.value === "" ? "" : Number(target.value);
-      setCurrentValue(parsedValue);
-      return;
-    }
-
-    // Default String handling
-    setCurrentValue(target.value);
+    const val =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setCurrentValue(val);
   };
 
-  // Determine the type strictly based on the current state's variable type
-  switch (typeof currentValue) {
-    case "boolean":
-      return (
-        <div className="flex items-center h-8 w-full">
-          <input
-            type="checkbox"
-            checked={currentValue}
-            onChange={handleChange}
-            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+  // Boolean — triggered when initialValue is a boolean
+  // Boolean — Switch
+  if (typeof currentValue === "boolean") {
+    return (
+      <div className="flex items-center gap-2">
+          <input type="hidden" name={label} value={currentValue.toString()} />
+        <button
+          type="button"
+          role="switch"
+          aria-checked={currentValue}
+          onClick={() =>
+            !disabled && editable && setCurrentValue(!currentValue)
+          }
+          disabled={disabled}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200
+    ${currentValue ? "bg-blue-600" : "bg-gray-300"}
+    ${disabled ? "opacity-50 cursor-not-allowed" : editable ? "cursor-pointer" : "cursor-default"}
+  `}
+        >
+          <span
+            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200
+      ${currentValue ? "translate-x-4" : "translate-x-1"}
+    `}
           />
-          <span className="ml-2 text-xs text-gray-500">
-            {currentValue ? "Active / Enabled" : "Inactive / Disabled"}
-          </span>
-        </div>
-      );
-
-    case "number":
-      return (
-        <input
-          type="number"
-          // If showValue is false, we mask it by clearing the display value
-          value={showValue ? currentValue : ""}
-          onChange={handleChange}
-          className={`${commonInputField} w-full`}
-        />
-      );
-
-    case "string":
-    default:
-      // Passwords
-      if (label.toLowerCase().includes("password")) {
-        return (
-          <div className="w-full">
-            <PasswordInput
-              name={label}
-              placeholder="Enter password..."
-              value={showValue ? currentValue : ""}
-              onChange={handleChange}
-            />
-          </div>
-        );
-      }
-
-      // Dates and Timestamps
-      if (
-        label.toLowerCase().includes("date") ||
-        label.toLowerCase().includes("at")
-      ) {
-        const dateString = typeof currentValue === "string" ? currentValue.substring(0, 10) : "";
-        return (
-          <input
-            type="date"
-            value={showValue ? dateString : ""}
-            onChange={handleChange}
-            className={`${commonInputField} w-full`}
-          />
-        );
-      }
-
-      // Standard Text Fallback
-      return (
-        <input
-          type="text"
-          value={showValue ? currentValue : ""}
-          onChange={handleChange}
-          className={`${commonInputField} w-full`}
-        />
-      );
+        </button>
+        <span className="text-xs text-gray-500">
+          {currentValue ? "Active / Enabled" : "Inactive / Disabled"}
+        </span>
+      </div>
+    );
   }
+
+  // Password
+  if (label.toLowerCase() === "password") {
+    return (
+      <div className="w-full">
+        <PasswordInput
+          name={label}
+          placeholder="Enter password..."
+          value={currentValue ?? ""}
+          onChange={handleChange}
+          disabled={disabled}
+          readOnly={!editable}
+        />
+      </div>
+    );
+  }
+
+  // Date
+  if (
+    label.toLowerCase().includes("date") ||
+    label.toLowerCase().includes("at")
+  ) {
+    const dateString =
+      typeof currentValue === "string" ? currentValue.substring(0, 10) : "";
+    return (
+      <input
+        type="date"
+        name={label}
+        value={dateString}
+        onChange={handleChange}
+        disabled={disabled}
+        readOnly={!editable}
+        className={`${commonInputField} w-full disabled:opacity-50 disabled:cursor-not-allowed read-only:bg-gray-50 read-only:cursor-default`}
+      />
+    );
+  }
+
+  // Gender
+  if (label.toLowerCase().includes("gender")) {
+    return (
+      <select
+        name={label}
+        value={currentValue}
+        onChange={handleChange}
+        disabled={disabled}
+        readOnly={!editable}
+        className={`${commonInputField} w-full disabled:opacity-50 disabled:cursor-not-allowed read-only:bg-gray-50 read-only:cursor-default`}
+      >
+        <option value="">Select gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    );
+  }
+
+  // Text
+  return (
+    <input
+      type="text"
+      name={label}
+      value={currentValue ?? ""}
+      onChange={handleChange}
+      disabled={disabled}
+      readOnly={!editable}
+      className={`${commonInputField} w-full disabled:opacity-50 disabled:cursor-not-allowed read-only:bg-gray-50 read-only:cursor-default`}
+    />
+  );
 };
 
 export default Input;

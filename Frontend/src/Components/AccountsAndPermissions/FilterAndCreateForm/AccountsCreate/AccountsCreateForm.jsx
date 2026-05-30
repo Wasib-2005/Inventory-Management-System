@@ -5,9 +5,31 @@ import Field from "../../../Common/Field";
 import Input from "../../../Common/Input";
 import { primaryButton } from "../../../../Theme/primaryButton";
 import { IoPersonAddSharp } from "react-icons/io5";
+import { useState } from "react";
+import TimeZoneWarning from "../../../Common/TimeZoneWarning";
+import { hybridEncrypt } from "../../../../Service/auth/auth";
+import axios from "axios";
 
 const AccountsCreateForm = ({ page }) => {
   const isVisible = page === "createAccount";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+    const payload = await hybridEncrypt(data);
+
+    await axios.post(
+      `${import.meta.env.VITE_BACKEND_API_HEADER}/api/create_account`,
+      payload,
+      { withCredentials: true },
+    );
+
+    console.log("Submitted Account Data:", payload);
+  };
 
   const fields = {
     username: "jdoe_tech",
@@ -58,6 +80,7 @@ const AccountsCreateForm = ({ page }) => {
 
   return (
     <form
+      onSubmit={handleSubmit}
       className={`
         ${commonComponentBG} 
         transition-all duration-500 ease-in-out overflow-hidden
@@ -68,6 +91,8 @@ const AccountsCreateForm = ({ page }) => {
         <IoPersonAddOutline size={16} />
         <span>Create User</span>
       </h1>
+      <TimeZoneWarning />
+
       <div
         className="w-full h-full rounded-lg shadow p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"
         style={{ background: PALETTE.bg }}
@@ -83,13 +108,14 @@ const AccountsCreateForm = ({ page }) => {
             <div key={label} className="border-b pb-2 border-gray-100 text-sm">
               {/* Pass the dynamic clean text and the structural icon token */}
               <Field label={cleanLabel} icon={""}>
-                <Input label={label} value={value} />
+                <Input label={label} value={value} showValue={true} />
               </Field>
             </div>
           );
         })}
       </div>
       <button
+        type="submit"
         className={`${primaryButton} border border-dotted mt-4`}
         style={{
           // background: "linear-gradient(135deg, #2FA084, #1F6F5F)",

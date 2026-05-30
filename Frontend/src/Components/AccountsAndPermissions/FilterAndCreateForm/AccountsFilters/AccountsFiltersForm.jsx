@@ -4,6 +4,7 @@ import { PALETTE } from "../../../../Theme/palette";
 import Field from "../../../Common/Field";
 import Input from "../../../Common/Input";
 import { primaryButton } from "../../../../Theme/primaryButton";
+import TimeZoneWarning from "../../../Common/TimeZoneWarning";
 
 const AccountsFiltersForm = ({ page }) => {
   const isVisible = page === "filter";
@@ -67,6 +68,7 @@ const AccountsFiltersForm = ({ page }) => {
         <CiFilter size={18} />
         <span>Filters</span>
       </h1>
+      <TimeZoneWarning />
       <div
         className="w-full h-full rounded-lg shadow p-4 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"
         style={{ background: PALETTE.bg }}

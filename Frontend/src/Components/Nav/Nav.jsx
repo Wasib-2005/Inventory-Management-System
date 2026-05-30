@@ -8,6 +8,7 @@ import { PALETTE } from "../../Theme/palette";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
 import axios from "axios";
 import { primaryButton } from "../../Theme/primaryButton";
+import TimeZoneClock from "../Common/TimeZoneClock";
 
 const BASE = import.meta.env.VITE_BACKEND_API_HEADER;
 
@@ -71,6 +72,14 @@ const Nav = () => {
             />
           </div>
 
+          {/* Divider */}
+          <div
+            className="mx-[14px] h-px flex-shrink-0"
+            style={{ backgroundColor: PALETTE.steel }}
+          />
+          <div className="my-2 flex mx-auto">
+            <TimeZoneClock permanent12hIndicator={expanded} />
+          </div>
           {/* Divider */}
           <div
             className="mx-[14px] mb-5 h-px flex-shrink-0"
