@@ -1,74 +1,131 @@
-import { IoPersonAddOutline } from "react-icons/io5";
+import { IoPersonAddOutline, IoPersonAddSharp } from "react-icons/io5";
 import { commonComponentBG } from "../../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../../Theme/palette";
 import Field from "../../../Common/Field";
-import Input from "../../../Common/Input";
+import Input from "../../../Common/Inputs/Input";
 import { primaryButton } from "../../../../Theme/primaryButton";
-import { IoPersonAddSharp } from "react-icons/io5";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import TimeZoneWarning from "../../../Common/TimeZoneWarning";
 import { hybridEncrypt } from "../../../../Service/auth/auth";
 import axios from "axios";
+import { UserContext } from "../../../../Contexts/UserContexts/UserContext";
+import {useGetTimeZone} from "../../../../Hooks/useGetTimeZone";
 
 const AccountsCreateForm = ({ page }) => {
   const isVisible = page === "createAccount";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {};
-    formData.forEach((value, key) => {
-      data[key] = value;
-    });
-    const payload = await hybridEncrypt(data);
+  const [missingFields, setMissingFields] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [successfulSubmission, setSuccessfulSubmission] = useState(false); // for controlling input data after submission if successful
+  const [errorMessage, setErrorMessage] = useState("");
 
-    await axios.post(
-      `${import.meta.env.VITE_BACKEND_API_HEADER}/api/create_account`,
-      payload,
-      { withCredentials: true },
-    );
+  const user = useContext(UserContext)?.user || {};
 
-    console.log("Submitted Account Data:", payload);
-  };
+  const timeZone  = useGetTimeZone
 
-  const fields = {
-    username: "jdoe_tech",
-    email: "johndoe@company.com",
-    phone: "+15550198234",
-    photoUrl: "https://assets.company.com/profiles/jdoe_tech.jpg",
-    firstName: "John",
-    lastName: "Doe",
-    displayName: "John D.",
-    dateOfBirth: "1992-05-15T00:00:00.000Z",
-    gender: "male",
+  const fieldsConfig = {
+    username: "",
+    email: "",
+    phone: "",
+    photoUrl: "",
+    firstName: "",
+    lastName: "",
+    displayName: "",
+    dateOfBirth: "",
+    gender: "",
     address: {
-      street: "123 Innovation Way, Suite 400",
-      city: "Austin",
-      state: "Texas",
-      postalCode: "78701",
-      country: "United States",
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
     },
-    timezone: "America/Chicago",
-    language: "en",
-    employmentType: "full-time",
-    employmentStatus: "active",
-    hireDate: "2024-01-10T00:00:00.000Z",
-    manager: "65cb3e4a1f8b4a229c8e4d12",
-    role: "65cb3e1c1f8b4a229c8e4d10",
-    password: "$2b$12$e0MYzXyZ8P23K1vRw9A7eO3pGvWvYxFzKmUpQg7rLmNoPqRsTuVwX",
-    passwordChangedAt: "2024-01-10T09:15:00.000Z",
+    timezone: timeZone || "", // Use hook value safely here
+    language: "",
+    employmentType: "",
+    employmentStatus: "",
+    hireDate: new Date().toISOString(),
+    manager: "",
+    role: "",
+    password: "",
+    passwordChangedAt: new Date().toISOString(),
     isActive: true,
     isVerified: true,
     emailVerified: true,
     emergencyContact: {
-      name: "Jane Doe",
-      relationship: "Spouse",
-      phone: "+15550198235",
+      name: "",
+      relationship: "",
+      phone: "",
     },
     isDeleted: false,
   };
 
-  const fieldEntries = Object.entries(fields).flatMap(([key, value]) => {
+  console.log("Current User Context:", user);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
+    setMissingFields(false);
+
+    const formData = new FormData(e.target);
+    const data = {};
+    let hasMissing = false;
+
+    // Validate empty fields
+    for (const [key, value] of formData.entries()) {
+      if (value === "") {
+        e.target[key]?.classList.add("border-red-500");
+        hasMissing = true;
+      } else {
+        e.target[key]?.classList.remove("border-red-500");
+        if (value === "true") data[key] = true;
+        else if (value === "false") data[key] = false;
+        else data[key] = value;
+      }
+    }
+
+    setMissingFields(hasMissing);
+    if (hasMissing) return;
+
+    if (data?.password?.length < 8) {
+      setErrorMessage("Password must be at least 8 characters long.");
+      return;
+    }
+
+    try {
+      const payload = await hybridEncrypt(data);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/create_account`,
+        payload,
+        { withCredentials: true },
+      );
+
+      e.target.reset();
+      setSuccessfulSubmission(true);
+      setSuccessMessage(
+        response?.data?.message || "Account created successfully!",
+      );
+      setSuccessfulSubmission(false);
+    } catch (error) {
+      if (error.response) {
+        console.error("Backend Error:", error.response.data);
+        const backendError =
+          error.response.data.message || "An error occurred.";
+        setErrorMessage(backendError);
+      } else if (error.request) {
+        console.error("Network Error:", error.request);
+        setErrorMessage("Network error. Please check your connection.");
+      } else {
+        console.error("Error setting up request:", error.message);
+        setErrorMessage("An unexpected error occurred.");
+      }
+    }
+  };
+
+  // Flattening configuration keys for structural dynamic input maps
+  const fieldEntries = Object.entries(fieldsConfig).flatMap(([key, value]) => {
     if (value && typeof value === "object" && !Array.isArray(value)) {
       return Object.entries(value).map(([subKey, subValue]) => [
         `${key}.${subKey}`,
@@ -98,7 +155,6 @@ const AccountsCreateForm = ({ page }) => {
         style={{ background: PALETTE.bg }}
       >
         {fieldEntries.map(([label, value]) => {
-          // Format label from camelCase/dot.notation to spaced capitalized words
           const cleanLabel = label
             .replace(/\./g, " ")
             .replace(/([A-Z])/g, " $1")
@@ -106,19 +162,40 @@ const AccountsCreateForm = ({ page }) => {
 
           return (
             <div key={label} className="border-b pb-2 border-gray-100 text-sm">
-              {/* Pass the dynamic clean text and the structural icon token */}
               <Field label={cleanLabel} icon={""}>
-                <Input label={label} value={value} showValue={true} />
+                {/* Note: value={value} will act as defaultValue unless you implement an onChange tracking system */}
+                <Input
+                  label={label}
+                  value={value}
+                  showValue={true}
+                  successfulSubmission={successfulSubmission}
+                />
               </Field>
             </div>
           );
         })}
       </div>
+
+      <div className="mt-2 min-h-[20px]">
+        {missingFields && (
+          <p className="text-red-500 text-sm font-medium">
+            Please fill in all required fields.
+          </p>
+        )}
+
+        {errorMessage && (
+          <p className="text-red-500 text-sm font-medium">{errorMessage}</p>
+        )}
+
+        {successMessage && (
+          <p className="text-green-600 text-sm font-medium">{successMessage}</p>
+        )}
+      </div>
+
       <button
         type="submit"
-        className={`${primaryButton} border border-dotted mt-4`}
+        className={`${primaryButton} border border-dotted mt-2`}
         style={{
-          // background: "linear-gradient(135deg, #2FA084, #1F6F5F)",
           boxShadow: "0 1px 3px rgba(31, 111, 95, 0.3)",
           letterSpacing: "0.01em",
         }}

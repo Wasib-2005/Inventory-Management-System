@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import PasswordInput from "../Common/PasswordInput";
 import { useGetName } from "../../Hooks/userGetAppName";
+import PasswordInput from "../Common/Inputs/PasswordInput";
 
 const INITIAL = { email: "", password: "" };
 
-const SignIn = ({ onSwitch, onSubmit, isLoading }) => {
+const SignIn = ({  onSubmit, isLoading }) => {
   const [form, setForm] = useState(INITIAL);
   const [error, setError] = useState("");
 

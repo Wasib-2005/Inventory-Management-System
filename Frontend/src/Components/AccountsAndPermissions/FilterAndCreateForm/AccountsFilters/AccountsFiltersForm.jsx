@@ -2,7 +2,7 @@ import { CiFilter } from "react-icons/ci";
 import { commonComponentBG } from "../../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../../Theme/palette";
 import Field from "../../../Common/Field";
-import Input from "../../../Common/Input";
+import Input from "../../../Common/Inputs/Input";
 import { primaryButton } from "../../../../Theme/primaryButton";
 import TimeZoneWarning from "../../../Common/TimeZoneWarning";
 

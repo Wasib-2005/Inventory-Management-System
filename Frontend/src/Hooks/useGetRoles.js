@@ -16,7 +16,7 @@ const useGetRole = () => {
       } catch (error) {
         console.error("Failed to fetch custom workspace roles:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); 
       }
     };
 

@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
     dateOfBirth: { type: Date },
     gender: {
       type: String,
-      enum: ["male", "female", "non-binary", "prefer-not-to-say"],
+      enum: ["male", "female", "other"],
     },
     address: {
       street: String,
@@ -53,12 +53,12 @@ const userSchema = new mongoose.Schema(
     },
     employmentType: {
       type: String,
-      enum: ["full-time", "part-time", "contract", "intern", "consultant"],
+      enum: ["full-time", "part-time", "intern", "consultant", "contractor"],
       default: "full-time",
     },
     employmentStatus: {
       type: String,
-      enum: ["active", "onboarding", "on_leave", "suspended", "terminated"],
+      enum: ["active", "onboarding", "on-leave", "suspended", "terminated"],
       default: "onboarding",
     },
     hireDate: { type: Date },
@@ -82,6 +82,7 @@ const userSchema = new mongoose.Schema(
     emailVerified: { type: Boolean, default: false },
 
     // ── Emergency / HR ──────────────────────────────────────────────
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     emergencyContact: { name: String, relationship: String, phone: String },
 
     // ── Soft Delete ─────────────────────────────────────────────────

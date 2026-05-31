@@ -1,0 +1,1 @@
+export const useGetTimeZone = import.meta.env.VITE_TIMEZONE

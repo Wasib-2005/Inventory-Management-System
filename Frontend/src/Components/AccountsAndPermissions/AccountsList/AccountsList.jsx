@@ -60,7 +60,7 @@ const AccountsList = () => {
                 className="p-3 bg-white/5 rounded border border-white/10 flex justify-between items-center"
               >
                 <div>
-                  <p className="font-semibold">{account.name || "Unnamed Account"}</p>
+                  <p className="font-semibold">{account.firstName || "Unnamed Account"}</p>
                   <p className="text-sm text-gray-400">{account.email}</p>
                 </div>
                 <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">

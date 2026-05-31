@@ -6,10 +6,12 @@ import User from "../models/user.model.js";
 export const getRoles = async (req, res) => {
   try {
     // Only fetch userType and exclude the _id field
-    const roles = await Role.find().select("userType -_id");
+    const roles = await Role.find()
+
+    console.log(roles);
 
     // map returns a new array directly
-    const sendData = roles.map((role) => role.userType);
+    const sendData = roles.map((role) => role.roleTitle);
 
     res.status(200).json(sendData);
   } catch (error) {
