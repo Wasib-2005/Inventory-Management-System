@@ -7,28 +7,30 @@ import { commonComponentBG } from "../../Theme/commonComponentBG";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { hybridEncrypt } from "../../Service/auth/auth";
-import useGetRole from "../../Hooks/useGetRoles"; // Assuming this path is correct
+import useGetRole from "../../Hooks/useGetRoles";
+import useDebounce from "../../Hooks/useDebounce"; // 1. Import your new hook
 
 const FilterCreateIndex = () => {
   const [users, setUsers] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
 
-  // Use the custom hook correctly at the top level
-  const { roles, loading: rolesLoading } = useGetRole();
-
-  // Provide a fallback default if roles haven't loaded yet or are empty
+  const { roles } = useGetRole();
   const roleOptions = roles.length > 0 ? roles : ["user"];
-
   const selectedUser = users.find((u) => u._id === selectedId) ?? null;
+
+  // 2. Consume the debounce hook here
+  // debouncedQuery will only change when the user STOPS typing for 400ms
+  const debouncedQuery = useDebounce(query, 400);
 
   const handleSelect = (_id) => setSelectedId(_id);
 
   const fetchUsers = async (filters = {}) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: 1, limit: 50, ...filters });
+      const params = new URLSearchParams({ page: 1, limit: 15, ...filters });
       const res = await axios.get(
         `${import.meta.env.VITE_BACKEND_API_HEADER}/api/accounts-and-permissions?${params}`,
         { withCredentials: true },
@@ -41,22 +43,22 @@ const FilterCreateIndex = () => {
     }
   };
 
+  // 3. Trigger the network fetch only when the debounced query undergoes an actual change
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers({ search: debouncedQuery });
+  }, [debouncedQuery]); 
 
   const handleSave = async (updated) => {
-    console.log(updated);
     try {
       const payload = await hybridEncrypt(updated);
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_account`,
         payload,
         { withCredentials: true },
       );
-      console.log(response);
+      toast.success("User updated successfully");
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error.message || "An error occurred");
     }
   };
@@ -77,15 +79,8 @@ const FilterCreateIndex = () => {
       emailVerified: false,
       hireDate: new Date().toISOString().substring(0, 10),
       manager: "—",
-      dob: "",
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "",
-      emName: "",
-      emRel: "",
-      emPhone: "",
+      dob: "", street: "", city: "", state: "", postalCode: "", country: "",
+      emName: "", emRel: "", emPhone: "",
     };
     setUsers((prev) => [newUser, ...prev]);
     setSelectedId(newUser._id);
@@ -96,12 +91,7 @@ const FilterCreateIndex = () => {
       {/* LEFT — detail */}
       <div className={`flex flex-col overflow-hidden ${commonComponentBG} ${selectedUser ? " fixed md:relative left-5 md:left-auto top-5 md:top-auto z-50 md:z-auto w-[90%] md:w-auto h-[95%] md:h-full " : " hidden md:inline "} `}>
         {selectedUser ? (
-          <UserDetailPanel
-            user={selectedUser}
-            setSelectedId={setSelectedId}
-            onSave={handleSave}
-            onDelete={handleDelete}
-          />
+          <UserDetailPanel user={selectedUser} setSelectedId={setSelectedId} onSave={handleSave} onDelete={handleDelete} />
         ) : (
           <UserDetailEmpty />
         )}
@@ -114,16 +104,14 @@ const FilterCreateIndex = () => {
           selectedId={selectedId}
           onSelect={handleSelect}
           onCreateClick={() => setShowCreate(true)}
+          query={query} // Keeps the input field snappy and responsive instantly
+          setQuery={setQuery}
         />
       </div>
 
       {/* Create modal */}
       {showCreate && (
-        <CreateUserModal
-          roleOptions={roleOptions}
-          onClose={() => setShowCreate(false)}
-          onSubmit={handleCreate}
-        />
+        <CreateUserModal roleOptions={roleOptions} onClose={() => setShowCreate(false)} onSubmit={handleCreate} />
       )}
     </div>
   );

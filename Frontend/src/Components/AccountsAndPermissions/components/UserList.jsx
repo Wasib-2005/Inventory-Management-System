@@ -1,19 +1,19 @@
-import { useState } from "react";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import UserListItem from "./UserListItem";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 
-const UserList = ({ users, selectedId, onSelect, onCreateClick }) => {
-  console.log("asda", selectedId)
-  const [query, setQuery] = useState("");
-
-  const filtered = users.filter((u) =>
-    `${u.firstName} ${u.lastName} ${u.email} ${u.role} ${u.username}`
-      .toLowerCase()
-      .includes(query.toLowerCase())
-  );
-
+const UserList = ({
+  users,
+  selectedId,
+  onSelect,
+  onCreateClick,
+  query,
+  setQuery,
+}) => {
+  
+  // The data array coming from props is already queried and filtered by the database
+  const filtered = users; 
 
   return (
     <div className={`flex flex-col h-full overflow-hidden bg-(--color-background-secondary) ${commonComponentBG}`}>
@@ -33,7 +33,10 @@ const UserList = ({ users, selectedId, onSelect, onCreateClick }) => {
 
       {/* Search */}
       <div className="relative px-3 py-2.5 bg-[var(--color-background-primary)] border-b border-(--color-border-tertiary) shrink-0">
-        <CiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)" size={15} />
+        <CiSearch
+          className="absolute left-5 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)"
+          size={15}
+        />
         <input
           type="text"
           value={query}
