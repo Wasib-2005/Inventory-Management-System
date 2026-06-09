@@ -11,13 +11,13 @@ export const createAccountController = async (req, res) => {
 
     const password = await hashPass(plain.password);
 
-    plain.createdBy = req.userId;
+    // plain.createdBy = req.userId; 
+
 
     plain.password = password;
 
     const { role } = plain;
 
-    console.log(role);
 
     
     const getRoleId = await Role.find({ roleTitle: role });
@@ -28,8 +28,10 @@ export const createAccountController = async (req, res) => {
     }
     
     plain.role = getRoleId[0]?._id;
-    console.log(plain);
-    const createUser = await User.create(plain);
+
+    const createUser = await User.insertOne(plain)
+
+    console.log(createUser)
     if (!createUser) {
       logger.error("Failed to create account");
       return res.status(500).json({ message: "Failed to create account" });

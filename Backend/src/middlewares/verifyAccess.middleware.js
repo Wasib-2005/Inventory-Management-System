@@ -8,6 +8,7 @@ import logger from "../config/logger.js";
 export const verifyAccess = (req, res, next) => {
   try {
     const token = req.cookies?.access_token;
+    console.log(token)
     if (!token) {
       return res.status(401).json({ message: "No access token" });
     }

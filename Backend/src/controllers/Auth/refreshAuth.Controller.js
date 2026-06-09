@@ -5,7 +5,6 @@ import { sendResponse } from "./helper/sendResponse.js";
 
 // ── REFRESH ───────────────────────────────────────────────────────────────────
 export const refreshAuth = async (req, res) => {
-  console.log("refreshed")
   try {
     const rawRefresh = req.cookies?.refresh_token;
     if (!rawRefresh) {

@@ -9,6 +9,7 @@ const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
 const AccountsAndPermissionsRoute = require("./src/routes/accountsAndPermissions.route.js");
 const RoleRoute = require("./src/routes/roles.route.js");
 const ManageAccountsRoute = require("./src/routes/manageAccounts.route.js");
+const ManagerRouter = require ("./src/routes/managers.route.js")
 
 const app = express();
 
@@ -34,8 +35,8 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-app.use(express.json());
 app.use(cookieParser());
+app.use(express.json());
 app.use(cors(corsOptions));
 app.options("/{*path}", cors(corsOptions));
 
@@ -79,4 +80,5 @@ app.use("/api/", PublicKeyGeneratorRoute);
 app.use("/api/", AccountsAndPermissionsRoute);
 app.use("/api/", RoleRoute);
 app.use("/api/",ManageAccountsRoute);
+app.use("/api/",ManagerRouter);
 module.exports = app;

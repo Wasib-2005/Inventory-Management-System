@@ -10,7 +10,6 @@ const UserContextProvider = ({ children }) => {
   const refreshUser = async () => {
     try {
       const data = await refresh_auth();
-      console.log(data.user)
       setUser(data.user ?? null);
     } catch {
       setUser(null);

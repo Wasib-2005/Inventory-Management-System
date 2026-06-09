@@ -5,10 +5,9 @@ import User from "../models/user.model.js";
 
 export const getRoles = async (req, res) => {
   try {
-    // Only fetch userType and exclude the _id field
+    // Only fetch roleTitle and exclude the _id field
     const roles = await Role.find()
 
-    console.log(roles);
 
     // map returns a new array directly
     const sendData = roles.map((role) => role.roleTitle);
@@ -22,10 +21,10 @@ export const getRoles = async (req, res) => {
 
 export const changeRoles = async (req, res) => {
   try {
-    const { userId, userType } = req.body;
+    const { userId, roleTitle } = req.body;
 
     // 1. Find the Role document that matches the string "userType" (e.g., "admin")
-    const roleDoc = await Role.findOne({ userType: userType.toLowerCase() });
+    const roleDoc = await Role.findOne({ roleTitle: roleTitle.toLowerCase() });
 
     if (!roleDoc) {
       return res.status(404).json({ message: "Role type not found" });
@@ -42,11 +41,10 @@ export const changeRoles = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log(`Role updated for ${updatedUser.username} to ${userType}`);
 
     res.status(200).json({
       message: "Role updated successfully",
-      userType: userType,
+      roleTitle: roleTitle,
     });
   } catch (error) {
     logger.error("Error in changeRoles:", error);

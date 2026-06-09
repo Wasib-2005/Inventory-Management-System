@@ -34,7 +34,7 @@ export const getAccountsAndPermissions = async (req, res) => {
     // Role-specific filtering (assuming req.query.role passes the role name or '_id')
     // Note: If filters pass the Role ID from your dropdown, compare directly.
     if (role && role !== "all") {
-      const { _id } = await Role.findOne({ userType: role });
+      const { _id } = await Role.findOne({ roleTitle: role });
       queryFilter.role = _id;
     }
 
@@ -70,7 +70,7 @@ export const getAccountsAndPermissions = async (req, res) => {
       return {
         ...rest,
         // Safeguard in case role population failed or is missing
-        userType: roleDoc?.name || roleDoc?.userType || "Unknown",
+        roleTitle: roleDoc?.roleTitle || roleDoc?.name || "Unknown",
         permissions: roleDoc?.permissions || [],
       };
     });

@@ -30,7 +30,7 @@ export const signUpLogic = async (req, res) => {
       return res.status(409).json({ message: "An account already exists" });
     }
 
-    const defaultRole = await Role.findOne({ userType: "user" });
+    const defaultRole = await Role.findOne({ roleTitle: "user" });
 
     if (!defaultRole) {
       return res.status(500).json({ message: "Default role not configured" });
