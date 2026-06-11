@@ -10,7 +10,7 @@ const parseAdvancedSearch = (searchStr) => {
   if (!searchStr) return {};
 
   const andConditions = [];
-  
+
   // Regex captures key:value OR key:"value with spaces"
   // It handles text up to the next valid token or the end of the string
   const tokenRegex = /(\w+):\s*(?:"([^"]*)"|(.+?)(?=\s+\w+:|$))/g;
@@ -21,7 +21,7 @@ const parseAdvancedSearch = (searchStr) => {
   while ((match = tokenRegex.exec(searchStr)) !== null) {
     const key = match[1].toLowerCase();
     const value = (match[2] || match[3]).trim();
-    
+
     // Safely convert value to case-insensitive regex
     const regexVal = { $regex: value, $options: "i" };
 
@@ -38,10 +38,7 @@ const parseAdvancedSearch = (searchStr) => {
     } else if (key === "name") {
       // Map 'name' keyword against both first and last name values
       andConditions.push({
-        $or: [
-          { firstName: regexVal },
-          { lastName: regexVal },
-        ],
+        $or: [{ firstName: regexVal }, { lastName: regexVal }],
       });
     } else if (["username", "email", "phone"].includes(key)) {
       // Match explicit properties directly
@@ -118,11 +115,18 @@ export const getAccountsAndPermissions = async (req, res) => {
       .skip(skip)
       .limit(parsedLimit)
       .populate("role")
+      .populate("manager", "displayName username email")
       .lean();
 
     // Map and sanitize standard data response payloads
     const transformedData = users.map((user) => {
-      const { password, loginAttempts, lockUntil, role: roleDoc, ...rest } = user;
+      const {
+        password,
+        loginAttempts,
+        lockUntil,
+        role: roleDoc,
+        ...rest
+      } = user;
 
       return {
         ...rest,

@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   EMP_TYPE_OPTIONS,
   EMP_STATUS_OPTIONS,
   GENDER_OPTIONS,
   getRole,
-} from "../data/helpers";
-import { commonInputField } from "../../../Theme/commonInputField";
-
+} from "../../data/helpers";
+import { commonInputField } from "../../../../Theme/commonInputField";
 
 const EditField = ({
   label,
@@ -15,37 +14,38 @@ const EditField = ({
   editing,
   onChange,
   type = "text",
+  required = false,
 }) => {
   const [selectOptions, setSelectOptions] = useState({
-    role: ["user"],
-    empType: EMP_TYPE_OPTIONS,
-    empStatus: EMP_STATUS_OPTIONS,
+    roleTitle: [],
+    employmentType: EMP_TYPE_OPTIONS,
+    employmentStatus: EMP_STATUS_OPTIONS,
     gender: GENDER_OPTIONS,
   });
 
   const isSelect = fieldKey in selectOptions;
 
   useEffect(() => {
-    // 1. Define the async function inside the effect
+    if (fieldKey !== "roleTitle") return;
     const fetchRoles = async () => {
       try {
         const roles = await getRole();
-        setSelectOptions((prev) => ({ ...prev, role: roles }));
+        setSelectOptions((prev) => ({ ...prev, roleTitle: roles }));
       } catch (error) {
         console.error("Failed to fetch roles:", error);
       }
     };
-
-    // 2. Call it immediately
     fetchRoles();
-  }, []);
+  }, [fieldKey]);
+
+  const displayValue =
+    type === "date" && value ? value.slice(0, 10) : (value ?? "");
 
   return (
     <div className="flex flex-col gap-0.5 py-2 border-b border-(--color-border-tertiary) last:border-b-0">
-      <span className="text-[11px] font-medium text-(--color-text-tertiary) uppercase tracking-wide">
+      <span className="text-[12px] font-bold text-(--color-text-tertiary) uppercase tracking-wide">
         {label}
       </span>
-
       {editing ? (
         isSelect ? (
           <select
@@ -53,6 +53,7 @@ const EditField = ({
             value={value ?? ""}
             onChange={(e) => onChange(fieldKey, e.target.value)}
           >
+            {fieldKey === "roleTitle" && <option value="">Select role</option>}
             {selectOptions[fieldKey].map((o) => (
               <option key={o} value={o}>
                 {o}
@@ -63,15 +64,16 @@ const EditField = ({
           <input
             className={commonInputField}
             type={type}
-            value={value ?? ""}
+            value={displayValue}
             onChange={(e) => onChange(fieldKey, e.target.value)}
+            required={required}
           />
         )
       ) : (
         <span
-          className={`text-[13px] ${!value ? "text-(--color-text-tertiary)" : "text-(--color-text-primary)"}`}
+          className={`text-[14px] ${!value ? "text-(--color-text-tertiary)" : "text-(--color-text-primary)"}`}
         >
-          {value || "—"}
+          {type === "date" && value ? value.slice(0, 10) : value || "—"}
         </span>
       )}
     </div>

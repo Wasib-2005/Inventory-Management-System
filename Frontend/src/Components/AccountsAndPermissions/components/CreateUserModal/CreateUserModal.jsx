@@ -3,10 +3,11 @@ import axios from "axios";
 import { IoPersonAddSharp, IoClose } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
 import { IoIosEyeOff } from "react-icons/io";
-import { hybridEncrypt } from "../../../Service/auth/auth";
+import { hybridEncrypt } from "../../../../Service/auth/auth";
 import { toast } from "react-toastify";
-import { commonInputField } from "../../../Theme/commonInputField";
-import { commonComponentBG } from "../../../Theme/commonComponentBG";
+import { commonInputField } from "../../../../Theme/commonInputField";
+import { commonComponentBG } from "../../../../Theme/commonComponentBG";
+import ManagerField from "../Fields/ManagerField";
 
 const FieldLabel = ({ children, required }) => (
   <div className="text-[11px] text-(--color-text-tertiary) mb-1">
@@ -108,6 +109,7 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
       // e.g., const payload = myHybridEncryption(form);
 
       const payload = await hybridEncrypt(form);
+      console.log(form)
 
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_API_HEADER}/api/create_account`,
@@ -145,7 +147,7 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
       }
     >
       <div
-        className={` ${commonComponentBG} w-162.5 max-w-[95%] md:max-w-full max-h-[90vh] md:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl  `}
+        className={` ${commonComponentBG()} w-162.5 max-w-[95%] md:max-w-full max-h-[90vh] md:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl  `}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-(--color-border-tertiary) bg-gray-50/50 ">
@@ -332,7 +334,7 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="">
                 <FieldLabel required>Password</FieldLabel>
                 <div className="relative">
                   <input
@@ -370,6 +372,13 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
                   </div>
                 )}
               </div>
+
+              <ManagerField
+                editing={true}
+                manager={form.manager}
+                onChange={(key, value) => set(key, value)}
+                onSelectManager={(id) => set("managerId", id)}
+              />
             </div>
           </div>
 

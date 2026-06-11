@@ -6,8 +6,7 @@ import User from "../models/user.model.js";
 export const getRoles = async (req, res) => {
   try {
     // Only fetch roleTitle and exclude the _id field
-    const roles = await Role.find()
-
+    const roles = await Role.find();
 
     // map returns a new array directly
     const sendData = roles.map((role) => role.roleTitle);
@@ -18,6 +17,21 @@ export const getRoles = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getRolesForEditing = async (req, res) => {
+  try {
+    console.log("get-role-for-edit")
+    const roles = await Role.find();
+    if (!roles) return res.status(404).json({message:"No role find"})
+    res.status(200).json(roles)
+  } catch (error) {
+    res.status(500)
+  }
+};
+
+export const updateRoles = async (req,res) => {
+  
+} 
 
 export const changeRoles = async (req, res) => {
   try {
@@ -40,7 +54,6 @@ export const changeRoles = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
-
 
     res.status(200).json({
       message: "Role updated successfully",

@@ -3,6 +3,7 @@ import App from "./App";
 import Home from "./Pages/Home/Home";
 import AuthPage from "./Pages/Auth/AuthPage";
 import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
+import RoleManagement from "./Components/RoleManagement/RoleManagement";
 
 const MainRouter = createBrowserRouter([
   {
@@ -13,9 +14,11 @@ const MainRouter = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      {path:"/accounts-and-permissions",
-        element:<AccountsAndPermissions/>
-      }
+      { path: "role-management", element: <RoleManagement /> },
+      {
+        path: "/accounts-and-permissions",
+        element: <AccountsAndPermissions />,
+      },
     ],
   },
   {

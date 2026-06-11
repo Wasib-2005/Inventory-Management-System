@@ -8,6 +8,15 @@ import { commonComponentBG } from "../../../Theme/commonComponentBG";
 
 const TABS = ["Info", "Address", "Emergency", "Flags"];
 
+const setNestedValue = (obj, path, value) => {
+  const keys = path.split(".");
+  if (keys.length === 1) return { ...obj, [path]: value };
+  return {
+    ...obj,
+    [keys[0]]: setNestedValue(obj[keys[0]] ?? {}, keys.slice(1).join("."), value),
+  };
+};
+
 const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(null);
@@ -24,7 +33,8 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   };
 
   const handleChange = (key, value) => {
-    setDraft((prev) => ({ ...prev, [key]: value }));
+    console.log(key, value)
+    setDraft((prev) => setNestedValue(prev, key, value));
   };
 
   const handleSave = () => {
@@ -34,21 +44,16 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   };
 
   const handleDelete = () => {
-    if (
-      confirm(
-        `Delete ${user.firstName} ${user.lastName}? This cannot be undone.`,
-      )
-    ) {
-      onDelete(user.id);
+    if (confirm(`Delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) {
+      onDelete(user._id);
     }
   };
 
   const current = editing ? draft : user;
-
   const tabProps = { user: current, editing, onChange: handleChange };
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG}`}>
+    <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")}`}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border-tertiary) shrink-0 bg-[var(--color-background-primary)]">
         <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
@@ -70,10 +75,9 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-3.5 py-2 text-[12px] font-medium border-b-2 transition-colors
-              ${
-                activeTab === tab
-                  ? "text-[#1D9E75] border-[#1D9E75]"
-                  : "text-(--color-text-tertiary) border-transparent hover:text-[var(--color-text-secondary)]"
+              ${activeTab === tab
+                ? "text-[#1D9E75] border-[#1D9E75]"
+                : "text-(--color-text-tertiary) border-transparent hover:text-[var(--color-text-secondary)]"
               }`}
           >
             {tab}

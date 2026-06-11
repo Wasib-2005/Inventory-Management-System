@@ -1,11 +1,14 @@
-import EditField from "./EditField";
+import EditField from "./Fields/EditField";
 import Toggle from "./Toggle";
 import StatusBadge from "./StatusBadge";
 import UserAvatar from "./UserAvatar";
+import ManagerField from "./Fields/ManagerField";
 
 const SectionTitle = ({ children }) => (
-  <div className="text-[11px] font-medium text-(--color-text-tertiary) uppercase tracking-widest mt-4 mb-2 pb-1 border-b border-(--color-border-tertiary) first:mt-0">
-    {children}
+  <div className="text-[13px] font-bold text-(--color-text-tertiary) uppercase tracking-widest mt-4 mb-2 pb-1 first:mt-0">
+    <div className="flex ">
+      <p className="border-b-3 border-dotted border-(--color-border-tertiary) px-1 text-gray-800">{children}</p>
+    </div>
   </div>
 );
 
@@ -14,9 +17,7 @@ const FlagRow = ({ label, desc, value, editing, onChange }) => (
     <div>
       <div className="text-[13px]">{label}</div>
       {desc && (
-        <div className="text-[11px] text-(--color-text-tertiary)">
-          {desc}
-        </div>
+        <div className="text-[11px] text-(--color-text-tertiary)">{desc}</div>
       )}
     </div>
     {editing ? (
@@ -27,6 +28,30 @@ const FlagRow = ({ label, desc, value, editing, onChange }) => (
         variant={value ? "role" : "danger"}
       />
     )}
+  </div>
+);
+
+const PermissionRow = ({ label, value }) => (
+  <div className="flex items-center justify-between py-1.5 border-b border-(--color-border-tertiary) last:border-b-0">
+    <div className="text-[13px]">{label}</div>
+    <StatusBadge
+      status={value ? "Yes" : "No"}
+      variant={value ? "role" : "danger"}
+    />
+  </div>
+);
+
+// Read-only field for non-editable values like manager
+export const ReadonlyField = ({ label, value }) => (
+  <div className="flex flex-col gap-0.5 py-2 border-b border-(--color-border-tertiary) last:border-b-0">
+    <span className="text-[11px] font-medium text-(--color-text-tertiary) uppercase tracking-wide">
+      {label}
+    </span>
+    <span
+      className={`text-[13px] ${!value ? "text-(--color-text-tertiary)" : "text-(--color-text-primary)"}`}
+    >
+      {value || "—"}
+    </span>
   </div>
 );
 
@@ -44,7 +69,7 @@ export const InfoTab = ({ user, editing, onChange }) => (
         </div>
       </div>
     </div>
-
+    <SectionTitle>Personal Information</SectionTitle>
     <div className="grid grid-cols-2 gap-x-3">
       <EditField
         label="First name"
@@ -84,11 +109,25 @@ export const InfoTab = ({ user, editing, onChange }) => (
       />
       <EditField
         label="Date of birth"
-        fieldKey="dob"
-        value={user.dob}
+        fieldKey="dateOfBirth"
+        value={user.dateOfBirth}
         editing={editing}
         onChange={onChange}
         type="date"
+      />
+      <EditField
+        label="Gender"
+        fieldKey="gender"
+        value={user.gender}
+        editing={editing}
+        onChange={onChange}
+      />
+      <EditField
+        label="Language"
+        fieldKey="language"
+        value={user.language}
+        editing={editing}
+        onChange={onChange}
       />
     </div>
     <EditField
@@ -98,42 +137,49 @@ export const InfoTab = ({ user, editing, onChange }) => (
       editing={editing}
       onChange={onChange}
     />
+    <EditField
+      label="Timezone"
+      fieldKey="timezone"
+      value={user.timezone}
+      editing={editing}
+      onChange={onChange}
+    />
 
     <SectionTitle>Employment</SectionTitle>
     <EditField
       label="Role"
-      fieldKey="role"
-      value={user.role}
+      fieldKey="roleTitle"
+      value={user.roleTitle}
       editing={editing}
       onChange={onChange}
+      required ={true}
     />
     <EditField
       label="Employment type"
-      fieldKey="empType"
-      value={user.empType}
+      fieldKey="employmentType"
+      value={user.employmentType}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="Employment status"
-      fieldKey="empStatus"
-      value={user.empStatus}
+      fieldKey="employmentStatus"
+      value={user.employmentStatus}
       editing={editing}
       onChange={onChange}
     />
-    <EditField
+    {/* Manager is always read-only — it's a populated object, not a plain string */}
+    <ManagerField
       label="Manager"
-      fieldKey="manager"
-      value={user.manager}
+      manager={user?.manager}
       editing={editing}
       onChange={onChange}
     />
-    <EditField
-      label="Hire date"
-      fieldKey="hireDate"
-      value={user.hireDate}
-      editing={false}
-      onChange={onChange}
+    <ReadonlyField label="Employee ID" value={user.employeeId} />
+    <ReadonlyField label="Hire date" value={user.hireDate} />
+    <ReadonlyField
+      label="Created at"
+      value={user.createdAt ? user.createdAt.slice(0, 10) : null}
     />
   </div>
 );
@@ -143,36 +189,36 @@ export const AddressTab = ({ user, editing, onChange }) => (
     <SectionTitle>Address</SectionTitle>
     <EditField
       label="Street"
-      fieldKey="street"
-      value={user.street}
+      fieldKey="address.street"
+      value={user.address?.street}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="City"
-      fieldKey="city"
-      value={user.city}
+      fieldKey="address.city"
+      value={user.address?.city}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="State"
-      fieldKey="state"
-      value={user.state}
+      fieldKey="address.state"
+      value={user.address?.state}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="Postal code"
-      fieldKey="postalCode"
-      value={user.postalCode}
+      fieldKey="address.postalCode"
+      value={user.address?.postalCode}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="Country"
-      fieldKey="country"
-      value={user.country}
+      fieldKey="address.country"
+      value={user.address?.country}
       editing={editing}
       onChange={onChange}
     />
@@ -184,22 +230,22 @@ export const EmergencyTab = ({ user, editing, onChange }) => (
     <SectionTitle>Emergency contact</SectionTitle>
     <EditField
       label="Name"
-      fieldKey="emName"
-      value={user.emName}
+      fieldKey="emergencyContact.name"
+      value={user.emergencyContact?.name}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="Relationship"
-      fieldKey="emRel"
-      value={user.emRel}
+      fieldKey="emergencyContact.relationship"
+      value={user.emergencyContact?.relationship}
       editing={editing}
       onChange={onChange}
     />
     <EditField
       label="Phone"
-      fieldKey="emPhone"
-      value={user.emPhone}
+      fieldKey="emergencyContact.phone"
+      value={user.emergencyContact?.phone}
       editing={editing}
       onChange={onChange}
     />
@@ -208,7 +254,7 @@ export const EmergencyTab = ({ user, editing, onChange }) => (
 
 export const FlagsTab = ({ user, editing, onChange }) => (
   <div>
-    <SectionTitle>Flags</SectionTitle>
+    <SectionTitle>Account flags</SectionTitle>
     <FlagRow
       label="Active"
       desc="User can log in"
@@ -229,6 +275,36 @@ export const FlagsTab = ({ user, editing, onChange }) => (
       value={user.emailVerified}
       editing={editing}
       onChange={(v) => onChange("emailVerified", v)}
+    />
+
+    <SectionTitle>Permissions</SectionTitle>
+    <PermissionRow
+      label="Read products"
+      value={user.permissions?.hasReadProductPermission}
+    />
+    <PermissionRow
+      label="Add products"
+      value={user.permissions?.hasAddProductPermission}
+    />
+    <PermissionRow
+      label="Edit products"
+      value={user.permissions?.hasProductChangeermission}
+    />
+    <PermissionRow
+      label="Delete products"
+      value={user.permissions?.hasProductDeletePermission}
+    />
+    <PermissionRow
+      label="Add roles"
+      value={user.permissions?.hasNewRoleAddPermission}
+    />
+    <PermissionRow
+      label="Change role permissions"
+      value={user.permissions?.hasRolePermissionsChangePermission}
+    />
+    <PermissionRow
+      label="Delete roles"
+      value={user.permissions?.hasNewRoleDeletePermission}
     />
   </div>
 );

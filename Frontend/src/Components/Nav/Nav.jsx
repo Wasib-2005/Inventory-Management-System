@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { FaHome } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
+import { FaUsersGear } from "react-icons/fa6";
 import { CiLogin } from "react-icons/ci";
 import { NavLink } from "react-router";
 import { motion } from "framer-motion";
@@ -14,6 +15,11 @@ const BASE = import.meta.env.VITE_BACKEND_API_HEADER;
 
 const navLinks = [
   { label: <FaHome size={18} />, path: "/", name: "Home" },
+  {
+    label: <FaUsersGear size={22} />,
+    path: "/role-management",
+    name: "Role Control",
+  },
   {
     label: <IoPersonSharp size={18} />,
     path: "/accounts-and-permissions",

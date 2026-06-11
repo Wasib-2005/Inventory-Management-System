@@ -42,7 +42,7 @@ const Input = ({
   // Boolean — Switch
   if (typeof currentValue === "boolean") {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ">
         <input type="hidden" name={label} value={currentValue.toString()} />
         <button
           type="button"

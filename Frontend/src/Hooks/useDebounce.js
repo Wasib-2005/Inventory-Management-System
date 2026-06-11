@@ -6,10 +6,11 @@ import { useState, useEffect } from "react";
  * @param {number} delay - The delay in milliseconds (defaults to 400ms)
  * @returns {*} - The stable, debounced value
  */
-const useDebounce = (value, delay = 400) => {
+const useDebounce = (value, delay = 10000) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
+    console.log("Start debounce counter")
     // Set a timer to update the debounced value after the specified delay
     const handler = setTimeout(() => {
       setDebouncedValue(value);

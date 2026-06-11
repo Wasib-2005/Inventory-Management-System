@@ -11,27 +11,36 @@ export const createAccountController = async (req, res) => {
 
     const password = await hashPass(plain.password);
 
-    // plain.createdBy = req.userId; 
-
+    // plain.createdBy = req.userId;
 
     plain.password = password;
 
     const { role } = plain;
 
-
-    
     const getRoleId = await Role.find({ roleTitle: role });
 
     if (getRoleId.length === 0) {
       logger.error("Role not found");
       return res.status(404).json({ message: "Role not found" });
     }
-    
+
     plain.role = getRoleId[0]?._id;
+
+    if (plain.manager._id) {
+      const { _id: managerId } = await User.findById(plain.manager._id).select(
+        "_id",
+      );
+
+      if (!managerId) res.status(404).json({ message: "manager not found!!!" });
+
+      plain.manager = managerId;
+    }
+
+    console.log(plain);
 
     const createUser = await User.insertOne(plain)
 
-    console.log(createUser)
+    console.log(createUser);
     if (!createUser) {
       logger.error("Failed to create account");
       return res.status(500).json({ message: "Failed to create account" });
