@@ -2,15 +2,31 @@ const express = require("express");
 const logger = require("../config/logger.js");
 const {
   getRoles,
-  changeRoles,
   getRolesForEditing,
-} = require("../controllers/roles.controller.js");
+} = require("../controllers/Role/get_roles.controller.js");
 const { verifyAccess } = require("../middlewares/verifyAccess.middleware.js");
+const {
+  updateRole,
+  deleteRole,
+} = require("../controllers/Role/update_delete_role.controller.js");
+const { createRole } = require("../controllers/Role/create_role.controller.js");
+const {
+  checkPermission,
+} = require("../middlewares/checkPermission.middleware.js");
 
 const router = express.Router();
 
 router.get("/roles", getRoles);
-router.get("/get-role-for-edit",  getRolesForEditing);
-router.patch("/change_role", changeRoles);
+router.get(
+  "/get-role-for-edit",
+  verifyAccess,
+  // checkPermission([]),
+  getRolesForEditing,
+);
+
+router.post("/create-role", verifyAccess, createRole);
+
+router.patch("/update_role", verifyAccess, updateRole);
+router.delete("/delete-role", verifyAccess, deleteRole);
 
 module.exports = router;

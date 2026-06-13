@@ -1,14 +1,16 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import RoleCard from "./RoleCard";
 import CreateRole from "./CreateRole";
+import { toast } from "react-toastify";
 
 const RoleManagement = () => {
   const [roles, setRoles] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [showRoleModel, setShowRoleModel] = useState(false);
+  const isInitialMount = useRef(true); // Used to prevent duplicate initial API fetches
 
   const fetchRoles = async (query = "") => {
     setLoading(true);
@@ -23,24 +25,38 @@ const RoleManagement = () => {
       setRoles(res.data);
     } catch (error) {
       console.error("Error fetching roles:", error);
+      toast.error("Failed to load roles.");
     } finally {
       setLoading(false);
     }
   };
 
+  // 1. Fetch instantly on initial component mount
   useEffect(() => {
     fetchRoles();
   }, []);
 
-  // Debounced search
+  // 2. Debounced search logic (skips the very first layout render to avoid duplicate API hits)
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const timeout = setTimeout(() => {
       fetchRoles(search);
     }, 400);
+
     return () => clearTimeout(timeout);
   }, [search]);
 
-  const handlePermissionChange = (roleId, permKey, newValue) => {
+  // 3. Finished Permission Update Logic
+  const handlePermissionChange = async (roleId, permKey, newValue) => {
+    // Locate the current role state to reference old values if a fallback is needed
+    const originalRole = roles.find((r) => r._id === roleId);
+    if (!originalRole) return;
+
+    // A. OPTIMISTIC UPDATE: Change state right away for instant visual toggling
     setRoles((prev) =>
       prev.map((r) =>
         r._id === roleId
@@ -48,12 +64,46 @@ const RoleManagement = () => {
           : r,
       ),
     );
-    // Optionally: send PATCH to backend here
+
+    try {
+      // B. IMMUTABLE PAYLOAD: Construct a brand new payload without altering the state directly
+      const updatedPayload = {
+        ...originalRole,
+        permissions: {
+          ...originalRole.permissions,
+          [permKey]: newValue,
+        },
+      };
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_role`,
+        updatedPayload,
+        { withCredentials: true }, // Ensured authentication tokens/cookies transfer over
+      );
+
+      toast.success(
+        response.data?.message || "Permissions updated successfully!",
+      );
+    } catch (error) {
+      console.error("Failed updating role permission on server:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to update permissions.",
+      );
+
+      // C. ROLLBACK: Revert the UI switch back to its original status if backend fails
+      setRoles((prev) =>
+        prev.map((r) =>
+          r._id === roleId
+            ? { ...r, permissions: { ...r.permissions, [permKey]: !newValue } }
+            : r,
+        ),
+      );
+    }
   };
 
   return (
     <div
-      className={` ${commonComponentBG()} p-6 rounded-r-2xl ${showRoleModel&&"overflow-hidden"}`}
+      className={` ${commonComponentBG()} p-6 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
     >
       {/* Page header */}
       <div className="mb-6">
@@ -91,6 +141,7 @@ const RoleManagement = () => {
         </div>
         <div>
           <CreateRole
+            setRoles={setRoles}
             showRoleModel={showRoleModel}
             setShowRoleModel={setShowRoleModel}
           />
@@ -125,13 +176,7 @@ const RoleManagement = () => {
             <RoleCard
               key={role._id}
               role={role}
-              onPermissionChange={handlePermissionChange}
-            />
-          ))}
-          {roles.map((role) => (
-            <RoleCard
-              key={role._id}
-              role={role}
+              setRoles={setRoles}
               onPermissionChange={handlePermissionChange}
             />
           ))}

@@ -4,7 +4,9 @@ const Toggle = ({ checked, onChange }) => {
       type="button"
       onClick={onChange}
       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 ${
-        checked ? "bg-emerald-500" : "bg-gray-200"
+        checked
+          ? "bg-emerald-500 hover:bg-emerald-500/60"
+          : "bg-gray-200 hover:bg-gray-600/20"
       }`}
       aria-checked={checked}
       role="switch"

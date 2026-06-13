@@ -7,7 +7,9 @@ import ManagerField from "./Fields/ManagerField";
 const SectionTitle = ({ children }) => (
   <div className="text-[13px] font-bold text-(--color-text-tertiary) uppercase tracking-widest mt-4 mb-2 pb-1 first:mt-0">
     <div className="flex ">
-      <p className="border-b-3 border-dotted border-(--color-border-tertiary) px-1 text-gray-800">{children}</p>
+      <p className="border-b-3 border-dotted border-(--color-border-tertiary) px-1 text-gray-800">
+        {children}
+      </p>
     </div>
   </div>
 );
@@ -32,7 +34,7 @@ const FlagRow = ({ label, desc, value, editing, onChange }) => (
 );
 
 const PermissionRow = ({ label, value }) => (
-  <div className="flex items-center justify-between py-1.5 border-b border-(--color-border-tertiary) last:border-b-0">
+  <div className="flex items-center justify-between py-1.5 border-b border-(--color-border-tertiary) last:border-b-0 ml-10">
     <div className="text-[13px]">{label}</div>
     <StatusBadge
       status={value ? "Yes" : "No"}
@@ -152,7 +154,7 @@ export const InfoTab = ({ user, editing, onChange }) => (
       value={user.roleTitle}
       editing={editing}
       onChange={onChange}
-      required ={true}
+      required={true}
     />
     <EditField
       label="Employment type"
@@ -278,6 +280,9 @@ export const FlagsTab = ({ user, editing, onChange }) => (
     />
 
     <SectionTitle>Permissions</SectionTitle>
+    <p className="text-[14px] text-black font-bold">
+      Product Related Permissions:
+    </p>
     <PermissionRow
       label="Read products"
       value={user.permissions?.hasReadProductPermission}
@@ -287,24 +292,50 @@ export const FlagsTab = ({ user, editing, onChange }) => (
       value={user.permissions?.hasAddProductPermission}
     />
     <PermissionRow
-      label="Edit products"
-      value={user.permissions?.hasProductChangeermission}
+      label="Change products"
+      value={user.permissions?.hasProductChangePermission}
     />
     <PermissionRow
       label="Delete products"
       value={user.permissions?.hasProductDeletePermission}
+    />
+    <p className="text-[14px] text-black font-bold">
+      Role Related Permissions:
+    </p>
+    <PermissionRow
+      label="Read roles"
+      value={user.permissions?.hasReadRolePermission}
     />
     <PermissionRow
       label="Add roles"
       value={user.permissions?.hasNewRoleAddPermission}
     />
     <PermissionRow
-      label="Change role permissions"
+      label="Change role "
       value={user.permissions?.hasRolePermissionsChangePermission}
     />
     <PermissionRow
       label="Delete roles"
       value={user.permissions?.hasNewRoleDeletePermission}
+    />
+    <p className="text-[14px] text-black font-bold">
+      User Data Related Permissions:
+    </p>
+    <PermissionRow
+      label="Read user data"
+      value={user.permissions?.hasUserDataReadPermission}
+    />
+    <PermissionRow
+      label="Add user data"
+      value={user.permissions?.hasUserDataAddPermission}
+    />
+    <PermissionRow
+      label="Change user data"
+      value={user.permissions?.hasUserDataChangePermission}
+    />
+    <PermissionRow
+      label="Delete user data"
+      value={user.permissions?.hasUserDataDeletePermission}
     />
   </div>
 );
