@@ -8,6 +8,10 @@ export const createRole = async (req, res) => {
     return res.status(400).json({ message: "Role Name is required." });
   }
 
+  if (!roleData.roleRank) {
+    return res.status(400).json({ message: "Role Rank is required." });
+  }
+
   if (roleData.roleTitle.toLowerCase() === "admin".toLowerCase())
     return res.status(402).json({ message: "Can not create admin" });
   roleData.createdBy = req.userId;

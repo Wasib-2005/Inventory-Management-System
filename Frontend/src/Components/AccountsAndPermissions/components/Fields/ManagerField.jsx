@@ -118,7 +118,7 @@ const ManagerField = ({
 
       {isOpen && inputValue?.trim() !== "" && (
         <div
-          className={`${commonComponentBG()} mt-1 z-50 p-2 absolute left-0 right-0 max-h-52 overflow-y-auto rounded-md shadow-lg border border-(--color-border-secondary)`}
+          className={`${commonComponentBG()} overflow-auto mt-1 z-50 p-2 absolute left-0 right-0 max-h-52 overflow-y-auto rounded-md shadow-lg border border-(--color-border-secondary)`}
         >
           {suggestions.length > 0 ? (
             <ul className="flex flex-col gap-0.5 m-0 p-0 list-none">

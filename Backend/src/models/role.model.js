@@ -9,6 +9,7 @@ const roleSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    roleRank: { type: Number, required: true },
     permissions: {
       type: {
         // product related permissions
@@ -28,7 +29,6 @@ const roleSchema = new mongoose.Schema(
         hasUserDataAddPermission: { type: Boolean, default: true },
         hasUserDataChangePermission: { type: Boolean, default: true },
         hasUserDataDeletePermission: { type: Boolean, default: true },
-
       },
       _id: false,
       default: {},

@@ -53,7 +53,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   const tabProps = { user: current, editing, onChange: handleChange };
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")}`}>
+    <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")} overflow-auto`}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border-tertiary) shrink-0 bg-[var(--color-background-primary)]">
         <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--color-text-secondary)]">

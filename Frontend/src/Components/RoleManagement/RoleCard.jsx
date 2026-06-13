@@ -7,9 +7,73 @@ import { IoTrashOutline } from "react-icons/io5";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import EditField from "../AccountsAndPermissions/components/Fields/EditField";
+import { useState, useRef, useEffect } from "react";
+import Tooltip from "../Common/Tooltip";
 
 const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
+  const [roleRankEditing, setRoleRankEditing] = useState(false);
+  // 1. FIXED: Initialize state from the actual role object data
+  const [roleRank, setRoleRank] = useState(role?.roleRank || 1);
   const cleanTitle = role?.roleTitle?.toLowerCase() || "";
+  const rankRef = useRef(null);
+
+  // Sync state if role prop updates down the line
+  useEffect(() => {
+    if (role?.roleRank !== undefined) {
+      setRoleRank(role.roleRank);
+    }
+  }, [role?.roleRank]);
+
+  // 2. FIXED: Save rank to server on outside click close
+  useEffect(() => {
+    // 1. Separate the actual saving logic so both events can use it
+    const handleSave = async () => {
+      setRoleRankEditing(false);
+
+      // Only trigger network update if the value actually changed
+      if (roleRank !== role?.roleRank) {
+        try {
+          await axios.patch(
+            `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_role`,
+            { ...role, roleRank: Number(roleRank) },
+            { withCredentials: true },
+          );
+          toast.success("Role rank updated successfully!");
+        } catch (error) {
+          console.error("Failed to update rank:", error);
+          toast.error("Failed to save rank change.");
+          setRoleRank(role?.roleRank || 1); // Rollback on error
+        }
+      }
+    };
+
+    // 2. Click outside handler
+    const handleClickOutside = (event) => {
+      if (rankRef.current && !rankRef.current.contains(event.target)) {
+        handleSave();
+      }
+    };
+
+    // 3. Keydown handler (Named so we can clean it up later!)
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter") {
+        handleSave(); // Saves directly, bypassing the "outside" check
+      }
+    };
+
+    // Attach listeners only if editing
+    if (roleRankEditing) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    // 4. CLEANUP: Safely remove BOTH listeners
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [roleRankEditing, roleRank, role]);
 
   const handleDelete = async () => {
     const result = await Swal.fire({
@@ -47,7 +111,6 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
     }
   };
 
-  // ✅ Group and Sort Logic
   const groupedRolePermissions = Object.entries(role?.permissions || {}).reduce(
     (acc, [key, value]) => {
       const config = PERMISSION_CONFIG[key];
@@ -59,16 +122,17 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
       acc[groupName].push({ key, value, label, order });
       return acc;
     },
-    {}
+    {},
   );
 
-  // Apply sorting to each group
   Object.keys(groupedRolePermissions).forEach((group) => {
     groupedRolePermissions[group].sort((a, b) => a.order - b.order);
   });
 
   return (
-    <div className={`${commonComponentBG()} p-0`}>
+    <div
+      className={`${commonComponentBG()} p-0 relative hover:z-50 overflow-visible`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-emerald-100">
         <div className="flex items-center gap-2">
@@ -94,30 +158,75 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
 
       {/* Permissions List */}
       <div className="flex flex-col gap-0 px-4 pt-3 pb-3">
-        {Object.entries(groupedRolePermissions).map(([groupName, items]) => (
-          <div key={groupName} className="mb-3">
-            <p className="text-gray-800 font-bold capitalize mb-1">
-              {groupName}:
-            </p>
-
-            <div className="flex flex-col gap-1 ml-4 border-l-2 border-emerald-100 pl-4">
-              {items.map(({ key, value, label }) => (
-                <div
-                  key={key}
-                  className="flex items-center justify-between py-1"
-                >
-                  <span className="text-sm font-medium text-gray-600 capitalize">
-                    {label}
+        <div
+          ref={rankRef}
+          className="flex justify-between items-center cursor-pointer select-none border-b border-gray-100 pb-2 mb-2"
+          onClick={() => setRoleRankEditing(true)}
+        >
+          <p className="text-xl font-bold"> Role Rank:</p>
+          <Tooltip
+            text={
+              !roleRankEditing ? (
+                <span className="block text-left space-y-1 text-[11px] leading-relaxed">
+                  <strong className="text-emerald-400 block border-b border-gray-700/60 pb-1 mb-1 text-xs">
+                    Rank Hierarchy
+                  </strong>
+                  <span className="block">
+                    • <strong className="text-emerald-400">Lower Number</strong>{" "}
+                    = Greater Power (e.g., 1 is highest)
                   </span>
-                  <Toggle
-                    checked={value}
-                    onChange={() => onPermissionChange(role._id, key, !value)}
-                  />
-                </div>
-              ))}
+                  <span className="block">
+                    • <strong className="text-gray-400">Higher Number</strong> =
+                    Lower Power / Less Authority
+                  </span>
+                  <span className="block text-[10px] text-gray-500 pt-1 text-center italic border-t border-gray-800 mt-1">
+                    Click to edit rank value
+                  </span>
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium tracking-wide block px-1">
+                  Click outside the target box to auto-save change
+                </span>
+              )
+            }
+          >
+            {/* 3. FIXED: Adjusted callback parameters to match EditField payload signature */}
+            <EditField
+              editing={roleRankEditing}
+              value={roleRank}
+              fieldKey="roleRank"
+              type="number"
+              onChange={(key, val) => setRoleRank(val)}
+            />
+          </Tooltip>
+        </div>
+
+        <div className="overflow-auto h-80 pr-1">
+          {Object.entries(groupedRolePermissions).map(([groupName, items]) => (
+            <div key={groupName} className="mb-3">
+              <p className="text-gray-800 font-bold capitalize mb-1">
+                {groupName}:
+              </p>
+
+              <div className="flex flex-col gap-1 ml-4 border-l-2 border-emerald-100 pl-4">
+                {items.map(({ key, value, label }) => (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between py-1"
+                  >
+                    <span className="text-sm font-medium text-gray-600 capitalize">
+                      {label}
+                    </span>
+                    <Toggle
+                      checked={value}
+                      onChange={() => onPermissionChange(role._id, key, !value)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         <hr className="border-gray-100 mt-2 mb-2" />
 

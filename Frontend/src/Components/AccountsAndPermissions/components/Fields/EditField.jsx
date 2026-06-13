@@ -23,6 +23,9 @@ const EditField = ({
     gender: GENDER_OPTIONS,
   });
 
+  // Local state to track number validation errors
+  const [error, setError] = useState("");
+
   const isSelect = fieldKey in selectOptions;
 
   useEffect(() => {
@@ -38,14 +41,35 @@ const EditField = ({
     fetchRoles();
   }, [fieldKey]);
 
-  const displayValue =
-    type === "date" && value ? value.slice(0, 10) : (value ?? "");
+  // Handle input and error states cleanly
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    
+    if (type === "number") {
+      // Check if the input is not empty and is not a valid number
+      if (val !== "" && isNaN(Number(val))) {
+        setError("Please give a number");
+      } else {
+        setError(""); // Clear error if it's a valid number or empty
+      }
+    }
+    
+    onChange(fieldKey, val);
+  };
+
+  const getDisplayValue = () => {
+    if (type === "date" && value) return value.slice(0, 10);
+    if (type === "number") return value !== undefined && value !== "" ? value : 0;
+    return value || "—";
+  };
 
   return (
-    <div className="flex flex-col gap-0.5 py-2 border-b border-(--color-border-tertiary) last:border-b-0">
-      <span className="text-[12px] font-bold text-(--color-text-tertiary) uppercase tracking-wide">
-        {label}
-      </span>
+    <div className="flex flex-col gap-0.5 py-2 border-b border-dashed border-(--color-border-tertiary) last:border-b-0">
+      {label && (
+        <span className="text-[12px] font-bold text-(--color-text-tertiary) uppercase tracking-wide">
+          {label}
+        </span>
+      )}
       {editing ? (
         isSelect ? (
           <select
@@ -61,19 +85,29 @@ const EditField = ({
             ))}
           </select>
         ) : (
-          <input
-            className={commonInputField}
-            type={type}
-            value={displayValue}
-            onChange={(e) => onChange(fieldKey, e.target.value)}
-            required={required}
-          />
+          <div className="flex flex-col w-full">
+            <input
+              className={`${type === "number" && "text-right"} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${commonInputField}`}
+              // We use "text" type for numbers so the browser lets users type mistakes, allowing us to show the error message
+              type={type === "number" ? "text" : type}
+              value={type === "date" && value ? value.slice(0, 10) : (value ?? "")}
+              onChange={handleInputChange}
+              required={required}
+            />
+            
+            {/* Error Message Displayed Directly Under Input */}
+            {type === "number" && error && (
+              <span className={`text-[12px] text-red-500 mt-1 font-medium ${type === "number" && "text-right"}`}>
+                {error}
+              </span>
+            )}
+          </div>
         )
       ) : (
         <span
-          className={`text-[14px] ${!value ? "text-(--color-text-tertiary)" : "text-(--color-text-primary)"}`}
+          className={`text-[14px] ${!value && type !== "number" ? "text-(--color-text-tertiary)" : "text-(--color-text-primary)"}`}
         >
-          {type === "date" && value ? value.slice(0, 10) : value || "—"}
+          {getDisplayValue()}
         </span>
       )}
     </div>

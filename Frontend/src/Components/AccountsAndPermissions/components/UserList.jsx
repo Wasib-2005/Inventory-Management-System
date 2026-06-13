@@ -30,7 +30,7 @@ const UserList = ({
   );
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden bg-(--color-background-secondary) ${commonComponentBG("r")}`}>
+    <div className={`flex flex-col h-full overflow-hidden bg-(--color-background-secondary) ${commonComponentBG("r")} overflow-auto`}>
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--color-background-primary)] border-b border-(--color-border-tertiary) shrink-0">
         <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">

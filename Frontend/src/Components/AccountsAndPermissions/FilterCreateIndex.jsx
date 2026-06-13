@@ -111,7 +111,7 @@ const FilterCreateIndex = () => {
     <div className="relative w-full h-[calc(100vh-30px)] md:h-[calc(100vh-90px)] overflow-hidden grid md:grid-cols-[2fr_3fr] gap-3">
       {/* LEFT — detail */}
       <div
-        className={`flex flex-col overflow-hidden ${commonComponentBG("l")} ${selectedUser ? " fixed md:relative left-5 md:left-auto top-5 md:top-auto z-50 md:z-auto w-[90%] md:w-auto h-[95%] md:h-full " : " hidden md:inline "} `}
+        className={`flex flex-col overflow-hidden ${commonComponentBG("l")} overflow-auto ${selectedUser ? " fixed md:relative left-5 md:left-auto top-5 md:top-auto z-50 md:z-auto w-[90%] md:w-auto h-[95%] md:h-full " : " hidden md:inline "} `}
       >
         {selectedUser ? (
           <UserDetailPanel
@@ -126,7 +126,7 @@ const FilterCreateIndex = () => {
       </div>
 
       {/* RIGHT — list */}
-      <div className={`flex flex-col overflow-hidden ${commonComponentBG("r")}`}>
+      <div className={`flex flex-col overflow-hidden ${commonComponentBG("r")} overflow-auto`}>
         <UserList
           users={users}
           selectedId={selectedId}
