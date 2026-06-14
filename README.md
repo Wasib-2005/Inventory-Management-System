@@ -98,7 +98,7 @@ NODE_ENV=production
 IS_HTTPS=true
 PORT=5000
 ALLOWED_ORIGIN=https://localhost:3000,https://localhost:5000,https://192.168.1.17:3000
-MONGOURL=mongodb://<user>:<password>@localhost:27018/<dbname>?authSource=admin
+MONGOURL=mongodb://<user>:<password>@<mongodb server url>/<dbname>?authSource=admin
 JWT_SECRET=replace_with_secret
 JWT_ACCESS_SECRET=replace_with_64_byte_hex
 JWT_REFRESH_SECRET=replace_with_64_byte_hex
