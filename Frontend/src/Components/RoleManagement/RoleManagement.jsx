@@ -103,7 +103,7 @@ const RoleManagement = () => {
 
   return (
     <div
-      className={` ${commonComponentBG()} overflow-auto p-6 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
+      className={` ${commonComponentBG("r")} overflow-auto p-6 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
     >
       {/* Page header */}
       <div className="mb-6">

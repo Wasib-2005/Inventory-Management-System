@@ -1,42 +1,68 @@
 import Role from "../../models/role.model.js";
+import {
+  checkHasPermissionInRole,
+  checkHierarchy,
+} from "../../utility/checkRoleForCreatingOrUpdatingRoles.js";
 
 export const createRole = async (req, res) => {
   const roleData = req.body;
 
-  // 1. Changed to 400 Bad Request (403 is for unauthorized access)
   if (!roleData.roleTitle) {
-    return res.status(400).json({ message: "Role Name is required." });
+    return res.status(400).json({ message: "Role title is required." });
   }
 
-  if (!roleData.roleRank) {
-    return res.status(400).json({ message: "Role Rank is required." });
+  // Check if roleRank is missing or explicitly 0
+  if (!roleData.roleRank || roleData.roleRank === String(0)) {
+    return res
+      .status(400)
+      .json({ message: "Role rank is required and cannot be 0." });
   }
 
-  if (roleData.roleTitle.toLowerCase() === "admin".toLowerCase())
-    return res.status(402).json({ message: "Can not create admin" });
+  const rankCheck = checkHierarchy(req.roleRank, roleData.roleRank);
+
+  const hasPermissionForCreatingRole = checkHasPermissionInRole(
+    req.permission,
+    roleData.permissions,
+  );
+
+  if (!hasPermissionForCreatingRole)
+    return res.status(400).json({
+      message: "You do not have the permission for creating this role.",
+    })
+
+  // CRITICAL FIX: Added 'return' here so execution stops on failure
+  if (!rankCheck) {
+    return res.status(403).json({
+      message:
+        "Forbidden: You cannot create a role with a higher or equal privilege rank than your own.",
+    });
+  }
+
+  // Spelling fix: "admin".toLowerCase() is already lowercase, no need to lower both sides
+  if (roleData.roleTitle.toLowerCase() === "admin") {
+    return res
+      .status(400)
+      .json({ message: "Cannot create an additional Admin role." });
+  }
+
   roleData.createdBy = req.userId;
-  console.log("Creating role:", roleData);
 
   try {
-    // 2. Used Mongoose's .create() and added the missing 'await'
     const savedRole = await Role.create(roleData);
 
-    // 3. Added the missing success response so the frontend actually finishes loading
     return res.status(201).json({
       message: "Role created successfully!",
       role: savedRole,
     });
   } catch (error) {
-    // 4. Filled in the catch block to prevent the server from silently swallowing errors
     console.error("Error creating role:", error);
 
-    // Optional: Handle Mongoose duplicate key error if Role Name must be unique
     if (error.code === 11000) {
       return res
         .status(409)
         .json({ message: "A role with this name already exists." });
     }
 
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };

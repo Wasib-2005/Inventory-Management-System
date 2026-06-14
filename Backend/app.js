@@ -9,7 +9,7 @@ const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
 const AccountsAndPermissionsRoute = require("./src/routes/accountsAndPermissions.route.js");
 const RoleRoute = require("./src/routes/roles.route.js");
 const ManageAccountsRoute = require("./src/routes/manageAccounts.route.js");
-const ManagerRouter = require ("./src/routes/managers.route.js")
+const ManagerRouter = require("./src/routes/managers.route.js");
 
 const app = express();
 
@@ -74,11 +74,17 @@ app.options("/{*path}", cors(corsOptions));
 // });
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Simulate network delay (e.g., 1000ms = 1 second)
+app.use((req, res, next) => {
+  const DELAY_MS = 1000;
+  setTimeout(next, DELAY_MS);
+});
+
 app.use("/", healthRoute);
 app.use("/api/auth/", authRoute);
 app.use("/api/", PublicKeyGeneratorRoute);
 app.use("/api/", AccountsAndPermissionsRoute);
 app.use("/api/", RoleRoute);
-app.use("/api/",ManageAccountsRoute);
-app.use("/api/",ManagerRouter);
+app.use("/api/", ManageAccountsRoute);
+app.use("/api/", ManagerRouter);
 module.exports = app;

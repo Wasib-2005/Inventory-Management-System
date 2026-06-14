@@ -158,38 +158,38 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
 
       {/* Permissions List */}
       <div className="flex flex-col gap-0 px-4 pt-3 pb-3">
+        <Tooltip
+          text={
+            !roleRankEditing ? (
+              <span className="block text-left space-y-1 text-[11px] leading-relaxed">
+                <strong className="text-emerald-400 block border-b border-gray-700/60 pb-1 mb-1 text-xs">
+                  Rank Hierarchy
+                </strong>
+                <span className="block">
+                  • <strong className="text-emerald-400">Lower Number</strong>{" "}
+                  = Greater Power (e.g., 1 is highest)
+                </span>
+                <span className="block">
+                  • <strong className="text-gray-400">Higher Number</strong> =
+                  Lower Power / Less Authority
+                </span>
+                <span className="block text-[10px] text-gray-500 pt-1 text-center italic border-t border-gray-800 mt-1">
+                  Click to edit rank value
+                </span>
+              </span>
+            ) : (
+              <span className="text-[11px] font-medium tracking-wide block px-1">
+                Click outside the target box to auto-save change
+              </span>
+            )
+          }
+        >
         <div
           ref={rankRef}
-          className="flex justify-between items-center cursor-pointer select-none border-b border-gray-100 pb-2 mb-2"
+          className="flex justify-between items-center cursor-pointer select-none border-b border-gray-500 pb-2 "
           onClick={() => setRoleRankEditing(true)}
         >
           <p className="text-xl font-bold"> Role Rank:</p>
-          <Tooltip
-            text={
-              !roleRankEditing ? (
-                <span className="block text-left space-y-1 text-[11px] leading-relaxed">
-                  <strong className="text-emerald-400 block border-b border-gray-700/60 pb-1 mb-1 text-xs">
-                    Rank Hierarchy
-                  </strong>
-                  <span className="block">
-                    • <strong className="text-emerald-400">Lower Number</strong>{" "}
-                    = Greater Power (e.g., 1 is highest)
-                  </span>
-                  <span className="block">
-                    • <strong className="text-gray-400">Higher Number</strong> =
-                    Lower Power / Less Authority
-                  </span>
-                  <span className="block text-[10px] text-gray-500 pt-1 text-center italic border-t border-gray-800 mt-1">
-                    Click to edit rank value
-                  </span>
-                </span>
-              ) : (
-                <span className="text-[11px] font-medium tracking-wide block px-1">
-                  Click outside the target box to auto-save change
-                </span>
-              )
-            }
-          >
             {/* 3. FIXED: Adjusted callback parameters to match EditField payload signature */}
             <EditField
               editing={roleRankEditing}
@@ -198,10 +198,10 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
               type="number"
               onChange={(key, val) => setRoleRank(val)}
             />
-          </Tooltip>
         </div>
+          </Tooltip>
 
-        <div className="overflow-auto h-80 pr-1">
+        <div className="overflow-auto h-70 pr-1">
           {Object.entries(groupedRolePermissions).map(([groupName, items]) => (
             <div key={groupName} className="mb-3">
               <p className="text-gray-800 font-bold capitalize mb-1">

@@ -11,6 +11,7 @@ import { PERMISSION_CONFIG } from "./PERMISSION_CONFIG";
 
 const CreateRole = ({ setRoles, showRoleModel, setShowRoleModel }) => {
   const [roleTitle, setRoleTitle] = useState("");
+  const [roleRank, setRoleRank] = useState("");
 
   const [permissions, setPermissions] = useState(() => {
     const initialPermissions = {};
@@ -30,7 +31,7 @@ const CreateRole = ({ setRoles, showRoleModel, setShowRoleModel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { roleTitle, permissions };
+    const payload = { roleTitle, roleRank, permissions };
 
     try {
       const response = await axios.post(
@@ -82,14 +83,14 @@ const CreateRole = ({ setRoles, showRoleModel, setShowRoleModel }) => {
       </button>
 
       {showRoleModel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center md:p-4">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setShowRoleModel(false)}
           />
 
           <div
-            className={`${commonComponentBG()} relative z-10 w-full max-w-md transform overflow-hidden rounded-xl p-6 shadow-2xl transition-all scale-100 animate-in fade-in zoom-in-95 duration-200`}
+            className={`${commonComponentBG()} relative z-10 w-full max-w-md transform overflow-hidden rounded-xl p-6 shadow-2xl transition-all scale-100 animate-in fade-in zoom-in-95 duration-200 `}
           >
             <div className="flex items-center justify-between ">
               <h3 className="text-xl font-semibold ">Create New Role</h3>
@@ -102,13 +103,20 @@ const CreateRole = ({ setRoles, showRoleModel, setShowRoleModel }) => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-2 mt-4">
-              <div>
+              <div className="flex gap-2">
                 <EditField
                   editing={true}
                   label={"Role Name"}
                   fieldKey="roleName"
                   value={roleTitle}
                   onChange={(key, value) => setRoleTitle(value)}
+                />
+                <EditField
+                  editing={true}
+                  label={"Role Rank"}
+                  fieldKey="roleRank"
+                  value={roleRank}
+                  onChange={(key, value) => setRoleRank(value)}
                 />
               </div>
 
