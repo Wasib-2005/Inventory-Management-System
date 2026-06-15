@@ -23,6 +23,9 @@ export const verifyAccess = async (req, res, next) => {
     req.userId = payload.sub;
     req.permission = userData.role.permissions;
     req.roleRank = userData.role.roleRank;
+    req.roleTitle = userData.role.roleTitle
+
+    // console.log(req.userId, req.permission, req.roleRank);
 
     next();
   } catch (err) {

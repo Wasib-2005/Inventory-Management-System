@@ -1,6 +1,6 @@
 export const checkHierarchy = (user, target) => {
   return user <= target;
-};
+}
 
 export const checkHasPermissionInRole = (userPermissions, newTargetPermissions = {}, oldTargetPermissions = {}) => {
   // Safe extraction (handles Mongoose documents or raw objects gracefully)

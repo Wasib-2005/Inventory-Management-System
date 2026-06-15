@@ -5,10 +5,6 @@ const { verifyAccess } = require("../middlewares/verifyAccess.middleware.js");
 
 const router = express.Router();
 
-router.get(
-  "/get-managers",
-  //  verifyAccess,
-  getManagers,
-);
+router.get("/get-managers", verifyAccess, getManagers);
 
 module.exports = router;

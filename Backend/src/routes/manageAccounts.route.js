@@ -8,7 +8,7 @@ const {
 } = require("../controllers/ManageAccounts.Controllers/updateAccount.Controller.js");
 const router = express.Router();
 
-router.post("/create_account", createAccountController);
-router.post("/update_account", updateAccount);
+router.post("/create_account", verifyAccess, createAccountController);
+router.post("/update_account", verifyAccess, updateAccount);
 
 module.exports = router;
