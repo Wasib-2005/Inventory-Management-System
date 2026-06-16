@@ -83,6 +83,7 @@ const userSchema = new mongoose.Schema(
 
     // ── Emergency / HR ──────────────────────────────────────────────
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     emergencyContact: { name: String, relationship: String, phone: String },
 
     // ── Soft Delete ─────────────────────────────────────────────────

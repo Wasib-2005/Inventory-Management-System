@@ -1,6 +1,6 @@
-import logger from "../config/logger.js";
-import Role from "../models/role.model.js";
-import User from "../models/user.model.js";
+import logger from "../../config/logger.js";
+import Role from "../../models/role.model.js";
+import User from "../../models/user.model.js";
 
 /**
  * Helper to parse custom targeted queries out of a single text input string.

@@ -78,7 +78,6 @@ Inventory-Management-System/
 VITE_APP_NAME=Inventra
 VITE_IS_HTTPS=true
 VITE_BACKEND_API_HEADER=https://localhost:5000
-VITE_BG_COLOUR=#40514E
 VITE_TIMEZONE=Asia/Dhaka
 ```
 

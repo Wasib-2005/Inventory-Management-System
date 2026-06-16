@@ -8,8 +8,8 @@ const { verifyAccess } = require("../middlewares/verifyAccess.middleware.js");
 const {
   updateRole,
   deleteRole,
-} = require("../controllers/Role/update_delete_role.controller.js");
-const { createRole } = require("../controllers/Role/create_role.controller.js");
+  createRole,
+} = require("../controllers/Role/CUD_role.controller.js");
 const {
   checkPermission,
 } = require("../middlewares/checkPermission.middleware.js");
@@ -20,7 +20,7 @@ router.get("/roles", getRoles);
 router.get(
   "/get-role-for-edit",
   verifyAccess,
-  // checkPermission([]),
+  checkPermission(["hasReadRolePermission",]),
   getRolesForEditing,
 );
 

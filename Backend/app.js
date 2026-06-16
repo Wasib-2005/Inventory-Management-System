@@ -6,10 +6,10 @@ const connectMongoDB = require("./src/config/connectMongoDB.js");
 const healthRoute = require("./src/routes/health.route.js");
 const authRoute = require("./src/routes/auth.route.js");
 const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
-const AccountsAndPermissionsRoute = require("./src/routes/accountsAndPermissions.route.js");
+const AccountsAndPermissionsRoute = require("./src/routes/AccountsRelated/accountsAndPermissions.route.js");
 const RoleRoute = require("./src/routes/roles.route.js");
-const ManageAccountsRoute = require("./src/routes/manageAccounts.route.js");
-const ManagerRouter = require("./src/routes/managers.route.js");
+const ManageAccountsRoute = require("./src/routes/AccountsRelated/manageAccounts.route.js");
+const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
 
 const app = express();
 

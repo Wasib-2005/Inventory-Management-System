@@ -5,7 +5,7 @@ import {
   checkHasPermissionInRole,
   checkHierarchy,
 } from "../../utility/checkRoleForCreatingOrUpdatingRoles.js";
-import { hybridDecryption } from "../../utility/ecryptionDecryption.js";
+import { hybridDecryption } from "../../utility/encryptionDecryption.js";
 import { hashPass } from "../../utility/hash_utility/passHashManager.js";
 
 export const createAccountController = async (req, res) => {
@@ -32,7 +32,7 @@ export const createAccountController = async (req, res) => {
     const rankCheck = checkHierarchy(req.roleRank, getRole.roleRank);
     if (!rankCheck) {
       return res.status(400).json({
-        message: "You cannot create a user that has higher rank than you!",
+        message: "You cannot create a user that has higher rank or equal than you!",
       });
     }
 

@@ -1,7 +1,5 @@
 import { useContext, useState } from "react";
-import { FaHome } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
-import { FaUsersGear } from "react-icons/fa6";
 import { CiLogin } from "react-icons/ci";
 import { NavLink } from "react-router";
 import { motion } from "framer-motion";
@@ -10,22 +8,11 @@ import { UserContext } from "../../Contexts/UserContexts/UserContext";
 import axios from "axios";
 import { primaryButton } from "../../Theme/primaryButton";
 import TimeZoneClock from "../Common/TimeZoneClock";
+import NavLinks from "./NavLinks";
 
 const BASE = import.meta.env.VITE_BACKEND_API_HEADER;
 
-const navLinks = [
-  { label: <FaHome size={18} />, path: "/", name: "Home" },
-  {
-    label: <FaUsersGear size={22} />,
-    path: "/role-management",
-    name: "Role Control",
-  },
-  {
-    label: <IoPersonSharp size={18} />,
-    path: "/accounts-and-permissions",
-    name: "Accounts & Permission",
-  },
-];
+
 
 const Nav = () => {
   const [expanded, setExpanded] = useState(false);
@@ -94,7 +81,7 @@ const Nav = () => {
 
           {/* Nav links */}
           <ul className="flex flex-col gap-2 px-3">
-            {navLinks.map((link) => (
+            {NavLinks.map((link) => (
               <li key={link.path}>
                 <NavLink
                   to={link.path}

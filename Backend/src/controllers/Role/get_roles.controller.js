@@ -6,7 +6,7 @@ import User from "../../models/user.model.js";
 export const getRoles = async (req, res) => {
   try {
     // Only fetch roleTitle and exclude the _id field
-    const roles = await Role.find();
+    const roles = await Role.find().populate("updatedBy","username email displayName");
 
     // map returns a new array directly
     const sendData = roles.map((role) => role.roleTitle);
@@ -21,7 +21,7 @@ export const getRoles = async (req, res) => {
 export const getRolesForEditing = async (req, res) => {
   try {
     console.log("get-role-for-edit")
-    const roles = await Role.find();
+    const roles = await Role.find().populate("updatedBy","username email displayName");
     if (!roles) return res.status(404).json({message:"No role find"})
     res.status(200).json(roles)
   } catch (error) {

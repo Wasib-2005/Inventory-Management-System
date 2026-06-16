@@ -6,7 +6,6 @@ import {
   hashPass,
   compHashPass,
 } from "../../utility/hash_utility/passHashManager.js";
-import { hybridDecryption } from "../../utility/ecryptionDecryption.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -18,6 +17,7 @@ import {
 } from "../../utility/tokenService.js";
 import Role from "../../models/role.model.js";
 import { sendResponse } from "./helper/sendResponse.js";
+import { hybridDecryption } from "../../utility/encryptionDecryption.js";
 
 // ── SIGN UP ───────────────────────────────────────────────────────────────────
 export const signUpLogic = async (req, res) => {

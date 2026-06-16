@@ -89,11 +89,9 @@ export const updateRole = async (req, res) => {
 
     // FIX 2: Check if the role being targeted is the core Admin role
     if (roleInDD.roleTitle.toLowerCase() === "admin") {
-      return res
-        .status(403)
-        .json({
-          message: "Action Forbidden: Cannot update the core Admin role.",
-        });
+      return res.status(403).json({
+        message: "Action Forbidden: Cannot update the core Admin role.",
+      });
     }
 
     // FIX 3: Prevent renaming an existing role TO "admin"
@@ -130,10 +128,12 @@ export const updateRole = async (req, res) => {
       });
     }
 
+    roleData.updatedBy = req.userId;
+
     const updatedRole = await Role.findByIdAndUpdate(roleData._id, roleData, {
       new: true,
       runValidators: true,
-    });
+    }).populate("updatedBy", "username email displayName");
 
     return res.status(200).json({
       message: "Update completed successfully.",

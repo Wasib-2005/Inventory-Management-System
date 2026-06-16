@@ -4,7 +4,7 @@ import {
   checkHasPermissionInRole,
   checkHierarchy,
 } from "../../utility/checkRoleForCreatingOrUpdatingRoles.js";
-import { hybridDecryption } from "../../utility/ecryptionDecryption.js";
+import { hybridDecryption } from "../../utility/encryptionDecryption.js";
 
 export const updateAccount = async (req, res) => {
   try {

@@ -1,5 +1,5 @@
 export const checkHierarchy = (user, target) => {
-  return user <= target;
+  return user < target;
 }
 
 export const checkHasPermissionInRole = (userPermissions, newTargetPermissions = {}, oldTargetPermissions = {}) => {

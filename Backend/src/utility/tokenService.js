@@ -1,13 +1,18 @@
-import jwt       from "jsonwebtoken";
-import crypto    from "crypto";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import ms from "ms"; // Parses strings like "7d" or "15m" into milliseconds
 import RefreshToken from "../models/refreshToken.model.js";
 
-const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET;   // add to your .env
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;  // add to your .env
+const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
-const ACCESS_TTL  = "15m";
-const REFRESH_TTL = "7d";
-const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// ── Read from .env with fallback defaults ─────────────────────────────────────
+const ACCESS_TTL     = process.env.JWT_ACCESS_TTL || "15m";
+const REFRESH_TTL    = process.env.JWT_REFRESH_TTL || "7d";
+
+// Automatically convert the strings to millisecond numbers
+const ACCESS_TTL_MS  = ms(ACCESS_TTL);
+const REFRESH_TTL_MS = ms(REFRESH_TTL);
 
 // ── Token generation ──────────────────────────────────────────────────────────
 
@@ -27,7 +32,7 @@ export const saveRefreshToken = async (userId, rawToken, family) => {
   // 1. Remove any old token for this specific family (if rotating)
   await RefreshToken.deleteOne({ user: userId, family });
 
-  // 2. NEW: Enforce a maximum session limit (e.g., 5 devices)
+  // 2. Enforce a maximum session limit (e.g., 5 devices)
   const MAX_SESSIONS = 5;
   const activeSessions = await RefreshToken.find({ user: userId }).sort({ createdAt: 1 });
 
@@ -39,7 +44,7 @@ export const saveRefreshToken = async (userId, rawToken, family) => {
     await RefreshToken.deleteMany({ _id: { $in: sessionIdsToDelete } });
   }
 
-  // 3. Create the new token
+  // 3. Create the new token (Uses dynamic REFRESH_TTL_MS)
   await RefreshToken.create({
     user:      userId,
     tokenHash: hashToken(rawToken),
@@ -90,13 +95,13 @@ export const setAuthCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure:   IS_PROD,
     sameSite: "strict",
-    maxAge:   15 * 60 * 1000,           // 15 min
+    maxAge:   ACCESS_TTL_MS,            // Dynamic: uses parsed access token TTL
   });
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
     secure:   IS_PROD,
     sameSite: "strict",
-    maxAge:   REFRESH_TTL_MS,            // 7 days
+    maxAge:   REFRESH_TTL_MS,           // Dynamic: uses parsed refresh token TTL
     path:     "/api/auth",              // only sent to auth routes
   });
 };
