@@ -24,7 +24,7 @@ const UserListItem = ({ user, active, onClick }) => (
     </div>
 
     <span
-      className={`w-[7px] h-[7px] rounded-full shrink-0 ${user.isActive ? "bg-[#1D9E75]" : "bg-[#B4B2A9]"}`}
+      className={`w-1.75 h-1.75 rounded-full shrink-0 ${user.isActive ? "bg-[#1D9E75]" : "bg-[#B4B2A9]"}`}
     />
   </div>
 );

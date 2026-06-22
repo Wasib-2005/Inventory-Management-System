@@ -1,11 +1,14 @@
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
-import RoleCard from "./RoleCard";
-import CreateRole from "./CreateRole";
+import RoleCard from "../../Components/RoleManagement/RoleCard";
+import CreateRole from "../../Components/RoleManagement/CreateRole";
 import { toast } from "react-toastify";
+import { useGetName } from "../../Hooks/userGetAppName";
+import { Helmet } from "react-helmet-async";
 
 const RoleManagement = () => {
+  const pageName = `Role Management | ${useGetName}`;
   const [roles, setRoles] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -105,6 +108,9 @@ const RoleManagement = () => {
     <div
       className={` ${commonComponentBG("r")} overflow-auto p-6 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
     >
+      <Helmet>
+        <title>{pageName}</title>
+      </Helmet>
       {/* Page header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Role Management</h1>

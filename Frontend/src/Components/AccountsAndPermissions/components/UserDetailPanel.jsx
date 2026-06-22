@@ -55,8 +55,8 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   return (
     <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")} overflow-auto`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border-tertiary) shrink-0 bg-[var(--color-background-primary)]">
-        <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border-tertiary) shrink-0 bg-(--color-background-primary)">
+        <div className="flex items-center gap-2 text-[13px] font-medium text-(--color-text-secondary)">
           <UserAvatar user={user} size="sm" />
           {user.firstName} {user.lastName}
         </div>
@@ -69,7 +69,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-(--color-border-tertiary) shrink-0 bg-[var(--color-background-primary)]">
+      <div className="flex border-b border-(--color-border-tertiary) shrink-0 bg-(--color-background-primary)">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -77,7 +77,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
             className={`px-3.5 py-2 text-[12px] font-medium border-b-2 transition-colors
               ${activeTab === tab
                 ? "text-[#1D9E75] border-[#1D9E75]"
-                : "text-(--color-text-tertiary) border-transparent hover:text-[var(--color-text-secondary)]"
+                : "text-(--color-text-tertiary) border-transparent hover:text-(--color-text-secondary)"
               }`}
           >
             {tab}
@@ -94,7 +94,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
       </div>
 
       {/* Action bar */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-t border-(--color-border-tertiary) shrink-0 bg-[var(--color-background-primary)]">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-t border-(--color-border-tertiary) shrink-0 bg-(--color-background-primary)">
         <button
           onClick={handleDelete}
           className="flex items-center gap-1.5 h-7 px-2.5 text-[12px] font-medium rounded-md border border-[#F7C1C1] text-[#A32D2D] hover:bg-[#FCEBEB] transition-colors"

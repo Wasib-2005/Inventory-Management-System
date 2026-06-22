@@ -11,6 +11,7 @@ const ProfileHeader = ({
   onChange,
   roleTitle,
 }) => {
+  console.log(photoUrl)
   // Safe extraction of initials (e.g., "John Doe" -> "JO")
   // Using a fallback "U" if displayName is empty or missing
   const avatarInitials =

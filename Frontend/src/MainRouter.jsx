@@ -3,7 +3,7 @@ import App from "./App";
 import Home from "./Pages/Home/Home";
 import AuthPage from "./Pages/Auth/AuthPage";
 import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
-import RoleManagement from "./Components/RoleManagement/RoleManagement";
+import RoleManagement from "./Pages/RolePage/RoleManagement";
 import Products from "./Pages/Products/Products";
 import UserProfile from "./Pages/UserProfile/UserProfile";
 import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
@@ -22,7 +22,7 @@ const MainRouter = createBrowserRouter([
         element: <Home />,
       },
       { path: "/products", element: <Products /> },
-      { path: "role-management", element: <RoleManagement /> },
+      { path: "/role-management", element: <RoleManagement /> },
       {
         path: "/accounts-and-permissions",
         element: <AccountsAndPermissions />,

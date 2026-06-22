@@ -87,6 +87,15 @@ export const InfoTab = ({ user, editing, onChange }) => (
         editing={editing}
         onChange={onChange}
       />
+      {editing && (
+        <EditField
+          label="Photo Url"
+          fieldKey="photoUrl"
+          value={user.photoUrl}
+          editing={editing}
+          onChange={onChange}
+        />
+      )}
       <EditField
         label="Username"
         fieldKey="username"
@@ -277,6 +286,13 @@ export const FlagsTab = ({ user, editing, onChange }) => (
       value={user.emailVerified}
       editing={editing}
       onChange={(v) => onChange("emailVerified", v)}
+    />
+    <FlagRow
+      label="Can change his data"
+      desc="Permission for changeing data on his own"
+      value={user.canEditOwnData}
+      editing={editing}
+      onChange={(v) => onChange("canEditOwnData", v)}
     />
 
     <SectionTitle>Permissions</SectionTitle>

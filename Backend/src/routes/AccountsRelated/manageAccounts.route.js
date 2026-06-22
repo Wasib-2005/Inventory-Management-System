@@ -6,9 +6,13 @@ const { verifyAccess } = require("../../middlewares/verifyAccess.middleware.js")
 const {
   updateAccount,
 } = require("../../controllers/ManageAccounts.Controllers/updateAccount.Controller.js");
+const { updateOwnData } = require("../../controllers/ManageAccounts.Controllers/updateOwnData.Controller.js");
+
+
 const router = express.Router();
 
 router.post("/create_account", verifyAccess, createAccountController);
 router.post("/update_account", verifyAccess, updateAccount);
+router.post("/update_own_data",verifyAccess,updateOwnData)
 
 module.exports = router;

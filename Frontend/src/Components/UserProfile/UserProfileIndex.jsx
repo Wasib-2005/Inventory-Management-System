@@ -6,6 +6,10 @@ import ProfileAddress from "./components/ProfileAddress";
 import ProfileEmployment from "./components/ProfileEmployment";
 import ProfileEmergency from "./components/ProfileEmergency";
 import { hybridEncrypt } from "../../Service/auth/auth";
+import { MdOutlineEdit } from "react-icons/md";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 const UserProfileIndex = () => {
   const { user, setUser } = useContext(UserContext);
@@ -13,15 +17,23 @@ const UserProfileIndex = () => {
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  if (!user)
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-full text-emerald-700/60 font-semibold">
         Loading...
       </div>
     );
+  }
 
   const handleEdit = () => {
-    setDraft(JSON.parse(JSON.stringify(user))); // deep clone
+    // FIX 1: Corrected inverted logic and schema naming key (canEditOwnData)
+    if (!user.canEditOwnData) {
+      return toast.error(
+        "You do not have permission to change your data. Please contact HR.",
+      );
+    }
+
+    setDraft(structuredClone(user));
     setEditing(true);
   };
 
@@ -33,7 +45,6 @@ const UserProfileIndex = () => {
   const handleChange = (path, value) => {
     setDraft((prev) => {
       const next = { ...prev };
-      // support nested paths like "address.city"
       const keys = path.split(".");
       let ref = next;
       for (let i = 0; i < keys.length - 1; i++) {
@@ -46,16 +57,50 @@ const UserProfileIndex = () => {
   };
 
   const handleSave = async () => {
+    const result = await Swal.fire({
+      title: "Confirm Changes?",
+      text: "Please double-check your details. This is a one-time modification link. Once saved, your update permission will be removed.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, save changes!",
+      cancelButtonText: "Review again",
+      background: "#1f2937",
+      color: "#fff",
+    });
+
+    if (!result.isConfirmed) return;
+
     setSaving(true);
     try {
+      // FIX 2: Added 'await' to ensure payload encryption executes completely
       const payload = await hybridEncrypt(draft);
-      console.log("Encrypted profile payload:", payload);
-      // TODO: replace with actual API call e.g. await updateProfile(payload)
-      setUser(draft);
+
+      // FIX 3: Added 'await' to axios.post so state updates ONLY happen upon successful HTTP 200 response
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_own_data`,
+        payload,
+        { withCredentials: true },
+      );
+
+      // FIX 4: Sync context state with actual backend sanitized response data
+      if (res.data && res.data.success) {
+        setUser(res.data.data);
+        toast.success("Profile updated successfully!");
+      } else {
+        setUser(draft);
+        toast.success("Profile updated.");
+      }
+
       setEditing(false);
       setDraft(null);
     } catch (err) {
       console.error("Save failed:", err);
+      const errMsg =
+        err.response?.data?.message ||
+        "Failed to update profile. Please try again.";
+      toast.error(errMsg);
     } finally {
       setSaving(false);
     }
@@ -88,12 +133,14 @@ const UserProfileIndex = () => {
               </button>
             </>
           ) : (
-            <button
-              onClick={handleEdit}
-              className="px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest text-emerald-800/60 hover:text-emerald-900 bg-white/30 hover:bg-white/50 border border-emerald-300/40 transition-all duration-200"
-            >
-              Edit
-            </button>
+            user.canEditOwnData && (
+              <button
+                onClick={handleEdit}
+                className="p-1.5 rounded-lg text-xs font-bold uppercase tracking-widest text-emerald-800/60 hover:text-emerald-900 bg-white/30 hover:bg-white/50 border border-emerald-300/40 transition-all duration-200 hover:scale-95"
+              >
+                <MdOutlineEdit size={20} />
+              </button>
+            )
           )}
         </div>
       </div>

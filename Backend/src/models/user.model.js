@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    canEditOwnData: {
+      type: Boolean,
+      required: true,
+      trim: true,
+      default: false,
+    },
     phone: { type: String, default: null, trim: true },
     photoUrl: { type: String, trim: true },
 

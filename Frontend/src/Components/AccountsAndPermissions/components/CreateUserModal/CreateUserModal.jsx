@@ -141,13 +141,13 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
 
   return (
     <div
-      className="fixed md:absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-100 "
+      className="fixed md:absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-25 rounded-xl"
       onClick={(e) =>
         !isSubmitting && e.target === e.currentTarget && onClose()
       }
     >
       <div
-        className={` ${commonComponentBG()} overflow-auto w-162.5 max-w-[95%] md:max-w-full max-h-[90vh] md:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl  `}
+        className={` ${commonComponentBG()} overflow-auto w-162.5 max-w-[95%] md:max-w-full max-h-[90vh] md:max-h-[80vh] flex flex-col shadow-2xl  `}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-(--color-border-tertiary) bg-gray-50/50 ">
@@ -159,7 +159,7 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="Close"
-            className="text-[var(--color-text-secondary)] hover:text-gray-800 transition-colors disabled:opacity-50"
+            className="text-(--color-text-secondary) hover:text-gray-800 transition-colors disabled:opacity-50"
           >
             <IoClose size={20} />
           </button>
@@ -357,14 +357,14 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
                 </div>
                 {strength && (
                   <div className="mt-1.5 flex items-center gap-2">
-                    <div className="h-[3px] flex-1 bg-[var(--color-border-tertiary)] rounded-full overflow-hidden">
+                    <div className="h-0.75 flex-1 bg-(--color-border-tertiary) rounded-full overflow-hidden">
                       <div
                         style={{ width: strength.w, background: strength.bg }}
                         className="h-full transition-all duration-300"
                       />
                     </div>
                     <span
-                      className="text-[10px] font-medium min-w-[45px] text-right"
+                      className="text-[10px] font-medium min-w-11.25 text-right"
                       style={{ color: strength.bg }}
                     >
                       {strength.label}
@@ -499,7 +499,7 @@ const CreateUserModal = ({ onClose, onSubmit, roleOptions }) => {
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-8 px-4 text-[12px] font-medium rounded-md border border-(--color-border-secondary) text-[var(--color-text-secondary)] hover:bg-(--color-background-secondary) transition-colors disabled:opacity-50"
+            className="h-8 px-4 text-[12px] font-medium rounded-md border border-(--color-border-secondary) text-(--color-text-secondary) hover:bg-(--color-background-secondary) transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

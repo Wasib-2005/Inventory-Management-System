@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { UserContext } from "./UserContext";
 import { refresh_auth } from "../../Service/auth/auth";
-import ms from "ms"; // Parses "15m" to milliseconds
+import ms from "ms";
 
 const UserContextProvider = ({ children }) => {
   const [user, setUser]               = useState(null);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import UserList from "./components/UserList";
 import UserDetailPanel from "./components/UserDetailPanel";
 import UserDetailEmpty from "./components/UserDetailEmpty";
@@ -10,12 +10,21 @@ import { hybridEncrypt } from "../../Service/auth/auth";
 import useGetRole from "../../Hooks/useGetRoles";
 import useDebounce from "../../Hooks/useDebounce";
 
+const LIMIT = 15;
+const DEFAULT_FILTERS = { status: "all", type: "all", gender: "all" };
+
 const FilterCreateIndex = () => {
   const [users, setUsers] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
+  // Pagination state for infinite scroll
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { roles } = useGetRole();
   const roleOptions = roles.length > 0 ? roles : ["user"];
@@ -28,25 +37,53 @@ const FilterCreateIndex = () => {
 
   const handleSelect = (_id) => setSelectedId(_id);
 
-  const fetchUsers = async (filters = {}) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: 1, limit: 15, ...filters });
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/accounts-and-permissions?${params}`,
-        { withCredentials: true },
-      );
-      setUsers(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // pageNum + append=true => infinite-scroll "load more" (keeps existing users, appends)
+  // append=false => fresh search/filter change (replaces the list, resets pagination)
+  const fetchUsers = useCallback(
+    async (pageNum = 1, append = false) => {
+      if (append) setIsLoadingMore(true);
+      else setLoading(true);
 
+      try {
+        const params = new URLSearchParams({
+          page: pageNum,
+          limit: LIMIT,
+          search: debouncedQuery,
+          ...filters,
+        });
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/accounts-and-permissions?${params}`,
+          { withCredentials: true },
+        );
+
+        const fetched = res.data || [];
+        setUsers((prev) => (append ? [...prev, ...fetched] : fetched));
+        setHasMore(fetched.length === LIMIT);
+        setPage(pageNum);
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err.response?.data?.message || err.message || "Failed to load users",
+        );
+      } finally {
+        setLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [debouncedQuery, filters],
+  );
+
+  // Refetch from page 1 whenever the search term or filters change
   useEffect(() => {
-    fetchUsers({ search: debouncedQuery });
-  }, [debouncedQuery]);
+    fetchUsers(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery, filters]);
+
+  const handleLoadMore = () => {
+    if (isLoadingMore || !hasMore) return;
+    fetchUsers(page + 1, true);
+  };
 
   // FIX: Handles state mutation securely using backend return value
   const handleSave = async (updated) => {
@@ -134,6 +171,11 @@ const FilterCreateIndex = () => {
           onCreateClick={() => setShowCreate(true)}
           query={query}
           setQuery={setQuery}
+          filters={filters}
+          setFilters={setFilters}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
+          isLoadingMore={isLoadingMore}
         />
       </div>
 

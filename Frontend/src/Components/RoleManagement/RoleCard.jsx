@@ -19,6 +19,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
 
   useEffect(() => {
     if (role?.roleRank !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoleRank(role.roleRank);
     }
   }, [role?.roleRank]);

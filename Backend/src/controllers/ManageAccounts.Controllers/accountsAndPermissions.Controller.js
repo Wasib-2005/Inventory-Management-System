@@ -3,6 +3,12 @@ import Role from "../../models/role.model.js";
 import User from "../../models/user.model.js";
 
 /**
+ * Escape regex special characters so user input can't break
+ * the MongoDB regex engine or be used for ReDoS injection.
+ */
+const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
  * Helper to parse custom targeted queries out of a single text input string.
  * Example: 'address:Dhaka name:"John Doe" regularText'
  */
@@ -20,10 +26,11 @@ const parseAdvancedSearch = (searchStr) => {
   // 1. Extract and process explicit key-value pairs
   while ((match = tokenRegex.exec(searchStr)) !== null) {
     const key = match[1].toLowerCase();
-    const value = (match[2] || match[3]).trim();
+    const rawValue = (match[2] || match[3]).trim();
+    if (!rawValue) continue;
 
-    // Safely convert value to case-insensitive regex
-    const regexVal = { $regex: value, $options: "i" };
+    // Safely convert value to case-insensitive regex (escaped)
+    const regexVal = { $regex: escapeRegex(rawValue), $options: "i" };
 
     if (key === "address") {
       // Map 'address' keyword against all nested sub-document values
@@ -52,7 +59,7 @@ const parseAdvancedSearch = (searchStr) => {
   // 2. Process leftover general terms (e.g. text containing no colons)
   const generalTerms = cleanedSearch.trim();
   if (generalTerms) {
-    const generalRegex = { $regex: generalTerms, $options: "i" };
+    const generalRegex = { $regex: escapeRegex(generalTerms), $options: "i" };
     andConditions.push({
       $or: [
         { username: generalRegex },
@@ -67,6 +74,45 @@ const parseAdvancedSearch = (searchStr) => {
   return andConditions.length > 0 ? { $and: andConditions } : {};
 };
 
+// Whitelisted enum values — must mirror the Mongoose schema enums.
+// Keeps bad/unexpected query params from ever reaching the DB query.
+const ALLOWED_STATUS = [
+  "active",
+  "onboarding",
+  "on-leave",
+  "suspended",
+  "terminated",
+];
+const ALLOWED_TYPE = [
+  "full-time",
+  "part-time",
+  "intern",
+  "consultant",
+  "contractor",
+];
+const ALLOWED_GENDER = ["male", "female", "other"];
+
+/**
+ * Builds the { employmentStatus, employmentType, gender } portion of the
+ * query filter from the request's query params, ignoring "all"/blank/
+ * unrecognized values.
+ */
+const buildEnumFilters = ({ status, type, gender }) => {
+  const filters = {};
+
+  if (status && status !== "all" && ALLOWED_STATUS.includes(status)) {
+    filters.employmentStatus = status;
+  }
+  if (type && type !== "all" && ALLOWED_TYPE.includes(type)) {
+    filters.employmentType = type;
+  }
+  if (gender && gender !== "all" && ALLOWED_GENDER.includes(gender)) {
+    filters.gender = gender;
+  }
+
+  return filters;
+};
+
 export const getAccountsAndPermissions = async (req, res) => {
   try {
     logger.debug("Req for Accounts And Permissions");
@@ -77,6 +123,9 @@ export const getAccountsAndPermissions = async (req, res) => {
       role = "all",
       sortBy = "name-asc",
       search = "",
+      status = "all",
+      type = "all",
+      gender = "all",
     } = req.query;
 
     // Build standard filters base
@@ -87,6 +136,9 @@ export const getAccountsAndPermissions = async (req, res) => {
       queryFilter = parseAdvancedSearch(search);
     }
 
+    // Apply employmentStatus / employmentType / gender filters
+    Object.assign(queryFilter, buildEnumFilters({ status, type, gender }));
+
     // Add soft-delete filter security layer
     queryFilter.isDeleted = false;
 
@@ -95,6 +147,10 @@ export const getAccountsAndPermissions = async (req, res) => {
       const roleDoc = await Role.findOne({ roleTitle: role });
       if (roleDoc) {
         queryFilter.role = roleDoc._id;
+      } else {
+        // Unknown role requested — return no results instead of silently
+        // ignoring the filter and returning everyone.
+        return res.status(200).json([]);
       }
     }
 
@@ -105,8 +161,8 @@ export const getAccountsAndPermissions = async (req, res) => {
     else sortOptions = { createdAt: -1 };
 
     // Calculate pagination offsets
-    const parsedPage = Math.max(1, parseInt(page, 10));
-    const parsedLimit = Math.max(1, parseInt(limit, 10));
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, parseInt(limit, 10) || 15);
     const skip = (parsedPage - 1) * parsedLimit;
 
     // Execute query with database optimizations
