@@ -6,7 +6,7 @@ const UserListItem = ({ user, active, onClick }) => (
     role="button"
     tabIndex={0}
     onKeyDown={(e) => e.key === "Enter" && onClick()}
-    className={`flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer border-b border-(--color-border-tertiary) last:border-b-0 transition-colors
+    className={`flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors
       ${active
         ? "bg-(--color-background-primary) border-l-2 border-l-[#1D9E75] pl-3"
         : "hover:bg-(--color-background-primary)"

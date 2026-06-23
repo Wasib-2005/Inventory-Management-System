@@ -6,6 +6,7 @@ import CreateRole from "../../Components/RoleManagement/CreateRole";
 import { toast } from "react-toastify";
 import { useGetName } from "../../Hooks/userGetAppName";
 import { Helmet } from "react-helmet-async";
+import { commonInputField } from "../../Theme/commonInputField";
 
 const RoleManagement = () => {
   const pageName = `Role Management | ${useGetName}`;
@@ -141,7 +142,7 @@ const RoleManagement = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search roles..."
-              className="w-full pl-9 pr-4 py-2 bg-white/60 border border-emerald-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition"
+              className={`${commonInputField} pl-10`}
             />
           </div>
         </div>

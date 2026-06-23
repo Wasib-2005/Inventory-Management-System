@@ -113,7 +113,7 @@ const UserList = ({
       className={`flex flex-col h-full overflow-hidden bg-(--color-background-secondary) ${commonComponentBG("r")} relative`}
     >
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-(--color-background-primary) border-b border-(--color-border-tertiary) shrink-0">
+      <div className=" flex items-center justify-between px-3.5 py-2.5 bg-(--color-background-primary) border-b border-emerald-400 shrink-0">
         <span className="text-[12px] font-medium text-(--color-text-secondary)">
           {users.length} user{users.length !== 1 ? "s" : ""}
         </span>
@@ -127,7 +127,7 @@ const UserList = ({
       </div>
 
       {/* Search + Filter trigger */}
-      <div className="relative px-3 py-2.5 bg-(--color-background-primary) border-b border-(--color-border-tertiary) shrink-0 flex gap-2">
+      <div className="relative px-3 py-2.5 bg-(--color-background-primary) border-b border-emerald-400 shrink-0 flex gap-2">
         <div className="relative flex-1">
           <CiSearch
             className="absolute left-2 top-1/2 -translate-y-1/2 text-(--color-text-tertiary)"
@@ -138,7 +138,7 @@ const UserList = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, email"
-            className="w-full h-8 pl-7 pr-2 border border-(--color-border-secondary) rounded-md bg-(--color-background-secondary) text-(--color-text-primary) text-[12px] focus:outline-none focus:border-[#1D9E75]"
+            className={` ${commonInputField} w-full h-8 pl-7 pr-2 border border-(--color-border-secondary) rounded-md bg-(--color-background-secondary) text-(--color-text-primary) text-[12px] focus:outline-none focus:border-[#1D9E75] `}
           />
         </div>
 
@@ -150,7 +150,7 @@ const UserList = ({
           className={`relative h-8 w-8 flex items-center justify-center border rounded-md transition-colors ${
             activeCount > 0 || isFilterOpen
               ? "bg-[#1D9E75]/10 border-[#1D9E75] text-[#1D9E75]"
-              : "border-(--color-border-secondary) bg-(--color-background-secondary) text-(--color-text-secondary) hover:bg-(--color-background-primary)"
+              : "border-emerald-400 bg-(--color-background-secondary) text-gray-700 hover:bg-(--color-background-primary)"
           }`}
           title="Filter Options"
         >
