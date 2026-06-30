@@ -7,6 +7,7 @@ import RoleManagement from "./Pages/RolePage/RoleManagement";
 import Products from "./Pages/Products/Products";
 import UserProfile from "./Pages/UserProfile/UserProfile";
 import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
+import Warehouse from "./Pages/Warehouse/Warehouse";
 
 const MainRouter = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const MainRouter = createBrowserRouter([
       {
         path: "/user",
         element: <UserProfile />,
+      },
+      {
+        path: "/warehouse",
+        element: <Warehouse />,
       },
     ],
   },
