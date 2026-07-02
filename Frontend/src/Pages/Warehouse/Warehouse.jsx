@@ -82,11 +82,16 @@ const Warehouse = () => {
   };
 
   const handleWarehouseFormSubmit = async (formData) => {
+    console.log("Warehouse form submitted:", formData);
     if (warehouseModal.mode === "create") {
       try {
-        axios.post(`${import.meta.env.VITE_BACKEND_API_HEADER}/api/create`, formData, {
-          withCredentials: true,
-        });
+        axios.post(
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/create`,
+          formData,
+          {
+            withCredentials: true,
+          },
+        );
       } catch (error) {
         console.error("Error creating warehouse:", error);
       }

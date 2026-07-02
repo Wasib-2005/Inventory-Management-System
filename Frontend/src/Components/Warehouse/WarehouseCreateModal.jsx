@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TbMapPin, TbHash, TbPlus, TbX, TbLayersLinked, TbGridDots, TbEdit, TbAlertTriangle } from "react-icons/tb";
+import {
+  TbMapPin,
+  TbHash,
+  TbPlus,
+  TbX,
+  TbLayersLinked,
+  TbGridDots,
+  TbEdit,
+  TbAlertTriangle,
+  TbTrash,
+} from "react-icons/tb";
+import { SiNamesilo } from "react-icons/si";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { PALETTE } from "../../Theme/palette";
 import { commonFieldColour } from "../../Theme/commonFieldColour";
@@ -26,16 +37,25 @@ const getNextRackName = (currentRows) => {
 
 const emptyForm = {
   warehouseId: "",
+  warehouseName: "",
   place: "",
   address: "",
   rackRows: ["A", "B", "C", "D"],
   racksPerRow: 5,
 };
 
-const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onSubmit }) => {
+const WarehouseFormModal = ({
+  isOpen,
+  mode = "create",
+  initialData,
+  onClose,
+  onSubmit,
+  onDelete,
+}) => {
   const isEdit = mode === "edit";
 
   const [warehouseId, setWarehouseId] = useState(emptyForm.warehouseId);
+  const [warehouseName, setWarehouseName] = useState(emptyForm.warehouseName);
   const [place, setPlace] = useState(emptyForm.place);
   const [address, setAddress] = useState(emptyForm.address);
   const [rackRows, setRackRows] = useState(emptyForm.rackRows);
@@ -49,12 +69,14 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
 
     if (isEdit && initialData) {
       setWarehouseId(initialData.id ?? "");
+      setWarehouseName(initialData.warehouseName ?? "");
       setPlace(initialData.place ?? "");
       setAddress(initialData.address ?? "");
       setRackRows(initialData.rackRows ?? emptyForm.rackRows);
       setRacksPerRow(initialData.racksPerRow ?? emptyForm.racksPerRow);
     } else {
       setWarehouseId(emptyForm.warehouseId);
+      setWarehouseName(emptyForm.warehouseName);
       setPlace(emptyForm.place);
       setAddress(emptyForm.address);
       setRackRows(emptyForm.rackRows);
@@ -74,10 +96,12 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!warehouseId || !place) return;
+    if (!warehouseName || !warehouseId || !place) return;
 
+    // Payload now leaves 'warehouseName' exactly as requested
     const result = onSubmit({
       warehouseId,
+      warehouseName,
       place,
       address,
       rackRows,
@@ -100,7 +124,7 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/30 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/30 backdrop-blur-sm p-4 overflow-auto"
           onClick={onClose}
         >
           <motion.div
@@ -132,7 +156,11 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="relative">
-                <TbHash size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                <TbHash
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
                 <input
                   type="text"
                   required
@@ -143,9 +171,28 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
                   className={`${commonInputField} pl-8 ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
                 />
               </div>
+              <div className="relative">
+                <SiNamesilo
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
+                <input
+                  type="text"
+                  required
+                  value={warehouseName}
+                  onChange={(e) => setWarehouseName(e.target.value)}
+                  placeholder="Warehouse Name (e.g., Dhaka Central Depot)"
+                  className={`${commonInputField} pl-8 `}
+                />
+              </div>
 
               <div className="relative">
-                <TbMapPin size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                <TbMapPin
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
                 <input
                   type="text"
                   required
@@ -157,7 +204,11 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
               </div>
 
               <div className="relative">
-                <TbMapPin size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                <TbMapPin
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
                 <input
                   type="text"
                   value={address}
@@ -217,19 +268,44 @@ const WarehouseFormModal = ({ isOpen, mode = "create", initialData, onClose, onS
 
                 {isEdit && (
                   <p className="text-[10px] font-semibold text-emerald-700/50">
-                    Shrinking rows or racks-per-row is blocked if a removed rack still holds stock.
+                    Shrinking rows or racks-per-row is blocked if a removed rack
+                    still holds stock.
                   </p>
                 )}
               </div>
 
-              <button
-                type="submit"
-                className={primaryButton}
-                style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
-              >
-                {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
-                {isEdit ? "Save Changes" : "Save New Warehouse"}
-              </button>
+              <div className="flex justify-end gap-3 pt-4 border-t border-emerald-200">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={primaryButton}
+                  style={{ backgroundColor: "Black", color: "#fff" }}
+                >
+                  <TbX size={15} />
+                  Cancel
+                </button>
+
+                {isEdit && (
+                  <button
+                    type="button"
+                    onClick={onDelete}
+                    className={primaryButton}
+                    style={{ backgroundColor: "#FF0000", color: "#fff" }}
+                  >
+                    <TbTrash size={15} />
+                    Delete Warehouse
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  className={primaryButton}
+                  style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
+                >
+                  {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
+                  {isEdit ? "Save Changes" : "Save New Warehouse"}
+                </button>
+              </div>
             </form>
           </motion.div>
         </motion.div>

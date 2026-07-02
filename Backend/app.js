@@ -88,5 +88,5 @@ app.use("/api/", AccountsAndPermissionsRoute);
 app.use("/api/", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
-app.use("/api/", WarehouseRouter);
+app.use("/api/warehouses", WarehouseRouter);
 module.exports = app;

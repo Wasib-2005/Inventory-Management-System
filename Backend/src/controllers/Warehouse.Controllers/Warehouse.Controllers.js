@@ -4,12 +4,12 @@ import { Warehouse } from "../../models/Warehouse.models/warehouseId.models.js";
 
 export const createWarehouse = async (req, res) => {
   try {
-    const { name, warehouseId, place, address, rackRows, racksPerRow } =
+    const { warehouseName, warehouseId, place, address, rackRows, racksPerRow } =
       req.body;
 
     // 1. Validation
     if (
-      !name ||
+      !warehouseName ||
       !warehouseId ||
       !place ||
       !address ||
@@ -36,7 +36,7 @@ export const createWarehouse = async (req, res) => {
     }
 
     const warehouseData = {
-      name,
+      warehouseName,
       warehouseId,
       place,
       address,
@@ -56,6 +56,7 @@ export const createWarehouse = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error occurred while creating warehouse:");
+    console.error("errpr dazsda",error);
     logger.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
