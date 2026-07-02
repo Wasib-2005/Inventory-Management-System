@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, X } from "lucide-react";
-import { commonComponentBG } from "../../Theme/commonComponentBG";
-import { PALETTE } from "../../Theme/palette";
+import { commonComponentBG } from "../../../Theme/commonComponentBG";
+import { PALETTE } from "../../../Theme/palette";
+import WarehouseShelfCard from "./WarehouseShelfCard";
+
 
 const WarehouseRackDetailPanel = ({ selectedRack, onClose }) => {
   return (
@@ -27,22 +29,14 @@ const WarehouseRackDetailPanel = ({ selectedRack, onClose }) => {
             </button>
           </div>
 
-          {selectedRack.products.length === 0 ? (
+          {!selectedRack.shelves || selectedRack.shelves.length === 0 ? (
             <p className="text-xs text-emerald-700/40 font-semibold py-4 text-center">
-              This rack is empty.
+              This rack has no shelves.
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
-              {selectedRack.products.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-white/50 border border-emerald-300/40"
-                >
-                  <span className="text-xs font-semibold text-emerald-900">{p.name}</span>
-                  <span className="text-[11px] font-bold text-emerald-700/60">
-                    Qty: {p.qty}
-                  </span>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {selectedRack.shelves.map((shelf) => (
+                <WarehouseShelfCard key={shelf.id} shelf={shelf} />
               ))}
             </div>
           )}

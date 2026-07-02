@@ -10,6 +10,7 @@ const AccountsAndPermissionsRoute = require("./src/routes/AccountsRelated/accoun
 const RoleRoute = require("./src/routes/roles.route.js");
 const ManageAccountsRoute = require("./src/routes/AccountsRelated/manageAccounts.route.js");
 const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
+const WarehouseRouter = require("./src/routes/Warehouse.Routes/Warehouse.route.js");
 
 const app = express();
 
@@ -87,4 +88,5 @@ app.use("/api/", AccountsAndPermissionsRoute);
 app.use("/api/", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
+app.use("/api/", WarehouseRouter);
 module.exports = app;

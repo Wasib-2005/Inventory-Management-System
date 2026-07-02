@@ -1,12 +1,8 @@
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
-import { MOCK_RACKS, RACK_ROWS, RACKS_PER_ROW } from "../Mockdata";
 import WarehouseRackRow from "./WarehouseRackRow";
 
-const WarehouseRackContainer = ({ onSelectRack }) => {
-  const totalItems = Object.values(MOCK_RACKS).reduce(
-    (a, r) => a + r.itemCount,
-    0,
-  );
+const WarehouseRackContainer = ({ racks, onSelectRack, rackRows, racksPerRow, highlightedRackCode }) => {
+  const totalItems = Object.values(racks).reduce((a, r) => a + r.itemCount, 0);
 
   return (
     <div className={`${commonComponentBG()} p-4 sm:p-6 flex flex-col gap-4`}>
@@ -27,9 +23,9 @@ const WarehouseRackContainer = ({ onSelectRack }) => {
       </div>
 
       <div className="flex flex-col gap-4">
-        {RACK_ROWS.map((row) => {
-          const racksInRow = Array.from({ length: RACKS_PER_ROW }).map(
-            (_, i) => MOCK_RACKS[`${row}${i + 1}`],
+        {rackRows.map((row) => {
+          const racksInRow = Array.from({ length: racksPerRow }).map(
+            (_, i) => racks[`${row}${i + 1}`],
           );
           return (
             <WarehouseRackRow
@@ -37,6 +33,7 @@ const WarehouseRackContainer = ({ onSelectRack }) => {
               row={row}
               racks={racksInRow}
               onSelectRack={onSelectRack}
+              highlightedRackCode={highlightedRackCode}
             />
           );
         })}
