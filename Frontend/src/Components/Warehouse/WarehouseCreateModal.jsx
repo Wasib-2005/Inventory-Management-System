@@ -98,7 +98,6 @@ const WarehouseFormModal = ({
     e.preventDefault();
     if (!warehouseName || !warehouseId || !place) return;
 
-    // Payload now leaves 'warehouseName' exactly as requested
     const result = onSubmit({
       warehouseId,
       warehouseName,

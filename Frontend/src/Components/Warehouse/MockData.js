@@ -1,16 +1,11 @@
-export const MOCK_WAREHOUSES = [
-  { id: "WH-001", place: "Dhaka Central Depot", address: "Postogola, Dhaka", rackRows: ["A", "B", "C", "D"], racksPerRow: 50 },
-  { id: "WH-002", place: "Chittagong Port Storage", address: "Patenga, Chittagong", rackRows: ["A", "B", "C", "D"], racksPerRow: 50 },
-  { id: "WH-003", place: "Gazipur Industrial Hub", address: "Tongi, Gazipur", rackRows: ["A", "B", "C", "D"], racksPerRow: 50 },
-  { id: "WH-004", place: "Sylhet Distribution Center", address: "Shahjalal Upashahar, Sylhet", rackRows: ["A", "B", "C", "D"], racksPerRow: 50 },
-];
-
 export const RACK_ROWS = ["A", "B", "C", "D"];
 export const RACKS_PER_ROW = 50;
 export const SHELVES_PER_RACK = 4;
+export const DEFAULT_MAX_PRODUCTS = 6;
 
 const buildShelf = (rackCode, shelfIndex) => {
-  const productCount = Math.floor(Math.random() * 4);
+  const maxProducts = Math.floor(Math.random() * 4) + 3; // 3-6 product slots
+  const productCount = Math.floor(Math.random() * (maxProducts + 1));
 
   const products = Array.from({ length: productCount }).map((_, idx) => {
     const maxQty = Math.floor(Math.random() * 20) + 5;
@@ -31,6 +26,7 @@ const buildShelf = (rackCode, shelfIndex) => {
     name: `Shelf ${shelfIndex + 1}`,
     capacity,
     itemCount,
+    maxProducts,
     products,
   };
 };
@@ -93,6 +89,9 @@ export const findRemovedRacksWithProducts = (
 
   return blocked;
 };
+
+// Whether a shelf has hit its product-slot limit (independent of stock qty).
+export const isShelfFull = (shelf) => shelf.products.length >= shelf.maxProducts;
 
 export const occupancyColor = (itemCount, capacity) => {
   if (!capacity)

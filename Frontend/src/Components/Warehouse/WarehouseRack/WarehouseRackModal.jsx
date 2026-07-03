@@ -1,18 +1,38 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, X, Plus, PackageOpen, Layers } from "lucide-react";
+import {
+  Package,
+  X,
+  Plus,
+  PackageOpen,
+  Layers,
+  Lock,
+  AlertTriangle,
+} from "lucide-react";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
 import { commonInputField } from "../../../Theme/commonInputField";
 import { primaryButton } from "../../../Theme/primaryButton";
-import { occupancyColor } from "../MockData";
+import { occupancyColor, isShelfFull, DEFAULT_MAX_PRODUCTS } from "../MockData";
 
-const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf }) => {
+const WarehouseRackModal = ({
+  rack,
+  isOpen,
+  onClose,
+  onAddProduct,
+  onUpdateProduct,
+  onUpdateShelfMaxProducts,
+  shelfMaxProductsError,
+  onAddShelf,
+}) => {
   const [productInputs, setProductInputs] = useState({}); // { [shelfId]: { name, qty, maxQty } }
+  const [newShelfMaxProducts, setNewShelfMaxProducts] =
+    useState(DEFAULT_MAX_PRODUCTS);
 
   if (!rack) return null;
 
   const updateInput = (shelfId, field, value) => {
+    console.log("Updating input for shelf:", shelfId, field, value);
     setProductInputs((prev) => ({
       ...prev,
       [shelfId]: { ...prev[shelfId], [field]: value },
@@ -20,6 +40,8 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
   };
 
   const handleAddProduct = (shelf) => {
+    if (isShelfFull(shelf)) return;
+
     const input = productInputs[shelf.id];
     if (!input?.name || !input?.qty || !input?.maxQty) return;
 
@@ -34,6 +56,10 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
       ...prev,
       [shelf.id]: { name: "", qty: "", maxQty: "" },
     }));
+  };
+
+  const handleAddShelf = () => {
+    onAddShelf(Number(newShelfMaxProducts) || DEFAULT_MAX_PRODUCTS);
   };
 
   return (
@@ -71,6 +97,13 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
               </button>
             </div>
 
+            {shelfMaxProductsError && (
+              <div className="flex items-start gap-2 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 shrink-0">
+                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                <span>{shelfMaxProductsError}</span>
+              </div>
+            )}
+
             {/* Shelves list */}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
               {rack.shelves.length === 0 ? (
@@ -79,8 +112,16 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
                 </p>
               ) : (
                 rack.shelves.map((shelf) => {
-                  const shelfColor = occupancyColor(shelf.itemCount, shelf.capacity);
-                  const input = productInputs[shelf.id] || { name: "", qty: "", maxQty: "" };
+                  const shelfColor = occupancyColor(
+                    shelf.itemCount,
+                    shelf.capacity,
+                  );
+                  const input = productInputs[shelf.id] || {
+                    name: "",
+                    qty: "",
+                    maxQty: "",
+                  };
+                  const full = isShelfFull(shelf);
 
                   return (
                     <div
@@ -92,15 +133,54 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
                           <Layers size={12} className="text-emerald-600" />
                           {shelf.name}
                         </span>
-                        <span
-                          className="text-[10px] font-black px-1.5 py-0.5 rounded text-white"
-                          style={shelfColor.style}
-                        >
-                          {shelf.itemCount}/{shelf.capacity}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded ${
+                              full
+                                ? "bg-red-100 border border-red-300"
+                                : "bg-emerald-50 border border-emerald-200"
+                            }`}
+                          >
+                            <span
+                              className={`text-[10px] font-black ${
+                                full ? "text-red-700" : "text-emerald-800"
+                              }`}
+                            >
+                              {shelf.products.length}/
+                            </span>
+                            <input
+                              type="number"
+                              min={shelf.products.length || 1}
+                              value={shelf.maxProducts}
+                              onChange={(e) =>
+                                onUpdateShelfMaxProducts(
+                                  shelf.id,
+                                  e.target.value,
+                                )
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              className={`w-8 bg-white/70 rounded text-[10px] font-black text-center border border-black/10 py-0.5 ${
+                                full ? "text-red-700" : "text-emerald-800"
+                              }`}
+                            />
+                            <span
+                              className={`text-[9px] font-bold ${
+                                full ? "text-red-700" : "text-emerald-800"
+                              }`}
+                            >
+                              slots
+                            </span>
+                          </div>
+                          <span
+                            className="text-[10px] font-black px-1.5 py-0.5 rounded text-white"
+                            style={shelfColor.style}
+                          >
+                            {shelf.itemCount}/{shelf.capacity}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Existing products, each with its own qty/maxQty */}
+                      {/* Existing products - qty/maxQty editable inline */}
                       {shelf.products.length === 0 ? (
                         <p className="text-[11px] text-emerald-700/40 font-semibold py-1 text-center flex items-center justify-center gap-1">
                           <PackageOpen size={12} />
@@ -110,22 +190,56 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
                         <div className="flex flex-col gap-1.5">
                           {shelf.products.map((p) => {
                             const pColor = occupancyColor(p.qty, p.maxQty);
-                            const pPct = p.maxQty > 0 ? (p.qty / p.maxQty) * 100 : 0;
+                            const pPct =
+                              p.maxQty > 0 ? (p.qty / p.maxQty) * 100 : 0;
                             return (
                               <div
                                 key={p.id}
                                 className="flex flex-col gap-1 px-2 py-1.5 rounded-lg bg-white/60 border border-emerald-300/30"
                               >
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[11px] font-semibold text-emerald-900">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] font-semibold text-emerald-900 truncate flex-1">
                                     {p.name}
                                   </span>
-                                  <span
-                                    className="text-[10px] font-bold px-1 rounded"
-                                    style={{ backgroundColor: pColor.style.backgroundColor }}
+                                  <div
+                                    className="flex items-center gap-1 shrink-0 rounded px-1 py-0.5"
+                                    style={{
+                                      backgroundColor:
+                                        pColor.style.backgroundColor,
+                                    }}
                                   >
-                                    {p.qty}/{p.maxQty}
-                                  </span>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={p.qty}
+                                      onChange={(e) =>
+                                        onUpdateProduct(
+                                          shelf.id,
+                                          p.id,
+                                          "qty",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                    />
+                                    <span className="text-[10px] font-bold">
+                                      /
+                                    </span>
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      value={p.maxQty}
+                                      onChange={(e) =>
+                                        onUpdateProduct(
+                                          shelf.id,
+                                          p.id,
+                                          "maxQty",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                    />
+                                  </div>
                                 </div>
                                 <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
                                   <div
@@ -140,37 +254,53 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
                       )}
 
                       {/* Add product to this shelf */}
-                      <div className="flex items-center gap-1.5 pt-1 border-t border-emerald-100">
-                        <input
-                          type="text"
-                          value={input.name}
-                          onChange={(e) => updateInput(shelf.id, "name", e.target.value)}
-                          placeholder="Product name"
-                          className={`${commonInputField} text-xs py-1.5 flex-1`}
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          value={input.qty}
-                          onChange={(e) => updateInput(shelf.id, "qty", e.target.value)}
-                          placeholder="Qty"
-                          className={`${commonInputField} text-xs py-1.5 w-14`}
-                        />
-                        <input
-                          type="number"
-                          min="1"
-                          value={input.maxQty}
-                          onChange={(e) => updateInput(shelf.id, "maxQty", e.target.value)}
-                          placeholder="Max"
-                          className={`${commonInputField} text-xs py-1.5 w-14`}
-                        />
-                        <button
-                          onClick={() => handleAddProduct(shelf)}
-                          className="shrink-0 p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
+                      {full ? (
+                        <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-emerald-100 text-[11px] font-bold text-red-600 py-1.5">
+                          <Lock size={12} />
+                          Shelf full — no more product slots
+                        </div>
+                      ) : (
+                        <div className=" flex justify-between gap-1.5 pt-3 border-t border-emerald-100">
+                          <div className="grid grid-cols-3 w-full gap-2">
+                            <input
+                              type="text"
+                              value={input.name}
+                              onChange={(e) =>
+                                updateInput(shelf.id, "name", e.target.value)
+                              }
+                              placeholder="Product name"
+                              className={`${commonInputField} text-xs py-1.5 flex-1`}
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              value={input.qty}
+                              onChange={(e) =>
+                                updateInput(shelf.id, "qty", e.target.value)
+                              }
+                              placeholder="Qty"
+                              className={`${commonInputField} text-xs py-1.5 w-14`}
+                            />
+                            <input
+                              type="number"
+                              min="1"
+                              value={input.maxQty}
+                              onChange={(e) =>
+                                updateInput(shelf.id, "maxQty", e.target.value)
+                              }
+                              placeholder="Max"
+                              className={`${commonInputField} text-xs py-1.5 w-14`}
+                            />
+                          </div>
+
+                          <button
+                            onClick={() => handleAddProduct(shelf)}
+                            className="shrink-0 p-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -179,8 +309,20 @@ const WarehouseRackModal = ({ rack, isOpen, onClose, onAddProduct, onAddShelf })
 
             {/* Add shelf */}
             <div className="flex items-center gap-2 shrink-0 pt-2 border-t border-emerald-100">
+              <div className="flex items-center gap-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-emerald-800/60 whitespace-nowrap">
+                  Max slots
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={newShelfMaxProducts}
+                  onChange={(e) => setNewShelfMaxProducts(e.target.value)}
+                  className={`${commonInputField} py-1.5 text-xs w-16`}
+                />
+              </div>
               <button
-                onClick={onAddShelf}
+                onClick={handleAddShelf}
                 className={`${primaryButton} flex-1`}
                 style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
               >

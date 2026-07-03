@@ -1,4 +1,9 @@
-import { TbBuildingWarehouse, TbPlus, TbEdit, TbChevronRight } from "react-icons/tb";
+import {
+  TbBuildingWarehouse,
+  TbPlus,
+  TbEdit,
+  TbChevronRight,
+} from "react-icons/tb";
 import { HiSwitchHorizontal } from "react-icons/hi";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { PALETTE } from "../../Theme/palette";
@@ -11,8 +16,13 @@ const WarehouseHeader = ({
   onOpenEditModal,
 }) => {
   return (
-    <div className={`${commonComponentBG()} p-4 flex flex-row items-center justify-between`}>
-      <button onClick={onOpenSwitchModal} className="flex items-center gap-3 group">
+    <div
+      className={`${commonComponentBG()} p-4 flex flex-row items-center justify-between`}
+    >
+      <button
+        onClick={onOpenSwitchModal}
+        className="flex items-center gap-3 group"
+      >
         <div className="p-2.5 rounded-xl bg-emerald-100/70 border border-emerald-300/50">
           <TbBuildingWarehouse size={20} color={PALETTE.steel} />
         </div>
@@ -21,7 +31,9 @@ const WarehouseHeader = ({
             Current Warehouse
           </span>
           <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-            {selectedWarehouse?.place || "Select a Warehouse"}
+            {selectedWarehouse?.warehouseName ||
+              selectedWarehouse?.place ||
+              "Select a Warehouse"}
             {selectedWarehouse?.id && (
               <span className="text-emerald-700/50 font-semibold">
                 · {selectedWarehouse.id}
