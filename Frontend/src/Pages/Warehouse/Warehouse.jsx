@@ -10,7 +10,7 @@ import WarehouseHeader from "../../Components/Warehouse/WarehouseHeader";
 import WarehouseProductSearch from "../../Components/Warehouse/WarehouseProductSearch";
 import WarehouseRackContainer from "../../Components/Warehouse/WarehouseRack/WarehouseRackContainer";
 import WarehouseRackModal from "../../Components/Warehouse/WarehouseRack/WarehouseRackModal";
-import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelectorModal";
+import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelectorModal/WarehouseSelectorModal";
 import WarehouseFormModal from "../../Components/Warehouse/WarehouseFormModal";
 
 import axios from "axios";
@@ -331,6 +331,34 @@ const Warehouse = () => {
 
   const handleDeleteWarehouse = async (warehouseId) => {
     console.log("Deleting warehouse with ID:", warehouseId);
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/delete/${warehouseId}`,
+        { withCredentials: true },
+      );
+
+      if (response.status !== 200) {
+        console.error("Failed to delete warehouse:", response.data);
+        return { error: "Failed to delete warehouse. Please try again." };
+      }
+
+      setWarehouses((prev) => prev.filter((w) => w.id !== warehouseId));
+      setRacksByWarehouse((prev) => {
+        const updated = { ...prev };
+        delete updated[warehouseId];
+        return updated;
+      });
+
+      if (selectedWarehouseId === warehouseId) {
+        setSelectedWarehouseId(null);
+        localStorage.removeItem("selectedWarehouseId");
+      }
+
+      handleCloseWarehouseModal();
+    } catch (error) {
+      console.error("Error deleting warehouse:", error);
+      return { error: "An unexpected error occurred. Please try again." };
+    }
   };
 
   useEffect(() => {

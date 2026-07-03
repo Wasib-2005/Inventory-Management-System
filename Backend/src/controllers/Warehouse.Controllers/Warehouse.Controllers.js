@@ -3,7 +3,6 @@ import User from "../../models/user.model.js";
 import { Warehouse } from "../../models/Warehouse.models/warehouseId.models.js";
 
 export const createWarehouse = async (req, res) => {
-  res.status(404).send("xssd")
   try {
     const {
       warehouseName,
@@ -82,7 +81,20 @@ export const getAllWarehouses = async (req, res) => {
   }
 };
 
+export const updateWarehouse = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+    const updateData = req.body;
+
+  } catch (error) {
+    logger.error("Error occurred while updating warehouse:");
+    logger.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const deleteWarehouse = async (req, res) => {
+  return res.status(402).send("xssd");
   try {
     const { warehouseId } = req.params;
 

@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { TbMapPin, TbHash, TbPlus, TbX, TbEdit } from "react-icons/tb";
-import { commonComponentBG } from "../../Theme/commonComponentBG";
-import { PALETTE } from "../../Theme/palette";
-import { commonFieldColour } from "../../Theme/commonFieldColour";
-import { commonInputField } from "../../Theme/commonInputField";
-import { primaryButton } from "../../Theme/primaryButton";
-import IconActionButton from "../Common/IconActionButton";
+import { commonComponentBG } from "../../../Theme/commonComponentBG";
+import { PALETTE } from "../../../Theme/palette";
+import { commonFieldColour } from "../../../Theme/commonFieldColour";
+import { commonInputField } from "../../../Theme/commonInputField";
+import { primaryButton } from "../../../Theme/primaryButton";
+import IconActionButton from "../../Common/IconActionButton";
+import WarehouseSelectorCart from "./WarehouseSelectorCart";
 
 const WarehouseSelectorModal = ({
   isOpen,
@@ -51,7 +52,11 @@ const WarehouseSelectorModal = ({
             </div>
 
             <div className="relative">
-              <TbMapPin size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+              <TbMapPin
+                size={14}
+                className={commonFieldColour.icon}
+                style={{ top: "12px" }}
+              />
               <input
                 type="text"
                 value={placeQuery}
@@ -62,7 +67,11 @@ const WarehouseSelectorModal = ({
             </div>
 
             <div className="relative">
-              <TbHash size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+              <TbHash
+                size={14}
+                className={commonFieldColour.icon}
+                style={{ top: "12px" }}
+              />
               <input
                 type="text"
                 value={idQuery}
@@ -79,33 +88,13 @@ const WarehouseSelectorModal = ({
                 </p>
               ) : (
                 filteredWarehouses.map((w) => (
-                  <div
-                    key={w.id}
-                    className={`flex items-center justify-between p-2.5 rounded-lg border transition-all duration-200 ${
-                      selectedWarehouse.id === w.id
-                        ? "bg-emerald-200/60 border-emerald-400/70"
-                        : "bg-white/40 border-emerald-300/40 hover:bg-white/60"
-                    }`}
-                  >
-                    <button
-                      onClick={() => onSelectWarehouse(w)}
-                      className="flex-1 text-left"
-                    >
-                      <span className="text-xs font-bold text-emerald-900">{w.place}</span>
-                    </button>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] font-bold text-emerald-700/50">{w.id}</span>
-                      <IconActionButton
-                        icon={TbEdit}
-                        label="Edit"
-                        iconSize={13}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditWarehouse(w);
-                        }}
-                        className="p-1.5 rounded-md bg-amber-50/70 hover:bg-amber-100/80 text-amber-700 border border-amber-200/50 transition-colors"
-                      />
-                    </div>
+                  <div key={w.id}>
+                    <WarehouseSelectorCart
+                      w={w}
+                      selectedWarehouse={selectedWarehouse}
+                      onSelectWarehouse={onSelectWarehouse}
+                      onEditWarehouse={onEditWarehouse}
+                    />
                   </div>
                 ))
               )}
