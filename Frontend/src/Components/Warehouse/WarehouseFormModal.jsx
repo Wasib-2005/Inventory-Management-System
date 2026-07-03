@@ -62,10 +62,14 @@ const WarehouseFormModal = ({
   const [racksPerRow, setRacksPerRow] = useState(emptyForm.racksPerRow);
   const [error, setError] = useState(null);
 
+  // Core state that freezes the entire UI on submit/delete
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (!isOpen) return;
 
     setError(null);
+    setIsSubmitting(false); // Reset state when opening modal
 
     if (isEdit && initialData) {
       setWarehouseId(initialData.id ?? "");
@@ -85,35 +89,62 @@ const WarehouseFormModal = ({
   }, [isOpen, isEdit, initialData]);
 
   const handleAddRow = () => {
+    if (isSubmitting) return;
     setRackRows((prev) => [...prev, getNextRackName(prev)]);
   };
 
   const handleRemoveRow = (indexToRemove) => {
+    if (isSubmitting) return;
     if (indexToRemove === rackRows.length - 1) {
       setRackRows((prev) => prev.slice(0, -1));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!warehouseName || !warehouseId || !place) return;
+    if (!warehouseName || !warehouseId || !place || isSubmitting) return;
 
-    const result = onSubmit({
-      warehouseId,
-      warehouseName,
-      place,
-      address,
-      rackRows,
-      racksPerRow: Number(racksPerRow),
-    });
-
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
-
+    setIsSubmitting(true);
     setError(null);
-    onClose();
+
+    try {
+      const result = await onSubmit({
+        warehouseId,
+        warehouseName,
+        place,
+        address,
+        rackRows,
+        racksPerRow: Number(racksPerRow),
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        setIsSubmitting(false); // Thaw form if error happens so user can fix it
+        return;
+      }
+
+      onClose();
+    } catch (err) {
+      setError("An unexpected error occurred while saving.");
+      console.error("Error during warehouse submission:", err);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAction = async () => {
+    if (!onDelete || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await onDelete(initialData.mongoId);
+      onClose();
+    } catch (err) {
+      setError("Failed to delete the warehouse.");
+      console.error("Error during warehouse deletion:", err);
+      setIsSubmitting(false); // Thaw form on rejection
+    }
   };
 
   return (
@@ -124,7 +155,7 @@ const WarehouseFormModal = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/30 backdrop-blur-sm p-4 overflow-auto"
-          onClick={onClose}
+          onClick={() => !isSubmitting && onClose()} // Prevent click-outside closing during requests
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -132,15 +163,21 @@ const WarehouseFormModal = ({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className={`${commonComponentBG()} w-full max-w-md p-5 flex flex-col gap-4`}
+            className={`${commonComponentBG()} w-full max-w-md p-5 flex flex-col gap-4 ${
+              isSubmitting
+                ? "cursor-wait opacity-80 pointer-events-none select-none"
+                : ""
+            }`}
           >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-900/60">
                 {isEdit ? "Edit Warehouse" : "Create New Warehouse"}
               </h3>
               <button
+                type="button"
+                disabled={isSubmitting}
                 onClick={onClose}
-                className="text-emerald-700/50 hover:text-emerald-900 transition-colors"
+                className="text-emerald-700/50 hover:text-emerald-900 transition-colors disabled:opacity-30"
               >
                 <TbX size={16} />
               </button>
@@ -163,11 +200,15 @@ const WarehouseFormModal = ({
                 <input
                   type="text"
                   required
-                  disabled={isEdit}
+                  disabled={isEdit || isSubmitting}
                   value={warehouseId}
                   onChange={(e) => setWarehouseId(e.target.value)}
                   placeholder="Warehouse ID (e.g., WH-001)"
-                  className={`${commonInputField} pl-8 ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
+                  className={`${commonInputField} pl-8 ${
+                    isEdit || isSubmitting
+                      ? "opacity-60 cursor-not-allowed"
+                      : ""
+                  }`}
                 />
               </div>
               <div className="relative">
@@ -179,10 +220,11 @@ const WarehouseFormModal = ({
                 <input
                   type="text"
                   required
+                  disabled={isSubmitting}
                   value={warehouseName}
                   onChange={(e) => setWarehouseName(e.target.value)}
                   placeholder="Warehouse Name (e.g., Dhaka Central Depot)"
-                  className={`${commonInputField} pl-8 `}
+                  className={`${commonInputField} pl-8 disabled:opacity-60`}
                 />
               </div>
 
@@ -195,10 +237,11 @@ const WarehouseFormModal = ({
                 <input
                   type="text"
                   required
+                  disabled={isSubmitting}
                   value={place}
                   onChange={(e) => setPlace(e.target.value)}
                   placeholder="Place (e.g., Dhaka Central Depot)"
-                  className={`${commonInputField} pl-8`}
+                  className={`${commonInputField} pl-8 disabled:opacity-60`}
                 />
               </div>
 
@@ -210,10 +253,11 @@ const WarehouseFormModal = ({
                 />
                 <input
                   type="text"
+                  disabled={isSubmitting}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Full Address"
-                  className={`${commonInputField} pl-8`}
+                  className={`${commonInputField} pl-8 disabled:opacity-60`}
                 />
               </div>
 
@@ -225,9 +269,10 @@ const WarehouseFormModal = ({
                   <input
                     type="number"
                     min="1"
+                    disabled={isSubmitting}
                     value={racksPerRow}
                     onChange={(e) => setRacksPerRow(e.target.value)}
-                    className={`${commonInputField} py-1 text-xs`}
+                    className={`${commonInputField} py-1 text-xs disabled:opacity-60`}
                   />
                 </div>
               </div>
@@ -246,9 +291,10 @@ const WarehouseFormModal = ({
                       {row}
                       {index === rackRows.length - 1 && rackRows.length > 1 && (
                         <button
+                          disabled={isSubmitting}
                           type="button"
                           onClick={() => handleRemoveRow(index)}
-                          className="text-red-500 hover:text-red-700 ml-1 font-normal text-[9px]"
+                          className="text-red-500 hover:text-red-700 ml-1 font-normal text-[9px] disabled:opacity-30"
                         >
                           ✕
                         </button>
@@ -257,9 +303,10 @@ const WarehouseFormModal = ({
                   ))}
 
                   <button
+                    disabled={isSubmitting}
                     type="button"
                     onClick={handleAddRow}
-                    className="flex items-center justify-center px-2.5 py-1 text-[11px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                    className="flex items-center justify-center px-2.5 py-1 text-[11px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50"
                   >
                     + Add Row ({getNextRackName(rackRows)})
                   </button>
@@ -275,9 +322,10 @@ const WarehouseFormModal = ({
 
               <div className="flex justify-end gap-3 pt-4 border-t border-emerald-200">
                 <button
+                  disabled={isSubmitting}
                   type="button"
                   onClick={onClose}
-                  className={primaryButton}
+                  className={`${primaryButton} disabled:opacity-50`}
                   style={{ backgroundColor: "Black", color: "#fff" }}
                 >
                   <TbX size={15} />
@@ -286,23 +334,25 @@ const WarehouseFormModal = ({
 
                 {isEdit && (
                   <button
+                    disabled={isSubmitting}
                     type="button"
-                    onClick={onDelete}
-                    className={primaryButton}
+                    onClick={handleDeleteAction}
+                    className={`${primaryButton} disabled:opacity-50`}
                     style={{ backgroundColor: "#FF0000", color: "#fff" }}
                   >
                     <TbTrash size={15} />
-                    Delete Warehouse
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 )}
 
                 <button
+                  disabled={isSubmitting}
                   type="submit"
-                  className={primaryButton}
+                  className={`${primaryButton} disabled:opacity-50`}
                   style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                 >
                   {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
-                  {isEdit ? "Save Changes" : "Save New Warehouse"}
+                  {isSubmitting ? "Saving..." : isEdit ? "Save" : "Save"}
                 </button>
               </div>
             </form>

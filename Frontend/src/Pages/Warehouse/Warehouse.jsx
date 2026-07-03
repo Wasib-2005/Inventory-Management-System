@@ -11,7 +11,7 @@ import WarehouseProductSearch from "../../Components/Warehouse/WarehouseProductS
 import WarehouseRackContainer from "../../Components/Warehouse/WarehouseRack/WarehouseRackContainer";
 import WarehouseRackModal from "../../Components/Warehouse/WarehouseRack/WarehouseRackModal";
 import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelectorModal";
-import WarehouseCreateModal from "../../Components/Warehouse/WarehouseCreateModal";
+import WarehouseFormModal from "../../Components/Warehouse/WarehouseFormModal";
 
 import axios from "axios";
 
@@ -34,9 +34,9 @@ const Warehouse = () => {
 
   const [racksByWarehouse, setRacksByWarehouse] = useState({});
 
+  const [placeQuery, setPlaceQuery] = useState("");
   const [isWarehouseSelectorModalOpen, setIsWarehouseSelectorModalOpen] =
     useState(false);
-  const [placeQuery, setPlaceQuery] = useState("");
   const [idQuery, setIdQuery] = useState("");
   const [selectedRackCode, setSelectedRackCode] = useState(null);
   const [highlightedRackCode, setHighlightedRackCode] = useState(null);
@@ -79,7 +79,7 @@ const Warehouse = () => {
     setIdQuery("");
   };
 
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateWarehouseModal = () => {
     setWarehouseModal({ isOpen: true, mode: "create", initialData: null });
     setIsWarehouseSelectorModalOpen(false);
   };
@@ -136,6 +136,7 @@ const Warehouse = () => {
         }));
         setSelectedWarehouseId(newWarehouse.id);
         setSelectedRackCode(null);
+        handleCloseWarehouseModal();
         return;
       }
 
@@ -328,6 +329,10 @@ const Warehouse = () => {
     });
   };
 
+  const handleDeleteWarehouse = async (warehouseId) => {
+    console.log("Deleting warehouse with ID:", warehouseId);
+  };
+
   useEffect(() => {
     const getWarehouseData = async () => {
       setIsLoadingWarehouses(true);
@@ -408,7 +413,7 @@ const Warehouse = () => {
         <WarehouseHeader
           selectedWarehouse={selectedWarehouse}
           onOpenSwitchModal={() => setIsWarehouseSelectorModalOpen(true)}
-          onOpenCreateModal={handleOpenCreateModal}
+          onOpenCreateModal={handleOpenCreateWarehouseModal}
           onOpenEditModal={() => handleEditWarehouse(selectedWarehouse)}
         />
         <WarehouseProductSearch racks={racks} onLocateRack={handleLocateRack} />
@@ -439,15 +444,16 @@ const Warehouse = () => {
           filteredWarehouses={filteredWarehouses}
           selectedWarehouse={selectedWarehouse}
           onSelectWarehouse={handleSelectWarehouse}
-          onCreateWarehouse={handleOpenCreateModal}
+          onCreateWarehouse={handleOpenCreateWarehouseModal}
           onEditWarehouse={handleEditWarehouse}
         />
-        <WarehouseCreateModal
+        <WarehouseFormModal
           isOpen={warehouseModal.isOpen}
           mode={warehouseModal.mode}
           initialData={warehouseModal.initialData}
           onClose={handleCloseWarehouseModal}
           onSubmit={handleWarehouseFormSubmit}
+          onDelete={handleDeleteWarehouse}
         />
       </div>
     </div>

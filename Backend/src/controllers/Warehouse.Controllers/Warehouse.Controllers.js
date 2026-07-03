@@ -3,6 +3,7 @@ import User from "../../models/user.model.js";
 import { Warehouse } from "../../models/Warehouse.models/warehouseId.models.js";
 
 export const createWarehouse = async (req, res) => {
+  res.status(404).send("xssd")
   try {
     const {
       warehouseName,
@@ -76,6 +77,39 @@ export const getAllWarehouses = async (req, res) => {
     return res.status(200).json({ success: true, data: warehouses });
   } catch (error) {
     logger.error("Error occurred while fetching warehouses:");
+    logger.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteWarehouse = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+
+    // 1. Validation
+    if (!warehouseId) {
+      return res.status(400).json({ message: "Warehouse ID is required." });
+    }
+
+    // 2. Check if warehouse exists
+    const warehouse = await Warehouse.findOne({ warehouseId });
+    if (!warehouse) {
+      return res.status(404).json({ message: "Warehouse not found." });
+    }
+
+    // 3. Delete the warehouse
+    await Warehouse.deleteOne({ warehouseId });
+
+    logger.info(
+      `Warehouse deleted successfully. ID: ${warehouseId} by User ID: ${req.userId}`,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Warehouse deleted successfully.",
+    });
+  } catch (error) {
+    logger.error("Error occurred while deleting warehouse:");
     logger.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
