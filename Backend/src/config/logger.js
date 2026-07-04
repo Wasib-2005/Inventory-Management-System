@@ -1,21 +1,21 @@
-const pino = require('pino');
+const pino = require("pino");
 
-const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 
 const baseLogger = pino({
   level: LOG_LEVEL,
   transport: {
-    target: 'pino-pretty',
+    target: "pino-pretty",
     options: {
       colorize: true,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname',
+      translateTime: "SYS:standard",
+      ignore: "pid,hostname",
     },
   },
 });
 
 function buildCtx(args) {
-  if (!args.length) return { ctx: {}, suffix: '' };
+  if (!args.length) return { ctx: {}, suffix: "" };
 
   const ctx = {};
   const strings = [];
@@ -23,14 +23,14 @@ function buildCtx(args) {
   for (const arg of args) {
     if (arg instanceof Error) {
       ctx.err = arg;
-    } else if (arg && typeof arg === 'object') {
+    } else if (arg && typeof arg === "object") {
       Object.assign(ctx, arg);
     } else {
       strings.push(String(arg));
     }
   }
 
-  return { ctx, suffix: strings.join(' ') };
+  return { ctx, suffix: strings.join(" ") };
 }
 
 function makeLog(level) {
@@ -41,10 +41,10 @@ function makeLog(level) {
 }
 
 const logger = {
-  info:  makeLog('info'),
-  debug: makeLog('debug'),
-  warn:  makeLog('warn'),
-  error: makeLog('error'),
+  info: makeLog("info"),
+  debug: makeLog("debug"),
+  warn: makeLog("warn"),
+  error: makeLog("error"),
 };
 
 module.exports = logger;

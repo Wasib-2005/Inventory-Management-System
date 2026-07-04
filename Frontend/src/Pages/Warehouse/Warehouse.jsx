@@ -14,6 +14,7 @@ import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelector
 import WarehouseFormModal from "../../Components/Warehouse/WarehouseFormModal";
 
 import axios from "axios";
+import sweetalert2 from "sweetalert2";
 
 const normalizeWarehouse = (w) => ({
   id: w.warehouseId,
@@ -144,6 +145,19 @@ const Warehouse = () => {
         (w) => w.id === formData.warehouseId,
       );
       const currentRacks = racksByWarehouse[formData.warehouseId] || {};
+
+      console.log("Updating warehouse:", formData);
+
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/update/${formData.warehouseId}`,
+        formData,
+        { withCredentials: true },
+      );
+
+      if (response.status !== 200) {
+        console.error("Failed to update warehouse:", response.data);
+        return { error: "Failed to update warehouse. Please try again." };
+      }
 
       const blockedRacks = findRemovedRacksWithProducts(
         oldWarehouse.rackRows,
@@ -329,11 +343,24 @@ const Warehouse = () => {
     });
   };
 
-  const handleDeleteWarehouse = async (warehouseId) => {
-    console.log("Deleting warehouse with ID:", warehouseId);
+  const handleDeleteWarehouse = async (warehouseId, mongoId) => {
     try {
+      const confirmDelete = await sweetalert2.fire({
+        title: "Are you sure?",
+        text: "This action will permanently delete the warehouse and its data.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        confirmButtonColor: "#d33",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!confirmDelete.isConfirmed) {
+        return;
+      }
+      console.log("Deleting warehouse:", warehouseId, mongoId);
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/delete/${warehouseId}`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/delete/${mongoId}`,
         { withCredentials: true },
       );
 
@@ -342,6 +369,7 @@ const Warehouse = () => {
         return { error: "Failed to delete warehouse. Please try again." };
       }
 
+      console.log("Warehouse deleted successfully:", Warehouse);
       setWarehouses((prev) => prev.filter((w) => w.id !== warehouseId));
       setRacksByWarehouse((prev) => {
         const updated = { ...prev };
@@ -474,6 +502,7 @@ const Warehouse = () => {
           onSelectWarehouse={handleSelectWarehouse}
           onCreateWarehouse={handleOpenCreateWarehouseModal}
           onEditWarehouse={handleEditWarehouse}
+          onDeleteWarehouse={handleDeleteWarehouse}
         />
         <WarehouseFormModal
           isOpen={warehouseModal.isOpen}

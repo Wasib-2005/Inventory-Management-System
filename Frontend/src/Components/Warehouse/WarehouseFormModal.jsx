@@ -21,7 +21,6 @@ import { primaryButton } from "../../Theme/primaryButton";
 const getNextRackName = (currentRows) => {
   if (currentRows.length === 0) return "A";
   const last = currentRows[currentRows.length - 1];
-
   let i = last.length - 1;
   while (i >= 0 && last[i] === "Z") {
     i--;
@@ -68,6 +67,7 @@ const WarehouseFormModal = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null);
     setIsSubmitting(false); // Reset state when opening modal
 
@@ -138,12 +138,12 @@ const WarehouseFormModal = ({
     setError(null);
 
     try {
-      await onDelete(initialData.mongoId);
+      await onDelete(initialData.id, initialData.mongoId);
       onClose();
     } catch (err) {
       setError("Failed to delete the warehouse.");
       console.error("Error during warehouse deletion:", err);
-      setIsSubmitting(false); // Thaw form on rejection
+      setIsSubmitting(false);
     }
   };
 

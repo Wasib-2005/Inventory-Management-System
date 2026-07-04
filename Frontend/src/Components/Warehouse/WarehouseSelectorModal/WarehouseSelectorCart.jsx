@@ -1,4 +1,4 @@
-import { TbEdit } from "react-icons/tb";
+import { TbEdit, TbTrash } from "react-icons/tb";
 import IconActionButton from "../../Common/IconActionButton";
 
 const WarehouseSelectorCart = ({
@@ -6,6 +6,7 @@ const WarehouseSelectorCart = ({
   selectedWarehouse,
   onSelectWarehouse,
   onEditWarehouse,
+  onDeleteWarehouse,
 }) => {
   return (
     <div
@@ -16,12 +17,27 @@ const WarehouseSelectorCart = ({
       }`}
     >
       <button onClick={() => onSelectWarehouse(w)} className="flex-1 text-left">
-        <span className="text-xs font-bold text-emerald-900">{w.place}</span>
+        <p className="flex flex-col">
+          <span className="text-l font-bold text-emerald-900">
+            {w.warehouseName} · {w.place}
+          </span>
+          <span className="text-sm">{w.address}</span>
+        </p>
       </button>
       <div className="flex items-center gap-2 shrink-0">
         <span className="text-[10px] font-bold text-emerald-700/50">
           {w.id}
         </span>
+        <IconActionButton
+          icon={TbTrash}
+          label={"Delete"}
+          iconSize={13}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteWarehouse(w.id, w.mongoId);
+          }}
+          className="p-1.5 rounded-md bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors"
+        />
         <IconActionButton
           icon={TbEdit}
           label="Edit"

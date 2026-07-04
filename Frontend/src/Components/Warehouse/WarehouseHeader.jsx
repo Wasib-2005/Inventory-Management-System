@@ -31,12 +31,10 @@ const WarehouseHeader = ({
             Current Warehouse
           </span>
           <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-            {selectedWarehouse?.warehouseName ||
-              selectedWarehouse?.place ||
-              "Select a Warehouse"}
+            {selectedWarehouse?.warehouseName || "Select a Warehouse"}
             {selectedWarehouse?.id && (
               <span className="text-emerald-700/50 font-semibold">
-                · {selectedWarehouse.id}
+                · {selectedWarehouse?.id}
               </span>
             )}
             <TbChevronRight
@@ -44,6 +42,7 @@ const WarehouseHeader = ({
               className="text-emerald-700/40 group-hover:translate-x-0.5 transition-transform"
             />
           </span>
+          <p className="text-sm">{selectedWarehouse?.address}</p>
         </div>
       </button>
 

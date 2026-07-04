@@ -136,7 +136,7 @@ const Nav = () => {
           />
 
           {/* Nav links */}
-          <ul className="flex flex-col gap-2 px-3">
+          <ul className="flex flex-col gap-2 px-3 overflow-auto">
             {NavLinks.map((link) => (
               <li key={link.path}>
                 <NavLink

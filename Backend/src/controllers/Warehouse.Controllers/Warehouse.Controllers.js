@@ -64,7 +64,7 @@ export const createWarehouse = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error occurred while creating warehouse:");
-    console.error("errpr dazsda", error);
+    console.error("error ", error);
     logger.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -85,18 +85,8 @@ export const updateWarehouse = async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const updateData = req.body;
-
-  } catch (error) {
-    logger.error("Error occurred while updating warehouse:");
-    logger.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const deleteWarehouse = async (req, res) => {
-  return res.status(402).send("xssd");
-  try {
-    const { warehouseId } = req.params;
+    const userId = req.userId;
+    logger.info(`Updating warehouse: ${warehouseId}, User ID: ${userId}`);
 
     // 1. Validation
     if (!warehouseId) {
@@ -109,11 +99,68 @@ export const deleteWarehouse = async (req, res) => {
       return res.status(404).json({ message: "Warehouse not found." });
     }
 
+    // 3. Update the warehouse
+    if (updateData.warehouseName) {
+      warehouse.warehouseName = updateData.warehouseName;
+    }
+    if (updateData.place) {
+      warehouse.place = updateData.place;
+    }
+    if (updateData.address) {
+      warehouse.address = updateData.address;
+    }
+    if (updateData.rackRows) {
+      warehouse.rackRows = updateData.rackRows;
+    }
+    if (updateData.racksPerRow) {
+      warehouse.racksPerRow = updateData.racksPerRow;
+    }
+
+    // 4. Save the updated warehouse
+    await warehouse.save();
+
+    logger.info(
+      `Warehouse updated successfully. ID: ${warehouse.warehouseId}, Name: ${warehouse.warehouseName}, Place: ${warehouse.place} by User: ${userId}`,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Warehouse updated successfully.",
+      data: warehouse,
+    });
+  } catch (error) {
+    logger.error("Error occurred while updating warehouse");
+    logger.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteWarehouse = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+    const userId = req.userId;
+    logger.info(`Deleting warehouse: ${warehouseId}, User ID: ${userId}`);
+
+    // 1. Validation
+    if (!warehouseId) {
+      return res.status(400).json({ message: "Warehouse ID is required." });
+    }
+
+    // 2. Check if warehouse exists
+    const warehouse = await Warehouse.findById(warehouseId);
+    if (!warehouse) {
+      return res.status(404).json({ message: "Warehouse not found." });
+    }
+
     // 3. Delete the warehouse
-    await Warehouse.deleteOne({ warehouseId });
+    await Warehouse.deleteOne({ _id: warehouseId });
 
     logger.info(
       `Warehouse deleted successfully. ID: ${warehouseId} by User ID: ${req.userId}`,
+    );
+
+    logger.info(
+      `Warehouse deleted successfully. ID: ${warehouseId} by User: ${userId}`,
     );
 
     return res.status(200).json({

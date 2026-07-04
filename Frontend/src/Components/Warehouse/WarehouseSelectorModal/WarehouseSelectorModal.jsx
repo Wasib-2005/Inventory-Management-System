@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { TbMapPin, TbHash, TbPlus, TbX, TbEdit } from "react-icons/tb";
+import { TbMapPin, TbHash, TbPlus, TbX } from "react-icons/tb";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
 import { commonFieldColour } from "../../../Theme/commonFieldColour";
 import { commonInputField } from "../../../Theme/commonInputField";
 import { primaryButton } from "../../../Theme/primaryButton";
-import IconActionButton from "../../Common/IconActionButton";
+
 import WarehouseSelectorCart from "./WarehouseSelectorCart";
 
 const WarehouseSelectorModal = ({
@@ -20,6 +20,7 @@ const WarehouseSelectorModal = ({
   onSelectWarehouse,
   onCreateWarehouse,
   onEditWarehouse,
+  onDeleteWarehouse,
 }) => {
   return (
     <AnimatePresence>
@@ -94,6 +95,7 @@ const WarehouseSelectorModal = ({
                       selectedWarehouse={selectedWarehouse}
                       onSelectWarehouse={onSelectWarehouse}
                       onEditWarehouse={onEditWarehouse}
+                      onDeleteWarehouse={onDeleteWarehouse}
                     />
                   </div>
                 ))
