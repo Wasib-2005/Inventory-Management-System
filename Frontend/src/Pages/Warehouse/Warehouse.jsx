@@ -431,6 +431,7 @@ const Warehouse = () => {
   useEffect(() => {
     const selectedWarehouseInLS = localStorage.getItem("selectedWarehouseId");
     if (selectedWarehouseInLS) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedWarehouseId(selectedWarehouseInLS);
     }
   }, []);

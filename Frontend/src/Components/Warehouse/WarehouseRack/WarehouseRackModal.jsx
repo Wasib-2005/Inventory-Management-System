@@ -25,6 +25,7 @@ const WarehouseRackModal = ({
   shelfMaxProductsError,
   onAddShelf,
 }) => {
+  console.log("rack ");
   const [productInputs, setProductInputs] = useState({}); // { [shelfId]: { name, qty, maxQty } }
   const [newShelfMaxProducts, setNewShelfMaxProducts] =
     useState(DEFAULT_MAX_PRODUCTS);

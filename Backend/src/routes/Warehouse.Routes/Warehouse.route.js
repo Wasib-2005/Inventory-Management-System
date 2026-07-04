@@ -12,4 +12,5 @@ router.get("/", verifyAccess, getAllWarehouses);
 router.post("/create", verifyAccess, createWarehouse);
 router.put("/update/:warehouseId", verifyAccess, updateWarehouse);
 router.delete("/delete/:warehouseId", verifyAccess, deleteWarehouse);
+
 module.exports = router;
