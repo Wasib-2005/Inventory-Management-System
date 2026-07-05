@@ -1,119 +1,154 @@
 // ProductsList.jsx
-import { FiPackage, FiMapPin, FiArrowUp, FiArrowDown, FiEdit2 } from "react-icons/fi";
-import { LuLayers } from "react-icons/lu";
-import { secondaryButton } from "../../../Theme/secondaryButton";
+import { useState } from "react";
+import { FiPackage, FiMapPin, FiEdit2, FiTrash2, FiChevronDown } from "react-icons/fi";
+import { occupancyColor } from "../../Warehouse/MockData";
 
-const stockState = (currentStock, lowStockThreshold) => {
-  if (currentStock <= 0)
-    return { label: "Out of Stock", className: "bg-red-100 text-red-700 border-red-300/60" };
-  if (currentStock <= lowStockThreshold)
-    return { label: "Low Stock", className: "bg-amber-100 text-amber-700 border-amber-300/60" };
-  return { label: "In Stock", className: "bg-emerald-100 text-emerald-700 border-emerald-300/60" };
-};
+const VISIBLE_LOCATIONS = 3;
 
-const ProductsList = ({ productData, canEditProduct, onClick }) => {
+const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }) => {
+  const [showAllLocations, setShowAllLocations] = useState(false);
+
   const {
+    _id,
+    displayId,
+    variantOf,
     name,
     sku,
     category,
     unit,
-    currentStock,
-    lowStockThreshold,
-    unitCost,
-    location,
-    variants,
-    lastMovement,
-    updatedBy,
     image,
+    store = [],
+    price = {},
   } = productData;
 
-  const status = stockState(currentStock, lowStockThreshold);
-  const MovementIcon = lastMovement?.type === "IN" ? FiArrowUp : FiArrowDown;
-  const movementColor = lastMovement?.type === "IN" ? "text-emerald-600" : "text-rose-600";
+  const headerImage = image?.header;
+
+  const totalStock = store.reduce((sum, item) => sum + (item.qty || 0), 0);
+  const totalCapacity = store.reduce((sum, item) => sum + (item.maxQty || 0), 0);
+  const stockBadge = occupancyColor(totalStock, totalCapacity);
+
+  const hasOverflow = store.length > VISIBLE_LOCATIONS;
+  const visibleStore = showAllLocations ? store : store.slice(0, VISIBLE_LOCATIONS);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white/70 backdrop-blur shadow-[0_2px_12px_rgba(47,160,132,0.1),inset_0_1px_0_rgba(255,255,255,0.6)] rounded-2xl border border-emerald-300/50 overflow-hidden hover:border-emerald-400/70 hover:shadow-[0_4px_16px_rgba(47,160,132,0.18)] transition-all cursor-pointer flex flex-col"
+      className="group bg-white hover:bg-slate-50/60 shadow-sm hover:shadow-md rounded-xl border border-slate-200 p-4 transition-all duration-200 cursor-pointer flex flex-col md:flex-row md:items-center gap-4"
     >
-      {/* Image */}
-      <div className="relative h-40 bg-emerald-50 flex items-center justify-center overflow-hidden border-b border-emerald-300/40">
-        {image ? (
-          <img src={image} alt={name} className="w-[90%] h-[90%] object-cover" loading="lazy" />
+      {/* PHOTO */}
+      <div className="relative h-50 w-full md:w-30 md:h-30 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 flex-shrink-0 group-hover:scale-105 transition-transform">
+        {headerImage ? (
+          <img src={headerImage} alt={name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <FiPackage size={26} className="text-emerald-700/40" />
+          <FiPackage size={22} className="text-slate-400" />
         )}
-        <span
-          className={`absolute top-2 right-2 text-[10px] font-bold px-1.5 py-0.5 rounded border ${status.className}`}
-        >
-          {status.label}
-        </span>
+      </div>
 
-        {canEditProduct && (
+      {/* INFO */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+            {displayId}
+          </span>
+          <span
+            className={`text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              !variantOf
+                ? "bg-blue-50 text-blue-600 border-blue-200"
+                : "bg-purple-50 text-purple-600 border-purple-200"
+            }`}
+          >
+            {!variantOf ? "Base" : "Variant"}
+          </span>
+        </div>
+
+        <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
+          {name}
+        </h3>
+        <p className="text-xs text-slate-400 truncate">
+          {sku} · <span className="text-slate-500 font-medium">{category}</span>
+        </p>
+
+        <div className="flex items-center gap-3 flex-wrap pt-0.5">
+          {/* Locations */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {store.length > 0 ? (
+              <>
+                {visibleStore.map((loc, index) => (
+                  <div key={index} className="flex items-center gap-1 text-xs text-slate-600">
+                    <FiMapPin size={12} className={loc.qty > 0 ? "text-emerald-500" : "text-slate-300"} />
+                    <span className="font-medium">
+                      {loc.rackCode}-{loc.Shelf}{" "}
+                      <span className="text-slate-400 font-normal">
+                        ({loc.qty} {unit})
+                      </span>
+                    </span>
+                  </div>
+                ))}
+                {hasOverflow && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAllLocations((prev) => !prev);
+                    }}
+                    className="flex items-center gap-0.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    {showAllLocations ? "Show less" : `+${store.length - VISIBLE_LOCATIONS} more`}
+                    <FiChevronDown
+                      size={12}
+                      className={`transition-transform ${showAllLocations ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-slate-400 italic">Unassigned</span>
+            )}
+          </div>
+
+          {/* Stock badge */}
+          <span
+            style={stockBadge.style}
+            className={`text-xs font-semibold px-3 py-1 rounded-full border shadow-inner inline-block ${stockBadge.className}`}
+          >
+            {totalStock} / {totalCapacity} {unit}
+          </span>
+
+          {/* Price */}
+          <span className="text-xs">
+            <span className="text-slate-400">Cost </span>
+            <span className="font-medium text-slate-600">${price.costPrice?.toFixed(2)}</span>
+            <span className="text-slate-400 mx-1">/</span>
+            <span className="text-slate-400">Sell </span>
+            <span className="font-bold text-slate-900">${price.sellingPrice?.toFixed(2)}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* BUTTONS */}
+      {canEditProduct && (
+        <div className="flex md:flex-col items-center justify-end md:justify-center gap-1 flex-shrink-0 self-end md:self-center">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              // edit flow — wired later
+              if (onEdit) onEdit(_id);
             }}
-            className="absolute top-2 left-2 p-1.5 rounded-md bg-white/70 backdrop-blur border border-emerald-300/50 text-emerald-700 hover:bg-white hover:text-emerald-900 transition-colors"
+            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 rounded-lg transition-colors"
             title="Edit product"
           >
-            <FiEdit2 size={12} />
+            <FiEdit2 size={15} />
           </button>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="p-3 flex flex-col gap-2 flex-1">
-        <div>
-          <h3 className="text-[13px] font-bold text-emerald-900 truncate">{name}</h3>
-          <p className="text-[10px] text-emerald-700/50 font-semibold tracking-wide uppercase">
-            {sku} · {category}
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-emerald-900/70">
-            Qty: <span className="font-bold text-emerald-900">{currentStock} {unit}</span>
-          </span>
-          <span className="flex items-center gap-1 text-emerald-700/60">
-            <FiMapPin size={11} />
-            {location}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] text-emerald-900/70">
-          <span className="flex items-center gap-1">
-            <LuLayers size={12} className="text-emerald-700/50" />
-            {variants} variant{variants === 1 ? "" : "s"}
-          </span>
-          <span className="font-semibold">Cost: ${unitCost.toFixed(2)}</span>
-        </div>
-
-        {lastMovement && (
-          <div className="flex items-center justify-between text-[10px] text-emerald-700/60 pt-1 border-t border-emerald-300/30">
-            <span className={`flex items-center gap-1 font-semibold ${movementColor}`}>
-              <MovementIcon size={11} />
-              {lastMovement.type} {lastMovement.qty} {unit}
-            </span>
-            <span>{lastMovement.date}</span>
-          </div>
-        )}
-
-        <p className="text-[10px] text-emerald-700/40">Updated by {updatedBy}</p>
-
-        {canEditProduct && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              // adjust stock flow — wired later
+              if (onDelete) onDelete(_id);
             }}
-            className={secondaryButton}
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100 rounded-lg transition-colors"
+            title="Delete product"
           >
-            Adjust Stock
+            <FiTrash2 size={15} />
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

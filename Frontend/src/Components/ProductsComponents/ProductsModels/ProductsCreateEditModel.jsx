@@ -93,7 +93,7 @@ const ProductsModel = ({ productData, canEditProduct, onClose }) => {
             </div>
             <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
               <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Unit Cost</p>
-              <p className="text-emerald-900 font-bold text-base">${unitCost.toFixed(2)}</p>
+              <p className="text-emerald-900 font-bold text-base">${unitCost?.toFixed(2)}</p>
             </div>
             <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40 flex flex-col gap-1">
               <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Location</p>
