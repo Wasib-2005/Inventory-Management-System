@@ -34,10 +34,9 @@ const ProductsCreateEditModel = ({
     extraDetails: [],
   });
 
-  const [headerUploadMode, setHeaderUploadMode] = useState("url"); // 'url' | 'file'
-  const [extraUploadModes, setExtraUploadModes] = useState([]); // Array of 'url' | 'file'
+  const [headerUploadMode, setHeaderUploadMode] = useState("url");
+  const [extraUploadModes, setExtraUploadModes] = useState([]);
 
-  // Bulletproof Drag and Drop states
   const [isHeaderDragging, setIsHeaderDragging] = useState(false);
   const [draggingExtraIndex, setDraggingExtraIndex] = useState(null);
 
@@ -55,9 +54,7 @@ const ProductsCreateEditModel = ({
           price: editProduct.price || { costPrice: 0, sellingPrice: 0 },
           extraDetails: editProduct.extraDetails || [],
         });
-        setExtraUploadModes(
-          new Array(editProduct.image?.extra?.length || 0).fill("url"),
-        );
+        setExtraUploadModes(new Array(editProduct.image?.extra?.length || 0).fill("url"));
       } else {
         setFormData({
           displayId: "",
@@ -92,16 +89,13 @@ const ProductsCreateEditModel = ({
     });
   };
 
-  // --- Smooth Non-Flicker Drag & Drop Handlers ---
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e) => e.preventDefault();
 
   const handleHeaderDrop = (e) => {
     e.preventDefault();
     setIsHeaderDragging(false);
     setHeaderUploadMode("file");
-
+    
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(file);
@@ -115,7 +109,6 @@ const ProductsCreateEditModel = ({
   const handleExtraDrop = (index, e) => {
     e.preventDefault();
     setDraggingExtraIndex(null);
-
     setExtraUploadModes((prev) => {
       const updated = [...prev];
       updated[index] = "file";
@@ -133,7 +126,6 @@ const ProductsCreateEditModel = ({
     }
   };
 
-  // --- Traditional Input File Select Handlers ---
   const handleHeaderFile = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -199,7 +191,6 @@ const ProductsCreateEditModel = ({
     });
   };
 
-  // Dynamic Structure Blocks Helpers
   const handleSectionHeaderChange = (text, sectionIndex) => {
     const updatedDetails = [...formData.extraDetails];
     updatedDetails[sectionIndex].header = text;
@@ -274,7 +265,6 @@ const ProductsCreateEditModel = ({
   };
 
   const handleSubmit = () => {
-    console.log(formData);
     onSave?.(formData);
     onClose();
   };
@@ -282,14 +272,15 @@ const ProductsCreateEditModel = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50  flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4"
     >
+      {/* Added h-fit to keep the form wrapper tight to its structural fields */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${commonComponentBG()} w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col`}
+        className={`${commonComponentBG()} w-full max-w-2xl h-fit max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-2xl`}
       >
         {/* Header Title Area */}
-        <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl">
+        <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl shrink-0">
           <h2 className="text-lg font-bold text-emerald-900">
             {editProduct ? "Edit Product" : "Create Product"}
           </h2>
@@ -420,8 +411,7 @@ const ProductsCreateEditModel = ({
                       className="absolute inset-0 z-30 bg-emerald-600/10 border border-dashed border-emerald-500 rounded-md flex items-center justify-center"
                     >
                       <span className="bg-emerald-600 text-white font-semibold text-[10px] px-2 py-1 rounded-md shadow flex items-center gap-1">
-                        <FiUpload size={11} /> Drop to attach variant{" "}
-                        {index + 1}
+                        <FiUpload size={11} /> Drop to attach variant {index + 1}
                       </span>
                     </div>
                   )}
@@ -580,7 +570,7 @@ const ProductsCreateEditModel = ({
                   onChange={(e) => handleChange(e, "price", "costPrice")}
                   className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
                 />
-                <p className="absolute top-[15%] right-[3%]">
+                <p className="absolute top-[15%] right-[3%] text-xs font-bold text-slate-400">
                   {import.meta.env.VITE_CURRENCY_SYMBOL}
                 </p>
               </div>
@@ -597,7 +587,7 @@ const ProductsCreateEditModel = ({
                   onChange={(e) => handleChange(e, "price", "sellingPrice")}
                   className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
                 />
-                <p className="absolute top-[15%] right-[3%]">
+                <p className="absolute top-[15%] right-[3%] text-xs font-bold text-slate-400">
                   {import.meta.env.VITE_CURRENCY_SYMBOL}
                 </p>
               </div>
@@ -675,9 +665,7 @@ const ProductsCreateEditModel = ({
                           <div className="flex gap-1 sm:gap-0.5">
                             <button
                               type="button"
-                              onClick={() =>
-                                moveFieldUp(sectionIndex, rowIndex)
-                              }
+                              onClick={() => moveFieldUp(sectionIndex, rowIndex)}
                               disabled={rowIndex === 0}
                               className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
                             >
@@ -685,9 +673,7 @@ const ProductsCreateEditModel = ({
                             </button>
                             <button
                               type="button"
-                              onClick={() =>
-                                moveFieldDown(sectionIndex, rowIndex)
-                              }
+                              onClick={() => moveFieldDown(sectionIndex, rowIndex)}
                               disabled={rowIndex === section.body.length - 1}
                               className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
                             >

@@ -12,11 +12,8 @@ const Products = () => {
       <Helmet>
         <title>{pageName}</title>
       </Helmet>
-      <div
-        className={`${commonComponentBG("r")} h-[87vh] p-3 sm:p-5 flex flex-col gap-3 sm:gap-4 overflow-y-auto`}
-      >
-        <ProductsComponentsIndex />
-      </div>
+
+      <ProductsComponentsIndex />
     </div>
   );
 };
