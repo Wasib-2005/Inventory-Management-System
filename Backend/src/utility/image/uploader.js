@@ -41,7 +41,6 @@ export async function upload(files, destination) {
     throw new Error("No files provided for upload.");
   }
 
-  // Uniformity: Ensure input is treated as an array
   const fileArray = Array.isArray(files) ? files : [files];
   const transientUploads = []; 
   const urlResults = [];

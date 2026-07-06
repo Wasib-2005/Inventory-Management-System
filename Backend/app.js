@@ -41,7 +41,6 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.options("/{*path}", cors(corsOptions));
 
-// ─── Request Logger ───────────────────────────────────────────────────────────
 // app.use((req, res, next) => {
 //   const start = Date.now();
 
@@ -73,9 +72,8 @@ app.options("/{*path}", cors(corsOptions));
 
 //   next();
 // });
-// ─────────────────────────────────────────────────────────────────────────────
 
-// Simulate network delay (e.g., 1000ms = 1 second)
+// Simulate network delay remove it
 app.use((req, res, next) => {
   const DELAY_MS = 1000;
   setTimeout(next, DELAY_MS);

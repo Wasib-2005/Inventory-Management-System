@@ -10,8 +10,6 @@ const AES_ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12;
 const TAG_BYTES = 16;
 
-// ── Asymmetric (RSA-OAEP) ─────────────────────────────────────────────────────
-
 export const asymmetricEncryption = (plaintext) => {
   const buffer = Buffer.isBuffer(plaintext)
     ? plaintext
@@ -42,8 +40,6 @@ export const asymmetricDecryption = (ciphertextBase64) => {
     .toString("utf8");
 };
 
-// ── Symmetric (AES-256-GCM) ───────────────────────────────────────────────────
-
 export const symmetricEncryption = (data) => {
   const plaintext = typeof data === "string" ? data : JSON.stringify(data);
   const iv = crypto.randomBytes(IV_BYTES);
@@ -54,7 +50,6 @@ export const symmetricEncryption = (data) => {
     cipher.final(),
   ]);
 
-  // Layout: [ iv(12) | authTag(16) | ciphertext ]
   return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString("base64");
 };
 
@@ -79,9 +74,6 @@ export const symmetricDecryption = (payloadBase64) => {
   }
 };
 
-// ── Hybrid (RSA + AES) — for Frontend ↔ Backend communication ─────────────────
-// Use this when the frontend sends encrypted data using WebCrypto API
-
 /**
  * Decrypts a hybrid payload FROM the frontend.
  * Frontend encrypts with: RSA public key (wraps AES key) + AES-GCM (encrypts data)
@@ -92,7 +84,6 @@ export const symmetricDecryption = (payloadBase64) => {
  * data       — AES-GCM ciphertext + auth tag         (Base64)
  */
 export const hybridDecryption = ({ wrappedKey, iv, data }) => {
-  // Step 1 — RSA: unwrap the one-time AES key
   const aesKey = crypto.privateDecrypt(
     {
       key: serverPrivateKey,
@@ -102,18 +93,16 @@ export const hybridDecryption = ({ wrappedKey, iv, data }) => {
     Buffer.from(wrappedKey, "base64"),
   );
 
-  // Step 2 — Split ciphertext and auth tag (WebCrypto appends tag at the end)
   const cipherBuf = Buffer.from(data, "base64");
   const authTag = cipherBuf.subarray(cipherBuf.length - TAG_BYTES);
   const ciphertext = cipherBuf.subarray(0, cipherBuf.length - TAG_BYTES);
 
-  // Step 3 — AES-GCM: decrypt
   const decipher = crypto.createDecipheriv(
     AES_ALGORITHM,
     aesKey,
     Buffer.from(iv, "base64"),
   );
-  decipher.setAuthTag(authTag); // throws if payload was tampered
+  decipher.setAuthTag(authTag);
 
   const decrypted = Buffer.concat([
     decipher.update(ciphertext),
@@ -129,19 +118,15 @@ export const hybridDecryption = ({ wrappedKey, iv, data }) => {
  * @returns {{ wrappedKey: string, iv: string, data: string }}
  */
 export const hybridEncryption = (payload) => {
-  // Step 1 — Generate a fresh one-time AES key + IV (never reuse)
   const aesKey = crypto.randomBytes(32);
   const iv = crypto.randomBytes(IV_BYTES);
 
-  // Step 2 — AES-GCM: encrypt the payload
   const cipher = crypto.createCipheriv(AES_ALGORITHM, aesKey, iv);
   const plaintext = Buffer.from(JSON.stringify(payload), "utf8");
   const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()]);
 
-  // Pack ciphertext + authTag together — mirrors WebCrypto output layout
   const data = Buffer.concat([encrypted, cipher.getAuthTag()]);
 
-  // Step 3 — RSA: wrap the one-time AES key
   const wrappedKey = crypto.publicEncrypt(
     {
       key: serverPublicKey,
