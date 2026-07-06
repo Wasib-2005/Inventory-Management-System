@@ -1,17 +1,30 @@
 // ProductsList.jsx
 import { useState } from "react";
-import { FiPackage, FiMapPin, FiEdit2, FiTrash2, FiChevronDown } from "react-icons/fi";
+import {
+  FiPackage,
+  FiMapPin,
+  FiEdit2,
+  FiTrash2,
+  FiChevronDown,
+} from "react-icons/fi";
 import { occupancyColor } from "../../Warehouse/MockData";
 
 const VISIBLE_LOCATIONS = 3;
 
-const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }) => {
+const ProductsList = ({
+  productData,
+  canEditProduct,
+  onClick,
+  onEdit,
+  onDelete,
+}) => {
   const [showAllLocations, setShowAllLocations] = useState(false);
 
   const {
     _id,
     displayId,
     variantOf,
+    barCode,
     name,
     sku,
     category,
@@ -24,11 +37,16 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
   const headerImage = image?.header;
 
   const totalStock = store.reduce((sum, item) => sum + (item.qty || 0), 0);
-  const totalCapacity = store.reduce((sum, item) => sum + (item.maxQty || 0), 0);
+  const totalCapacity = store.reduce(
+    (sum, item) => sum + (item.maxQty || 0),
+    0,
+  );
   const stockBadge = occupancyColor(totalStock, totalCapacity);
 
   const hasOverflow = store.length > VISIBLE_LOCATIONS;
-  const visibleStore = showAllLocations ? store : store.slice(0, VISIBLE_LOCATIONS);
+  const visibleStore = showAllLocations
+    ? store
+    : store.slice(0, VISIBLE_LOCATIONS);
 
   return (
     <div
@@ -38,7 +56,12 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
       {/* PHOTO */}
       <div className="relative h-50 w-full md:w-30 md:h-30 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 flex-shrink-0 group-hover:scale-105 transition-transform">
         {headerImage ? (
-          <img src={headerImage} alt={name} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={headerImage}
+            alt={name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <FiPackage size={22} className="text-slate-400" />
         )}
@@ -64,6 +87,14 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
         <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
           {name}
         </h3>
+        {
+          <p className="text-[12px] truncate">
+            <span className="font-bold">Barcode: </span>
+            <span className={`${!barCode && "text-red-600"}`}>
+              {barCode || "No barcode"}
+            </span>
+          </p>
+        }
         <p className="text-xs text-slate-400 truncate">
           {sku} · <span className="text-slate-500 font-medium">{category}</span>
         </p>
@@ -74,8 +105,16 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
             {store.length > 0 ? (
               <>
                 {visibleStore.map((loc, index) => (
-                  <div key={index} className="flex items-center gap-1 text-xs text-slate-600">
-                    <FiMapPin size={12} className={loc.qty > 0 ? "text-emerald-500" : "text-slate-300"} />
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 text-xs text-slate-600"
+                  >
+                    <FiMapPin
+                      size={12}
+                      className={
+                        loc.qty > 0 ? "text-emerald-500" : "text-slate-300"
+                      }
+                    />
                     <span className="font-medium">
                       {loc.rackCode}-{loc.Shelf}{" "}
                       <span className="text-slate-400 font-normal">
@@ -92,7 +131,9 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
                     }}
                     className="flex items-center gap-0.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
                   >
-                    {showAllLocations ? "Show less" : `+${store.length - VISIBLE_LOCATIONS} more`}
+                    {showAllLocations
+                      ? "Show less"
+                      : `+${store.length - VISIBLE_LOCATIONS} more`}
                     <FiChevronDown
                       size={12}
                       className={`transition-transform ${showAllLocations ? "rotate-180" : ""}`}
@@ -116,10 +157,16 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
           {/* Price */}
           <span className="text-xs">
             <span className="text-slate-400">Cost </span>
-            <span className="font-medium text-slate-600">${price.costPrice?.toFixed(2)}</span>
+            <span className="font-medium text-slate-600">
+              {import.meta.env.VITE_CURRENCY_SYMBOL}
+              {price.costPrice?.toFixed(2)}
+            </span>
             <span className="text-slate-400 mx-1">/</span>
             <span className="text-slate-400">Sell </span>
-            <span className="font-bold text-slate-900">${price.sellingPrice?.toFixed(2)}</span>
+            <span className="font-bold text-slate-900">
+              {import.meta.env.VITE_CURRENCY_SYMBOL}
+              {price.sellingPrice?.toFixed(2)}
+            </span>
           </span>
         </div>
       </div>

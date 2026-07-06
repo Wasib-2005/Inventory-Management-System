@@ -25,6 +25,7 @@ const ProductDetailsModel = ({
 
   const {
     displayId,
+    barCode,
     variantOf,
     name,
     sku,
@@ -41,7 +42,10 @@ const ProductDetailsModel = ({
   const gallery = [headerImage, ...extraImages].filter(Boolean);
 
   const totalStock = store.reduce((sum, item) => sum + (item.qty || 0), 0);
-  const totalCapacity = store.reduce((sum, item) => sum + (item.maxQty || 0), 0);
+  const totalCapacity = store.reduce(
+    (sum, item) => sum + (item.maxQty || 0),
+    0,
+  );
   const stockBadge = occupancyColor(totalStock, totalCapacity);
 
   const close = () => setIsDetailsOpen(false);
@@ -58,7 +62,11 @@ const ProductDetailsModel = ({
         {/* Header image */}
         <div className="relative h-60 bg-emerald-50 rounded-t-2xl border-b border-emerald-300/40">
           {activeImage ? (
-            <img src={activeImage} alt={name} className="w-full h-full object-cover" />
+            <img
+              src={activeImage}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <FiPackage size={36} className="text-emerald-700/40" />
@@ -95,7 +103,11 @@ const ProductDetailsModel = ({
                       : "border-white/60 opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <img src={src} alt={`${name} ${i}`} className="w-full h-full object-cover" />
+                  <img
+                    src={src}
+                    alt={`${name} ${i}`}
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -104,8 +116,12 @@ const ProductDetailsModel = ({
 
         {/* Body */}
         <div className="p-5 flex flex-col gap-4">
-          <div>
+          <div className="grid gap-2">
             <h2 className="text-lg font-bold text-emerald-900">{name}</h2>
+            <p className="text-[14px] truncate">
+              <span className="font-bold">Barcode: </span>
+              <span className="text-slate-500 ">{barCode}</span>
+            </p>
             <p className="text-[11px] text-emerald-700/50 font-semibold uppercase tracking-wide">
               {sku} · {category} · {displayId}
             </p>
@@ -114,7 +130,9 @@ const ProductDetailsModel = ({
           {/* Stat grid */}
           <div className="grid grid-cols-2 gap-3 text-[12px]">
             <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Total Stock</p>
+              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">
+                Total Stock
+              </p>
               <span
                 style={stockBadge.style}
                 className={`inline-block mt-1 text-[13px] font-bold px-2.5 py-1 rounded-full border ${stockBadge.className}`}
@@ -123,11 +141,15 @@ const ProductDetailsModel = ({
               </span>
             </div>
             <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Pricing</p>
+              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">
+                Pricing
+              </p>
               <p className="text-emerald-900 font-bold text-base">
-                ${price.sellingPrice?.toFixed(2)}
+                {import.meta.env.VITE_CURRENCY_SYMBOL}
+                {price.sellingPrice?.toFixed(2)}
                 <span className="text-emerald-700/40 font-medium text-[11px] ml-1.5">
-                  (cost ${price.costPrice?.toFixed(2)})
+                  (cost {import.meta.env.VITE_CURRENCY_SYMBOL}
+                  {price.costPrice?.toFixed(2)})
                 </span>
               </p>
             </div>
@@ -148,7 +170,9 @@ const ProductDetailsModel = ({
                     <span className="flex items-center gap-1.5 font-medium">
                       <FiMapPin
                         size={12}
-                        className={loc.qty > 0 ? "text-emerald-500" : "text-emerald-300"}
+                        className={
+                          loc.qty > 0 ? "text-emerald-500" : "text-emerald-300"
+                        }
                       />
                       Rack {loc.rackCode} · Shelf {loc.Shelf}
                     </span>
@@ -159,21 +183,31 @@ const ProductDetailsModel = ({
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-emerald-700/40 italic">Unassigned</p>
+              <p className="text-[12px] text-emerald-700/40 italic">
+                Unassigned
+              </p>
             )}
           </div>
 
           {/* Extra details sections */}
           {extraDetails.map((section, i) => (
-            <div key={i} className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
+            <div
+              key={i}
+              className="p-3 rounded-lg bg-white/50 border border-emerald-300/40"
+            >
               <p className="text-emerald-700 font-semibold uppercase text-l mb-2">
                 {section.header}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                 {section.body?.map((row, j) => (
-                  <div key={j} className="flex items-baseline justify-between text-[12px] gap-2">
+                  <div
+                    key={j}
+                    className="flex items-baseline justify-between text-[12px] gap-2"
+                  >
                     <span className="text-emerald-700/50">{row.label}</span>
-                    <span className="text-emerald-900 font-medium text-right">{row.value}</span>
+                    <span className="text-emerald-900 font-medium text-right">
+                      {row.value}
+                    </span>
                   </div>
                 ))}
               </div>

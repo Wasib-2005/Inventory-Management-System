@@ -2,23 +2,17 @@
 import ProductsList from "./ProductsList";
 
 const productsData = [
-  // ==========================================
-  // 1. BASE PRODUCT (Parent)
-  // ==========================================
   {
-    _id: "64a2b1f8e4b0c25a1f8b4567", // MongoDB ID (Hidden, used for database queries)
-    displayId: "PROD-2026-001", // Admin/Management ID (Visible to team)
-    variantOf: null, // Null means this IS the base product
+    _id: "64a2b1f8e4b0c25a1f8b4567",
+    displayId: "PROD-2026-001",
+    barCode: "23534865245576",
+    variantOf: null,
 
     name: "Quantum Wireless Mouse (Base White)",
     sku: "MS-QT-001-WHT",
     category: "Peripherals",
     unit: "pcs",
 
-    // ==========================================
-    // IMAGE — header is the main/cover photo (card + modal header),
-    // extra is a gallery of additional shots shown in the details modal.
-    // ==========================================
     image: {
       header:
         "https://static.vecteezy.com/system/resources/thumbnails/057/068/323/small/single-fresh-red-strawberry-on-table-green-background-food-fruit-sweet-macro-juicy-plant-image-photo.jpg",
@@ -43,10 +37,6 @@ const productsData = [
       sellingPrice: 35.0,
     },
 
-    // ==========================================
-    // EXTRA DETAILS — arbitrary grouped sections shown in the details modal.
-    // Each section: { header, body: [{ label, value }] }
-    // ==========================================
     extraDetails: [
       {
         header: "Specifications",
@@ -67,15 +57,34 @@ const productsData = [
       },
     ],
   },
+  {
+    displayId: "",
+    barCode: "",
+    variantOf: "",
+    name: "",
+    sku: "",
+    category: "",
+    unit: "pcs",
+    image: {
+      header:
+        "blob:https://localhost:3000/6896aa60-a953-40e6-bef3-f937216e5667",
+      extra: [
+        "blob:https://localhost:3000/d8108ac3-9148-4852-a70a-d925989394be",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrY4zNW5agCCSjjTHe1acNzo5yh2DXM6G8RXMYDZ6KLv_Gq4cuqkMWaJKd&s=10",
+      ],
+    },
+    store: [],
+    price: {
+      costPrice: 0,
+      sellingPrice: 0,
+    },
+    extraDetails: [],
+  },
 
-  // ==========================================
-  // 2. VARIANT PRODUCT (Child of the White Mouse)
-  // ==========================================
   {
     _id: "64a2b203e4b0c25a1f8b4568",
     displayId: "PROD-2026-001-B",
-    variantOf: "64a2b1f8e4b0c25a1f8b4567", // Links directly to the Base White Mouse MongoDB ID
-
+    variantOf: "64a2b1f8e4b0c25a1f8b4567",
     name: "Quantum Wireless Mouse (Matte Black)",
     sku: "MS-QT-001-BLK",
     category: "Peripherals",

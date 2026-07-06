@@ -29,16 +29,12 @@ const FilterCreateIndex = () => {
   const { roles } = useGetRole();
   const roleOptions = roles.length > 0 ? roles : ["user"];
 
-  // FIX: Derived state! This automatically keeps your selection updated
-  // whenever the 'users' array or 'selectedId' changes.
   const selectedUser = users.find((u) => u._id === selectedId) ?? null;
 
   const debouncedQuery = useDebounce(query, 500);
 
   const handleSelect = (_id) => setSelectedId(_id);
 
-  // pageNum + append=true => infinite-scroll "load more" (keeps existing users, appends)
-  // append=false => fresh search/filter change (replaces the list, resets pagination)
   const fetchUsers = useCallback(
     async (pageNum = 1, append = false) => {
       if (append) setIsLoadingMore(true);
@@ -74,8 +70,8 @@ const FilterCreateIndex = () => {
     [debouncedQuery, filters],
   );
 
-  // Refetch from page 1 whenever the search term or filters change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery, filters]);
@@ -85,7 +81,6 @@ const FilterCreateIndex = () => {
     fetchUsers(page + 1, true);
   };
 
-  // FIX: Handles state mutation securely using backend return value
   const handleSave = async (updated) => {
     try {
       const payload = await hybridEncrypt(updated);
@@ -95,10 +90,9 @@ const FilterCreateIndex = () => {
         { withCredentials: true },
       );
 
-      // Access the fresh database user payload sent from your backend
+
       const updatedUserData = response.data?.data || response.data;
 
-      // Update the user item directly inside the master state array
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === updatedUserData._id ? updatedUserData : user,
@@ -122,7 +116,7 @@ const FilterCreateIndex = () => {
   const handleCreate = (formData) => {
     const newUser = {
       ...formData,
-      _id: Date.now().toString(), // Stringified to match schema IDs safely
+      _id: Date.now().toString(),
       displayName: `${formData.firstName} ${formData.lastName[0]}.`,
       empStatus: "Active",
       isActive: true,
@@ -163,7 +157,9 @@ const FilterCreateIndex = () => {
       </div>
 
       {/* RIGHT — list */}
-      <div className={`flex flex-col overflow-hidden ${commonComponentBG("r")} overflow-auto`}>
+      <div
+        className={`flex flex-col overflow-hidden ${commonComponentBG("r")} overflow-auto`}
+      >
         <UserList
           users={users}
           selectedId={selectedId}

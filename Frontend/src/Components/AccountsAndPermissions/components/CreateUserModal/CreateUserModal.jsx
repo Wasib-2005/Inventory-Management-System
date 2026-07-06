@@ -16,7 +16,7 @@ const FieldLabel = ({ children, required }) => (
   </div>
 );
 
-// Enums from your Mongoose Schema
+
 const GENDER_OPTIONS = ["male", "female", "other"];
 const EMP_TYPE_OPTIONS = [
   "full-time",
@@ -34,7 +34,7 @@ const EMP_STATUS_OPTIONS = [
 ];
 
 const BLANK = {
-  // Core & Profile
+
   firstName: "",
   lastName: "",
   displayName: "",
@@ -46,14 +46,11 @@ const BLANK = {
   gender: "",
   language: "en",
   timezone: "UTC",
-  // Nested Address
   address: { street: "", city: "", state: "", postalCode: "", country: "" },
-  // Employment
   role: "",
   employmentType: "full-time",
   employmentStatus: "onboarding",
   hireDate: "",
-  // Emergency
   emergencyContact: { name: "", relationship: "", phone: "" },
 };
 

@@ -67,7 +67,6 @@ const UserList = ({
     [hasMore, isLoadingMore, onLoadMore],
   );
 
-  // Close popover on outside click or Escape — standard expected behavior
   useEffect(() => {
     if (!isFilterOpen) return;
 

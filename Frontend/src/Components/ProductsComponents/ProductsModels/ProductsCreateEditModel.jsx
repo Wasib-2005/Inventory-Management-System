@@ -1,143 +1,775 @@
-// ProductsModel.jsx
+import { useState, useEffect } from "react";
 import {
   FiX,
-  FiPackage,
-  FiMapPin,
+  FiPlus,
   FiArrowUp,
   FiArrowDown,
-  FiEdit2,
+  FiTrash2,
+  FiSave,
+  FiImage,
+  FiUpload,
+  FiLink,
 } from "react-icons/fi";
-import { LuLayers } from "react-icons/lu";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../Theme/secondaryButton";
 import { primaryButton } from "../../../Theme/primaryButton";
 
-const stockState = (currentStock, lowStockThreshold) => {
-  if (currentStock <= 0)
-    return { label: "Out of Stock", className: "bg-red-100 text-red-700 border-red-300/60" };
-  if (currentStock <= lowStockThreshold)
-    return { label: "Low Stock", className: "bg-amber-100 text-amber-700 border-amber-300/60" };
-  return { label: "In Stock", className: "bg-emerald-100 text-emerald-700 border-emerald-300/60" };
-};
+const ProductsCreateEditModel = ({
+  isProductsCreateEditModel,
+  onClose,
+  editProduct,
+  onSave,
+}) => {
+  const [formData, setFormData] = useState({
+    displayId: "",
+    barCode: "",
+    variantOf: "",
+    name: "",
+    sku: "",
+    category: "",
+    unit: "pcs",
+    image: { header: "", extra: [] },
+    store: [],
+    price: { costPrice: 0, sellingPrice: 0 },
+    extraDetails: [],
+  });
 
-const ProductsModel = ({ productData, canEditProduct, onClose }) => {
-  if (!productData) return null;
+  const [headerUploadMode, setHeaderUploadMode] = useState("url"); // 'url' | 'file'
+  const [extraUploadModes, setExtraUploadModes] = useState([]); // Array of 'url' | 'file'
 
-  const {
-    id,
-    name,
-    sku,
-    category,
-    unit,
-    currentStock,
-    lowStockThreshold,
-    unitCost,
-    location,
-    variants,
-    lastMovement,
-    updatedBy,
-    image,
-  } = productData;
+  // Bulletproof Drag and Drop states
+  const [isHeaderDragging, setIsHeaderDragging] = useState(false);
+  const [draggingExtraIndex, setDraggingExtraIndex] = useState(null);
 
-  const status = stockState(currentStock, lowStockThreshold);
-  const MovementIcon = lastMovement?.type === "IN" ? FiArrowUp : FiArrowDown;
-  const movementColor = lastMovement?.type === "IN" ? "text-emerald-600" : "text-rose-600";
+  useEffect(() => {
+    if (isProductsCreateEditModel) {
+      if (editProduct) {
+        setFormData({
+          ...editProduct,
+          variantOf: editProduct.variantOf || "",
+          barCode: editProduct.barCode || "",
+          image: {
+            header: editProduct.image?.header || "",
+            extra: editProduct.image?.extra || [],
+          },
+          price: editProduct.price || { costPrice: 0, sellingPrice: 0 },
+          extraDetails: editProduct.extraDetails || [],
+        });
+        setExtraUploadModes(
+          new Array(editProduct.image?.extra?.length || 0).fill("url"),
+        );
+      } else {
+        setFormData({
+          displayId: "",
+          barCode: "",
+          variantOf: "",
+          name: "",
+          sku: "",
+          category: "",
+          unit: "pcs",
+          image: { header: "", extra: [] },
+          store: [],
+          price: { costPrice: 0, sellingPrice: 0 },
+          extraDetails: [],
+        });
+        setExtraUploadModes([]);
+      }
+    }
+  }, [editProduct, isProductsCreateEditModel]);
+
+  if (!isProductsCreateEditModel) return null;
+
+  const handleChange = (e, field, nestedField = null) => {
+    const value = e.target.value;
+    setFormData((prev) => {
+      if (nestedField) {
+        return {
+          ...prev,
+          [field]: { ...prev[field], [nestedField]: value },
+        };
+      }
+      return { ...prev, [field]: value };
+    });
+  };
+
+  // --- Smooth Non-Flicker Drag & Drop Handlers ---
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleHeaderDrop = (e) => {
+    e.preventDefault();
+    setIsHeaderDragging(false);
+    setHeaderUploadMode("file");
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const localUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        image: { ...prev.image, header: localUrl },
+      }));
+    }
+  };
+
+  const handleExtraDrop = (index, e) => {
+    e.preventDefault();
+    setDraggingExtraIndex(null);
+
+    setExtraUploadModes((prev) => {
+      const updated = [...prev];
+      updated[index] = "file";
+      return updated;
+    });
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const localUrl = URL.createObjectURL(file);
+      setFormData((prev) => {
+        const updatedExtra = [...prev.image.extra];
+        updatedExtra[index] = localUrl;
+        return { ...prev, image: { ...prev.image, extra: updatedExtra } };
+      });
+    }
+  };
+
+  // --- Traditional Input File Select Handlers ---
+  const handleHeaderFile = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const localUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        image: { ...prev.image, header: localUrl },
+      }));
+    }
+  };
+
+  const handleExtraFile = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const localUrl = URL.createObjectURL(file);
+      setFormData((prev) => {
+        const updatedExtra = [...prev.image.extra];
+        updatedExtra[index] = localUrl;
+        return { ...prev, image: { ...prev.image, extra: updatedExtra } };
+      });
+    }
+  };
+
+  const handleHeaderImageChange = (val) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: { ...prev.image, header: val },
+    }));
+  };
+
+  const handleExtraImageChange = (index, val) => {
+    setFormData((prev) => {
+      const updatedExtra = [...prev.image.extra];
+      updatedExtra[index] = val;
+      return { ...prev, image: { ...prev.image, extra: updatedExtra } };
+    });
+  };
+
+  const addExtraImageField = () => {
+    setFormData((prev) => ({
+      ...prev,
+      image: { ...prev.image, extra: [...prev.image.extra, ""] },
+    }));
+    setExtraUploadModes((prev) => [...prev, "url"]);
+  };
+
+  const removeExtraImageField = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: {
+        ...prev.image,
+        extra: prev.image.extra.filter((_, i) => i !== index),
+      },
+    }));
+    setExtraUploadModes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleExtraMode = (index) => {
+    setExtraUploadModes((prev) => {
+      const updated = [...prev];
+      updated[index] = updated[index] === "url" ? "file" : "url";
+      return updated;
+    });
+  };
+
+  // Dynamic Structure Blocks Helpers
+  const handleSectionHeaderChange = (text, sectionIndex) => {
+    const updatedDetails = [...formData.extraDetails];
+    updatedDetails[sectionIndex].header = text;
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const handleFieldChange = (text, sectionIndex, rowIndex, fieldKey) => {
+    const updatedDetails = [...formData.extraDetails];
+    updatedDetails[sectionIndex].body[rowIndex][fieldKey] = text;
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const addSection = () => {
+    setFormData({
+      ...formData,
+      extraDetails: [...formData.extraDetails, { header: "", body: [] }],
+    });
+  };
+
+  const addField = (sectionIndex) => {
+    const updatedDetails = [...formData.extraDetails];
+    updatedDetails[sectionIndex].body.push({ label: "", value: "" });
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const removeField = (sectionIndex, rowIndex) => {
+    const updatedDetails = [...formData.extraDetails];
+    updatedDetails[sectionIndex].body.splice(rowIndex, 1);
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const removeSection = (sectionIndex) => {
+    const updatedDetails = [...formData.extraDetails];
+    updatedDetails.splice(sectionIndex, 1);
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const moveFieldUp = (sectionIndex, rowIndex) => {
+    if (rowIndex === 0) return;
+    const updatedDetails = [...formData.extraDetails];
+    const body = updatedDetails[sectionIndex].body;
+    [body[rowIndex - 1], body[rowIndex]] = [body[rowIndex], body[rowIndex - 1]];
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const moveFieldDown = (sectionIndex, rowIndex) => {
+    const updatedDetails = [...formData.extraDetails];
+    const body = updatedDetails[sectionIndex].body;
+    if (rowIndex === body.length - 1) return;
+    [body[rowIndex + 1], body[rowIndex]] = [body[rowIndex], body[rowIndex + 1]];
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const moveSectionUp = (sectionIndex) => {
+    if (sectionIndex === 0) return;
+    const updatedDetails = [...formData.extraDetails];
+    [updatedDetails[sectionIndex - 1], updatedDetails[sectionIndex]] = [
+      updatedDetails[sectionIndex],
+      updatedDetails[sectionIndex - 1],
+    ];
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const moveSectionDown = (sectionIndex) => {
+    if (sectionIndex === formData.extraDetails.length - 1) return;
+    const updatedDetails = [...formData.extraDetails];
+    [updatedDetails[sectionIndex + 1], updatedDetails[sectionIndex]] = [
+      updatedDetails[sectionIndex],
+      updatedDetails[sectionIndex + 1],
+    ];
+    setFormData({ ...formData, extraDetails: updatedDetails });
+  };
+
+  const handleSubmit = () => {
+    console.log(formData);
+    onSave?.(formData);
+    onClose();
+  };
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50  flex items-center justify-center p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${commonComponentBG()} w-full max-w-lg max-h-[85vh] overflow-y-auto`}
+        className={`${commonComponentBG()} w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col`}
       >
-        {/* Header image */}
-        <div className="relative h-40 bg-emerald-50 rounded-t-2xl overflow-hidden border-b border-emerald-300/40">
-          {image ? (
-            <img src={image} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <FiPackage size={36} className="text-emerald-700/40" />
-            </div>
-          )}
-
+        {/* Header Title Area */}
+        <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl">
+          <h2 className="text-lg font-bold text-emerald-900">
+            {editProduct ? "Edit Product" : "Create Product"}
+          </h2>
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-md bg-white/80 hover:bg-white text-emerald-800 transition-colors"
+            className="p-1.5 rounded-md bg-white/80 hover:bg-white text-emerald-800 transition-colors"
           >
             <FiX size={16} />
           </button>
-
-          <span
-            className={`absolute top-3 left-3 text-[11px] font-bold px-2 py-1 rounded border ${status.className}`}
-          >
-            {status.label}
-          </span>
         </div>
 
-        {/* Body */}
-        <div className="p-5 flex flex-col gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-emerald-900">{name}</h2>
-            <p className="text-[11px] text-emerald-700/50 font-semibold uppercase tracking-wide">
-              {sku} · {category} · {id}
+        {/* Scrollable Context Panel Form */}
+        <div className="p-4 sm:p-5 overflow-y-auto flex flex-col gap-5">
+          {/* Universal Dynamic Media Section */}
+          <div className="p-3 sm:p-4 rounded-lg bg-emerald-50/30 border border-emerald-200 flex flex-col gap-4">
+            <p className="text-emerald-800 font-semibold uppercase text-xs tracking-wider">
+              Product Images Asset Manager
             </p>
+
+            {/* Primary Header Hero Image Dropzone box wrapper */}
+            <div
+              onDragEnter={() => setIsHeaderDragging(true)}
+              onDragOver={handleDragOver}
+              className={`relative flex flex-col md:flex-row items-start md:items-center gap-4 bg-white p-3 rounded-md border transition-all duration-150 ${
+                isHeaderDragging
+                  ? "border-emerald-500 bg-emerald-50 shadow-md"
+                  : "border-emerald-100"
+              }`}
+            >
+              {/* Invisible Interceptor Active Dragging Shield Overlay */}
+              {isHeaderDragging && (
+                <div
+                  onDragLeave={() => setIsHeaderDragging(false)}
+                  onDrop={handleHeaderDrop}
+                  className="absolute inset-0 z-30 bg-emerald-600/10 border-2 border-dashed border-emerald-500 rounded-md backdrop-blur-[0.5px] flex items-center justify-center transition-all animate-pulse"
+                >
+                  <span className="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
+                    <FiUpload size={13} /> Drop to upload Main Display Image
+                  </span>
+                </div>
+              )}
+
+              <div className="w-20 h-20 bg-slate-50 border border-emerald-100 rounded-md shrink-0 flex items-center justify-center overflow-hidden shadow-inner">
+                {formData.image.header ? (
+                  <img
+                    src={formData.image.header}
+                    alt="Header Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <FiImage size={24} className="text-emerald-300" />
+                )}
+              </div>
+
+              <div className="flex-1 w-full flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                    Main Display Image
+                  </label>
+                  <div className="flex bg-slate-100 p-0.5 rounded border text-[11px] font-medium">
+                    <button
+                      type="button"
+                      onClick={() => setHeaderUploadMode("url")}
+                      className={`px-2 py-0.5 rounded flex items-center gap-1 transition-all ${headerUploadMode === "url" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-500"}`}
+                    >
+                      <FiLink size={10} /> Link URL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHeaderUploadMode("file")}
+                      className={`px-2 py-0.5 rounded flex items-center gap-1 transition-all ${headerUploadMode === "file" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-500"}`}
+                    >
+                      <FiUpload size={10} /> Device File
+                    </button>
+                  </div>
+                </div>
+
+                {headerUploadMode === "url" ? (
+                  <input
+                    type="text"
+                    placeholder="Paste stable image link URL or drop your file context over this block..."
+                    value={formData.image.header}
+                    onChange={(e) => handleHeaderImageChange(e.target.value)}
+                    className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  />
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeaderFile}
+                    className="file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-xs text-slate-500 cursor-pointer border border-dashed border-emerald-200 p-1.5 rounded-md w-full bg-white"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Additional gallery structural listing arrays */}
+            <div className="border-t border-emerald-100 pt-3 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                  Additional Variant Images ({formData.image.extra.length})
+                </label>
+                <button
+                  type="button"
+                  onClick={addExtraImageField}
+                  className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded border border-emerald-200 transition-colors"
+                >
+                  <FiPlus size={12} /> Add Extra Image
+                </button>
+              </div>
+
+              {formData.image.extra.map((url, index) => (
+                <div
+                  key={index}
+                  onDragEnter={() => setDraggingExtraIndex(index)}
+                  onDragOver={handleDragOver}
+                  className={`relative flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white p-2 rounded-md border transition-all duration-150 ${
+                    draggingExtraIndex === index
+                      ? "border-emerald-500 bg-emerald-50/50"
+                      : "border-emerald-100"
+                  }`}
+                >
+                  {/* Invisible Interceptor Shield Overlay for specific Extra row index */}
+                  {draggingExtraIndex === index && (
+                    <div
+                      onDragLeave={() => setDraggingExtraIndex(null)}
+                      onDrop={(e) => handleExtraDrop(index, e)}
+                      className="absolute inset-0 z-30 bg-emerald-600/10 border border-dashed border-emerald-500 rounded-md flex items-center justify-center"
+                    >
+                      <span className="bg-emerald-600 text-white font-semibold text-[10px] px-2 py-1 rounded-md shadow flex items-center gap-1">
+                        <FiUpload size={11} /> Drop to attach variant{" "}
+                        {index + 1}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded shrink-0 flex items-center justify-center overflow-hidden shadow-inner">
+                      {url ? (
+                        <img
+                          src={url}
+                          alt={`Extra ${index}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FiImage size={16} className="text-slate-300" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 flex flex-col gap-1">
+                      {extraUploadModes[index] === "url" ? (
+                        <input
+                          type="text"
+                          placeholder="Paste image link URL or drag drop file anywhere directly over this item..."
+                          value={url}
+                          onChange={(e) =>
+                            handleExtraImageChange(index, e.target.value)
+                          }
+                          className="w-full p-1.5 text-xs border border-emerald-100 rounded focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                        />
+                      ) : (
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleExtraFile(index, e)}
+                          className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 text-[11px] text-slate-500 cursor-pointer border border-dashed border-slate-200 p-1 rounded w-full bg-white"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex sm:flex-col items-center justify-between sm:justify-center border-t sm:border-t-0 border-slate-50 pt-2 sm:pt-0 pl-1 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => toggleExtraMode(index)}
+                      className="text-[10px] text-slate-500 font-medium bg-slate-100 border hover:bg-slate-200 px-2 py-0.5 rounded transition-all whitespace-nowrap"
+                    >
+                      {extraUploadModes[index] === "url"
+                        ? "Use File Upload"
+                        : "Use Link URL"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeExtraImageField(index)}
+                      className="text-red-400 hover:text-red-600 p-1 self-end sm:self-auto"
+                    >
+                      <FiTrash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Stat grid */}
-          <div className="grid grid-cols-2 gap-3 text-[12px]">
-            <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Current Stock</p>
-              <p className="text-emerald-900 font-bold text-base">{currentStock} {unit}</p>
+          {/* Core Product Info Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1 sm:col-span-2">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Product Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange(e, "name")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
             </div>
-            <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Unit Cost</p>
-              <p className="text-emerald-900 font-bold text-base">${unitCost?.toFixed(2)}</p>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                SKU
+              </label>
+              <input
+                type="text"
+                value={formData.sku}
+                onChange={(e) => handleChange(e, "sku")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
             </div>
-            <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40 flex flex-col gap-1">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Location</p>
-              <p className="text-emerald-900 font-semibold flex items-center gap-1">
-                <FiMapPin size={12} /> {location}
-              </p>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Barcode
+              </label>
+              <input
+                type="text"
+                value={formData.barCode}
+                onChange={(e) => handleChange(e, "barCode")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
             </div>
-            <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40 flex flex-col gap-1">
-              <p className="text-emerald-700/50 font-semibold uppercase text-[10px]">Variants</p>
-              <p className="text-emerald-900 font-semibold flex items-center gap-1">
-                <LuLayers size={12} /> {variants}
-              </p>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Display ID
+              </label>
+              <input
+                type="text"
+                value={formData.displayId}
+                onChange={(e) => handleChange(e, "displayId")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Category
+              </label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) => handleChange(e, "category")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Unit
+              </label>
+              <input
+                type="text"
+                value={formData.unit}
+                onChange={(e) => handleChange(e, "unit")}
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Variant Of (Parent Product ID)
+              </label>
+              <input
+                type="text"
+                value={formData.variantOf || ""}
+                onChange={(e) => handleChange(e, "variantOf")}
+                placeholder="Leave blank if base product"
+                className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+              />
             </div>
           </div>
 
-          {/* Last movement */}
-          {lastMovement && (
-            <div className="p-3 rounded-lg bg-white/50 border border-emerald-300/40 flex items-center justify-between text-[12px]">
-              <span className={`flex items-center gap-1.5 font-semibold ${movementColor}`}>
-                <MovementIcon size={13} />
-                Last: {lastMovement.type} {lastMovement.qty} {unit}
-              </span>
-              <span className="text-emerald-700/50">{lastMovement.date}</span>
+          {/* Pricing Config */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Cost Price
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.price.costPrice}
+                  onChange={(e) => handleChange(e, "price", "costPrice")}
+                  className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                />
+                <p className="absolute top-[15%] right-[3%]">
+                  {import.meta.env.VITE_CURRENCY_SYMBOL}
+                </p>
+              </div>
             </div>
-          )}
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                Selling Price
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.price.sellingPrice}
+                  onChange={(e) => handleChange(e, "price", "sellingPrice")}
+                  className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                />
+                <p className="absolute top-[15%] right-[3%]">
+                  {import.meta.env.VITE_CURRENCY_SYMBOL}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <p className="text-[11px] text-emerald-700/40">Last updated by {updatedBy}</p>
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-1">
-            <button onClick={onClose} className={secondaryButton}>
-              Close
-            </button>
-            {canEditProduct && (
-              <button className={`${primaryButton} bg-[#1D9E75] text-white`}>
-                <FiEdit2 size={14} />
-                Edit Product
+          {/* Dynamic Specs Section Builders */}
+          <div className="p-3 sm:p-4 rounded-lg bg-emerald-50/50 border border-emerald-300/40">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <p className="text-emerald-800 font-semibold uppercase text-sm">
+                Extra Details
+              </p>
+              <button
+                type="button"
+                onClick={addSection}
+                className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded transition-colors shrink-0"
+              >
+                <FiPlus size={12} /> Add Section
               </button>
-            )}
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {formData.extraDetails.map((section, sectionIndex) => (
+                <div
+                  key={sectionIndex}
+                  className="p-3 bg-white border border-emerald-200 rounded-md shadow-sm"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2 border-b border-emerald-100 pb-2 sm:pb-1">
+                    <input
+                      type="text"
+                      placeholder="Section Header (e.g. Specifications)"
+                      value={section.header}
+                      onChange={(e) =>
+                        handleSectionHeaderChange(e.target.value, sectionIndex)
+                      }
+                      className="w-full sm:flex-1 p-1 text-sm font-semibold text-emerald-900 border-none focus:outline-none"
+                    />
+                    <div className="flex items-center justify-end gap-1 bg-emerald-50 p-1 rounded border border-emerald-100 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => moveSectionUp(sectionIndex)}
+                        disabled={sectionIndex === 0}
+                        className="text-emerald-500 hover:text-emerald-800 disabled:opacity-30 p-1"
+                      >
+                        <FiArrowUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSectionDown(sectionIndex)}
+                        disabled={
+                          sectionIndex === formData.extraDetails.length - 1
+                        }
+                        className="text-emerald-500 hover:text-emerald-800 disabled:opacity-30 p-1"
+                      >
+                        <FiArrowDown size={14} />
+                      </button>
+                      <div className="w-px h-4 bg-emerald-200 mx-1" />
+                      <button
+                        type="button"
+                        onClick={() => removeSection(sectionIndex)}
+                        className="text-red-400 hover:text-red-600 p-1"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    {section.body?.map((row, rowIndex) => (
+                      <div
+                        key={rowIndex}
+                        className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-slate-50/50 sm:bg-transparent p-2 sm:p-0 rounded border border-slate-100 sm:border-none"
+                      >
+                        <div className="flex sm:flex-col gap-2 sm:gap-0.5 w-full sm:w-auto justify-between sm:justify-start border-b sm:border-none pb-1.5 sm:pb-0 mb-1 sm:mb-0">
+                          <div className="flex gap-1 sm:gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                moveFieldUp(sectionIndex, rowIndex)
+                              }
+                              disabled={rowIndex === 0}
+                              className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
+                            >
+                              <FiArrowUp size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                moveFieldDown(sectionIndex, rowIndex)
+                              }
+                              disabled={rowIndex === section.body.length - 1}
+                              className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
+                            >
+                              <FiArrowDown size={12} />
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeField(sectionIndex, rowIndex)}
+                            className="text-red-400 hover:text-red-600 p-0.5 sm:hidden"
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Label"
+                          value={row.label}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              e.target.value,
+                              sectionIndex,
+                              rowIndex,
+                              "label",
+                            )
+                          }
+                          className="w-full sm:w-1/3 p-1.5 text-[12px] border border-emerald-200 rounded focus:outline-none focus:ring-1 focus:ring-emerald-400 bg-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Value"
+                          value={row.value}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              e.target.value,
+                              sectionIndex,
+                              rowIndex,
+                              "value",
+                            )
+                          }
+                          className="w-full sm:flex-1 p-1.5 text-[12px] border border-emerald-200 rounded focus:outline-none focus:ring-1 focus:ring-emerald-400 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeField(sectionIndex, rowIndex)}
+                          className="text-red-400 hover:text-red-600 p-1 hidden sm:block"
+                        >
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addField(sectionIndex)}
+                      className="mt-2 w-fit flex items-center gap-1 text-[11px] text-emerald-600 font-medium hover:text-emerald-800 transition-colors"
+                    >
+                      <FiPlus size={12} /> Add Field
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {/* Action Bottom Operations Control Panel */}
+        <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex justify-end gap-3 shrink-0">
+          <button type="button" onClick={onClose} className={secondaryButton}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className={`${primaryButton} bg-[#1D9E75] text-white flex items-center gap-1.5`}
+          >
+            <FiSave size={14} />
+            Save Product
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default ProductsModel;
+export default ProductsCreateEditModel;
