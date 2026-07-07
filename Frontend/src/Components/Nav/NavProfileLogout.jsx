@@ -5,11 +5,16 @@ import { CiLogin, CiUser } from "react-icons/ci";
 import { useState, useEffect, useRef } from "react";
 import { PALETTE } from "../../Theme/palette";
 
-const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clearHoverTimeout }) => {
+const NavProfileLogout = ({
+  user,
+  expanded,
+  handleLogout,
+  onDropdownToggle,
+  clearHoverTimeout,
+}) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown if user clicks anywhere outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -21,7 +26,7 @@ const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clea
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onDropdownToggle]);
 
-  // Force close dropdown if navbar layout expands
+
   useEffect(() => {
     if (expanded) {
       setDropdownOpen(false);
@@ -31,9 +36,8 @@ const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clea
 
   const handleAvatarClick = (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Stops parent container click events from firing
-    
-    // CRITICAL FIX: Kill the pending hover expansion timer instantly on click!
+    e.stopPropagation(); 
+
     if (clearHoverTimeout) clearHoverTimeout();
 
     if (!expanded) {
@@ -44,25 +48,31 @@ const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clea
   };
 
   return (
-    <div 
-      ref={dropdownRef} 
+    <div
+      ref={dropdownRef}
       className="mt-auto relative w-full"
-      onClick={(e) => e.stopPropagation()} 
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Divider */}
       <div
         className="mx-3.5 mb-3 h-px shrink-0"
         style={{ backgroundColor: PALETTE.steel }}
       />
-      
-      <div className={`flex items-center gap-3 p-3 rounded-xl ${!expanded && "justify-center"}`}>
+
+      <div
+        className={`flex items-center gap-3 p-3 rounded-xl  ${!expanded && "justify-center"}`}
+      >
         {/* Avatar Trigger Button */}
         <button
           onClick={handleAvatarClick}
-          className="w-8 h-8 rounded-full bg-[#DFF1F1] border border-green-500/40 flex items-center justify-center shrink-0 overflow-hidden text-xs font-bold text-cyan-800 uppercase tracking-wider cursor-pointer focus:outline-none relative z-50"
+          className="w-8 h-8 rounded-full bg-[#DFF1F1] border border-green-500/40 flex items-center justify-center shrink-0 overflow-hidden text-xs font-bold text-cyan-800 uppercase tracking-wider cursor-pointer focus:outline-none relative z-50 hover:opacity-50"
         >
           {user.photoUrl ? (
-            <img src={user.photoUrl} alt="Avatar" className="w-full h-full object-cover" />
+            <img
+              src={user.photoUrl}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
           ) : user.displayName ? (
             <span>{user.displayName.trim().slice(0, 2)}</span>
           ) : user.email ? (
@@ -72,7 +82,6 @@ const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clea
           )}
         </button>
 
-        {/* Inline Profile text (Active only when Sidebar layout is fully Expanded) */}
         <AnimatePresence>
           {expanded && (
             <>
@@ -84,16 +93,22 @@ const NavProfileLogout = ({ user, expanded, handleLogout, onDropdownToggle, clea
               >
                 <NavLink to={"/user"}>
                   <div
-                    className={`whitespace-nowrap text-sm font-medium text-gray-700 flex gap-4 ${
-                      user?.username?.length > 12 ? "animate-marquee-permanent" : ""
+                    className={`whitespace-nowrap text-sm font-medium text-gray-700 flex gap-4 hover:opacity-50 ${
+                      user?.username?.length > 12
+                        ? "animate-marquee-permanent"
+                        : ""
                     }`}
                   >
                     <span>{user?.username}</span>
                     {user?.username?.length > 12 && (
                       <>
-                        <span className="text-gray-400 select-none">&nbsp;•&nbsp;</span>
+                        <span className="text-gray-400 select-none">
+                          &nbsp;•&nbsp;
+                        </span>
                         <span>{user?.username}</span>
-                        <span className="text-gray-300 select-none">&nbsp;•&nbsp;</span>
+                        <span className="text-gray-300 select-none">
+                          &nbsp;•&nbsp;
+                        </span>
                       </>
                     )}
                   </div>
