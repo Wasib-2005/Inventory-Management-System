@@ -177,7 +177,7 @@ const ProductsList = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (onEdit) onEdit(_id);
+              onEdit?.();
             }}
             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 rounded-lg transition-colors"
             title="Edit product"
@@ -187,7 +187,7 @@ const ProductsList = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (onDelete) onDelete(_id);
+              onDelete?.();
             }}
             className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:bg-rose-100 rounded-lg transition-colors"
             title="Delete product"

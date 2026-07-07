@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
 import ProfileHeader from "./components/ProfileHeader";
 import ProfileInfo from "./components/ProfileInfo";
@@ -10,12 +10,93 @@ import { MdOutlineEdit } from "react-icons/md";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import axios from "axios";
+import DefaultProfileWarehouse from "./components/DefaultProfileWarehouse";
+import ProfileWarehouseSelectorModal from "./components/DefaultProfileWarehouse/ProfileWarehouseSelectorModal";
+
+const SELECTED_WAREHOUSE_LS_KEY = "selectedWarehouseId";
+
+const normalizeWarehouse = (w) => ({
+  ...w,
+  id: w.warehouseId,
+  mongoId: w._id,
+});
 
 const UserProfileIndex = () => {
   const { user, setUser } = useContext(UserContext);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const [warehouses, setWarehouses] = useState([]);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(
+    () => localStorage.getItem(SELECTED_WAREHOUSE_LS_KEY) || null,
+  );
+  const [isWarehouseSelectorModalOpen, setIsWarehouseSelectorModalOpen] =
+    useState(false);
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [idQuery, setIdQuery] = useState("");
+
+  const selectedWarehouse = useMemo(
+    () => warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0],
+    [warehouses, selectedWarehouseId],
+  );
+
+  const filteredWarehouses = useMemo(() => {
+    return warehouses.filter((w) => {
+      const matchesPlace = (w.place ?? "")
+        .toLowerCase()
+        .includes(placeQuery.trim().toLowerCase());
+      const matchesId = (w.id ?? "")
+        .toLowerCase()
+        .includes(idQuery.trim().toLowerCase());
+      return matchesPlace && matchesId;
+    });
+  }, [warehouses, placeQuery, idQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchWarehouses = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses`,
+          { withCredentials: true },
+        );
+
+        const raw = Array.isArray(res.data) ? res.data : res.data?.data;
+
+        if (!cancelled && Array.isArray(raw)) {
+          setWarehouses(raw.map(normalizeWarehouse));
+        }
+      } catch (err) {
+        console.error("Failed to fetch warehouses:", err);
+      }
+    };
+
+    fetchWarehouses();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedWarehouseId) {
+      localStorage.setItem(SELECTED_WAREHOUSE_LS_KEY, selectedWarehouseId);
+    }
+  }, [selectedWarehouseId]);
+
+  useEffect(() => {
+    if (!selectedWarehouseId && warehouses.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedWarehouseId(warehouses[0].id);
+    }
+  }, [selectedWarehouseId, warehouses]);
+
+  const handleSelectWarehouse = (warehouse) => {
+    setSelectedWarehouseId(warehouse.id);
+    localStorage.setItem(SELECTED_WAREHOUSE_LS_KEY, warehouse.id);
+    setIsWarehouseSelectorModalOpen(false);
+  };
 
   if (!user) {
     return (
@@ -26,7 +107,6 @@ const UserProfileIndex = () => {
   }
 
   const handleEdit = () => {
-    // FIX 1: Corrected inverted logic and schema naming key (canEditOwnData)
     if (!user.canEditOwnData) {
       return toast.error(
         "You do not have permission to change your data. Please contact HR.",
@@ -74,17 +154,14 @@ const UserProfileIndex = () => {
 
     setSaving(true);
     try {
-      // FIX 2: Added 'await' to ensure payload encryption executes completely
       const payload = await hybridEncrypt(draft);
 
-      // FIX 3: Added 'await' to axios.post so state updates ONLY happen upon successful HTTP 200 response
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_own_data`,
         payload,
         { withCredentials: true },
       );
 
-      // FIX 4: Sync context state with actual backend sanitized response data
       if (res.data && res.data.success) {
         setUser(res.data.data);
         toast.success("Profile updated successfully!");
@@ -155,6 +232,23 @@ const UserProfileIndex = () => {
         isVerified={data.isVerified}
         editing={editing}
         onChange={handleChange}
+      />
+
+      <DefaultProfileWarehouse
+        selectedWarehouse={selectedWarehouse}
+        onOpenSwitchModal={() => setIsWarehouseSelectorModalOpen(true)}
+      />
+
+      <ProfileWarehouseSelectorModal
+        isOpen={isWarehouseSelectorModalOpen}
+        onClose={() => setIsWarehouseSelectorModalOpen(false)}
+        placeQuery={placeQuery}
+        setPlaceQuery={setPlaceQuery}
+        idQuery={idQuery}
+        setIdQuery={setIdQuery}
+        filteredWarehouses={filteredWarehouses}
+        selectedWarehouse={selectedWarehouse}
+        onSelectWarehouse={handleSelectWarehouse}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

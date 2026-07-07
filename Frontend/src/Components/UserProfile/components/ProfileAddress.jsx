@@ -5,7 +5,6 @@ const ProfileAddress = ({ address, editing, onChange }) => {
   if (!address) return null;
   const { street, city, state, postalCode, country } = address;
 
-  // nested path helper — address fields go under "address.x"
   const addressChange = (key, value) => onChange(`address.${key}`, value);
 
   return (

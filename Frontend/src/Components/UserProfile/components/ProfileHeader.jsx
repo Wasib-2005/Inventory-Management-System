@@ -2,7 +2,7 @@ import EditField from "../../AccountsAndPermissions/components/Fields/EditField"
 
 const ProfileHeader = ({
   photoUrl,
-  displayName = "", // Default value ensures string methods like .trim() won't crash the app
+  displayName = "",
   username,
   employeeId,
   isActive,
@@ -11,9 +11,7 @@ const ProfileHeader = ({
   onChange,
   roleTitle,
 }) => {
-  console.log(photoUrl)
-  // Safe extraction of initials (e.g., "John Doe" -> "JO")
-  // Using a fallback "U" if displayName is empty or missing
+  console.log(photoUrl);
   const avatarInitials =
     displayName && displayName.trim()
       ? displayName.trim().slice(0, 2).toUpperCase()
@@ -29,7 +27,6 @@ const ProfileHeader = ({
               src={photoUrl}
               alt={displayName}
               onError={(e) => {
-                // Prevent infinite loop if /default-avatar.png also fails to load
                 if (
                   e.target.src !==
                   window.location.origin + "/default-avatar.png"
