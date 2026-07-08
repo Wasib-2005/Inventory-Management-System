@@ -1,4 +1,3 @@
-// ProductsList.jsx
 import { useState } from "react";
 import {
   FiPackage,

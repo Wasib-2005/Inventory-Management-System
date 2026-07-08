@@ -30,7 +30,13 @@ const ProductsCreateEditModel = ({
     unit: "pcs",
     image: { header: "", extra: [] },
     store: [],
-    price: { costPrice: 0, sellingPrice: 0 },
+    price: {
+      sellPrice: "",
+      sellPricePercentage: "",
+      buyPrice: "",
+      buyPricePercentage: "",
+      mrp: "",
+    },
     extraDetails: [],
   });
 
@@ -51,10 +57,18 @@ const ProductsCreateEditModel = ({
             header: editProduct.image?.header || "",
             extra: editProduct.image?.extra || [],
           },
-          price: editProduct.price || { costPrice: 0, sellingPrice: 0 },
+          price: {
+            sellPrice: editProduct.price?.sellPrice ?? "",
+            sellPricePercentage: editProduct.price?.sellPricePercentage ?? "",
+            buyPrice: editProduct.price?.buyPrice ?? "",
+            buyPricePercentage: editProduct.price?.buyPricePercentage ?? "",
+            mrp: editProduct.price?.mrp ?? "",
+          },
           extraDetails: editProduct.extraDetails || [],
         });
-        setExtraUploadModes(new Array(editProduct.image?.extra?.length || 0).fill("url"));
+        setExtraUploadModes(
+          new Array(editProduct.image?.extra?.length || 0).fill("url"),
+        );
       } else {
         setFormData({
           displayId: "",
@@ -66,7 +80,13 @@ const ProductsCreateEditModel = ({
           unit: "pcs",
           image: { header: "", extra: [] },
           store: [],
-          price: { costPrice: 0, sellingPrice: 0 },
+          price: {
+            sellPrice: "",
+            sellPricePercentage: "",
+            buyPrice: "",
+            buyPricePercentage: "",
+            mrp: "",
+          },
           extraDetails: [],
         });
         setExtraUploadModes([]);
@@ -78,6 +98,115 @@ const ProductsCreateEditModel = ({
 
   const handleChange = (e, field, nestedField = null) => {
     const value = e.target.value;
+
+    if (
+      (nestedField?.toLowerCase().includes("percentage") &&
+        Number(value) > 100) ||
+      value.includes("-")
+    )
+      return;
+    if (
+      (field?.toLowerCase().includes("price") && isNaN(Number(value))) ||
+      value.includes("-")
+    ) {
+      return;
+    }
+
+    if (field?.toLowerCase().includes("price")) {
+      let sellPrice = formData?.price.sellPrice;
+      let sellPricePercentage = formData?.price.sellPricePercentage;
+      let buyPrice = formData?.price.buyPrice;
+      let buyPricePercentage = formData?.price.buyPricePercentage;
+      const mrp = formData?.price.mrp;
+
+      if (nestedField === "sellPrice") {
+        sellPricePercentage = 100 - (value / mrp) * 100;
+        setFormData((prev) => {
+          if (nestedField) {
+            return {
+              ...prev,
+              [field]: {
+                ...prev[field],
+                sellPricePercentage,
+                [nestedField]: value,
+              },
+            };
+          }
+          return { ...prev, [field]: value };
+        });
+        return;
+      }
+      if (nestedField === "sellPricePercentage") {
+        sellPrice = mrp * ((100 - value) / 100);
+        setFormData((prev) => {
+          if (nestedField) {
+            return {
+              ...prev,
+              [field]: {
+                ...prev[field],
+                sellPrice,
+                [nestedField]: value,
+              },
+            };
+          }
+          return { ...prev, [field]: value };
+        });
+      }
+
+      if (nestedField === "buyPrice") {
+        buyPricePercentage = 100 - (value / mrp) * 100;
+        setFormData((prev) => {
+          if (nestedField) {
+            return {
+              ...prev,
+              [field]: {
+                ...prev[field],
+                buyPricePercentage,
+                [nestedField]: value,
+              },
+            };
+          }
+          return { ...prev, [field]: value };
+        });
+        return;
+      }
+      if (nestedField === "buyPricePercentage") {
+        buyPrice = mrp * ((100 - value) / 100);
+        setFormData((prev) => {
+          if (nestedField) {
+            return {
+              ...prev,
+              [field]: {
+                ...prev[field],
+                buyPrice,
+                [nestedField]: value,
+              },
+            };
+          }
+          return { ...prev, [field]: value };
+        });
+      }
+
+      if (nestedField === "mrp") {
+        sellPrice = value * ((100 - sellPricePercentage) / 100);
+        buyPrice = value * ((100 - buyPricePercentage) / 100);
+        console.log(value, sellPrice, buyPrice, 100 - sellPricePercentage);
+        setFormData((prev) => {
+          if (nestedField) {
+            return {
+              ...prev,
+              [field]: {
+                ...prev[field],
+                sellPrice,
+                buyPrice,
+                [nestedField]: value,
+              },
+            };
+          }
+          return { ...prev, [field]: value };
+        });
+      }
+    }
     setFormData((prev) => {
       if (nestedField) {
         return {
@@ -95,7 +224,7 @@ const ProductsCreateEditModel = ({
     e.preventDefault();
     setIsHeaderDragging(false);
     setHeaderUploadMode("file");
-    
+
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(file);
@@ -266,6 +395,8 @@ const ProductsCreateEditModel = ({
 
   const handleSubmit = () => {
     onSave?.(formData);
+    console.log(formData);
+    return;
     onClose();
   };
 
@@ -274,12 +405,10 @@ const ProductsCreateEditModel = ({
       onClick={onClose}
       className="fixed inset-0 z-50 bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4"
     >
-      {/* Added h-fit to keep the form wrapper tight to its structural fields */}
       <div
         onClick={(e) => e.stopPropagation()}
         className={`${commonComponentBG()} w-full max-w-2xl h-fit max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-2xl`}
       >
-        {/* Header Title Area */}
         <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl shrink-0">
           <h2 className="text-lg font-bold text-emerald-900">
             {editProduct ? "Edit Product" : "Create Product"}
@@ -292,15 +421,16 @@ const ProductsCreateEditModel = ({
           </button>
         </div>
 
-        {/* Scrollable Context Panel Form */}
         <div className="p-4 sm:p-5 overflow-y-auto flex flex-col gap-5">
-          {/* Universal Dynamic Media Section */}
           <div className="p-3 sm:p-4 rounded-lg bg-emerald-50/30 border border-emerald-200 flex flex-col gap-4">
-            <p className="text-emerald-800 font-semibold uppercase text-xs tracking-wider">
-              Product Images Asset Manager
-            </p>
-
-            {/* Primary Header Hero Image Dropzone box wrapper */}
+            <div>
+              <p className="text-emerald-800 font-semibold uppercase text-xs tracking-wider">
+                Product Images Asset Manager
+              </p>
+              <p className="pl-7 text-sm text-orange-400">
+                !Drag and Drop images or use a url for upload a photo
+              </p>
+            </div>
             <div
               onDragEnter={() => setIsHeaderDragging(true)}
               onDragOver={handleDragOver}
@@ -310,7 +440,6 @@ const ProductsCreateEditModel = ({
                   : "border-emerald-100"
               }`}
             >
-              {/* Invisible Interceptor Active Dragging Shield Overlay */}
               {isHeaderDragging && (
                 <div
                   onDragLeave={() => setIsHeaderDragging(false)}
@@ -377,7 +506,6 @@ const ProductsCreateEditModel = ({
               </div>
             </div>
 
-            {/* Additional gallery structural listing arrays */}
             <div className="border-t border-emerald-100 pt-3 flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
                 <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
@@ -403,7 +531,6 @@ const ProductsCreateEditModel = ({
                       : "border-emerald-100"
                   }`}
                 >
-                  {/* Invisible Interceptor Shield Overlay for specific Extra row index */}
                   {draggingExtraIndex === index && (
                     <div
                       onDragLeave={() => setDraggingExtraIndex(null)}
@@ -411,7 +538,8 @@ const ProductsCreateEditModel = ({
                       className="absolute inset-0 z-30 bg-emerald-600/10 border border-dashed border-emerald-500 rounded-md flex items-center justify-center"
                     >
                       <span className="bg-emerald-600 text-white font-semibold text-[10px] px-2 py-1 rounded-md shadow flex items-center gap-1">
-                        <FiUpload size={11} /> Drop to attach variant {index + 1}
+                        <FiUpload size={11} /> Drop to attach variant{" "}
+                        {index + 1}
                       </span>
                     </div>
                   )}
@@ -473,8 +601,6 @@ const ProductsCreateEditModel = ({
               ))}
             </div>
           </div>
-
-          {/* Core Product Info Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1 sm:col-span-2">
               <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
@@ -556,45 +682,101 @@ const ProductsCreateEditModel = ({
             </div>
           </div>
 
-          {/* Pricing Config */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
+          <div className="flex flex-col md:flex-row gap-2 w-full ">
+            {/* SELL PRICE SECTION */}
+            <div className="flex flex-col gap-1 md:w-[35%]">
               <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-                Cost Price
+                Sell Price & %
               </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.price.costPrice}
-                  onChange={(e) => handleChange(e, "price", "costPrice")}
-                  className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
-                />
-                <p className="absolute top-[15%] right-[3%] text-xs font-bold text-slate-400">
-                  {import.meta.env.VITE_CURRENCY_SYMBOL}
-                </p>
+              <div className="flex gap-2">
+                {/* Sell Price Amount */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    step="0.01"
+                    value={formData.price.sellPrice}
+                    onChange={(e) => handleChange(e, "price", "sellPrice")}
+                    className="p-2 pr-7 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  />
+                  <span className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">
+                    {import.meta.env.VITE_CURRENCY_SYMBOL}
+                  </span>
+                </div>
+                {/* Sell Price Percentage */}
+                <div className="relative w-15">
+                  <input
+                    type="text"
+                    step="0.01"
+                    value={formData.price.sellPricePercentage}
+                    onChange={(e) =>
+                      handleChange(e, "price", "sellPricePercentage")
+                    }
+                    className="p-2 pr-6 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  />
+                  <span className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">
+                    %
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-1">
+
+            {/* BUY PRICE SECTION */}
+            <div className="flex flex-col gap-1 md:w-[35%]">
               <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-                Selling Price
+                Buy Price & %
               </label>
-              <div className="relative">
+              <div className="flex gap-2">
+                {/* Buy Price Amount */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    step="0.01"
+                    value={formData.price.buyPrice}
+                    onChange={(e) => handleChange(e, "price", "buyPrice")}
+                    className="p-2 pr-7 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  />
+                  <span className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">
+                    {import.meta.env.VITE_CURRENCY_SYMBOL}
+                  </span>
+                </div>
+                {/* Buy Price Percentage */}
+                <div className="relative w-15">
+                  <input
+                    type="text"
+                    step="0.01"
+                    value={formData.price.buyPricePercentage}
+                    onChange={(e) =>
+                      handleChange(e, "price", "buyPricePercentage")
+                    }
+                    className="p-2 pr-6 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  />
+                  <span className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">
+                    %
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* MRP SECTION */}
+            <div className="flex flex-col gap-1 md:w-[27%]">
+              <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+                MRP
+              </label>
+              <div className="relative w-full">
                 <input
-                  type="number"
+                  type="text"
                   step="0.01"
-                  value={formData.price.sellingPrice}
-                  onChange={(e) => handleChange(e, "price", "sellingPrice")}
-                  className="p-2 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
+                  value={formData.price.mrp}
+                  onChange={(e) => handleChange(e, "price", "mrp")}
+                  className="p-2 pr-7 text-sm border border-emerald-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-400 w-full"
                 />
-                <p className="absolute top-[15%] right-[3%] text-xs font-bold text-slate-400">
+                <span className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">
                   {import.meta.env.VITE_CURRENCY_SYMBOL}
-                </p>
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Dynamic Specs Section Builders */}
           <div className="p-3 sm:p-4 rounded-lg bg-emerald-50/50 border border-emerald-300/40">
             <div className="flex items-center justify-between mb-4 gap-2">
               <p className="text-emerald-800 font-semibold uppercase text-sm">
@@ -665,7 +847,9 @@ const ProductsCreateEditModel = ({
                           <div className="flex gap-1 sm:gap-0.5">
                             <button
                               type="button"
-                              onClick={() => moveFieldUp(sectionIndex, rowIndex)}
+                              onClick={() =>
+                                moveFieldUp(sectionIndex, rowIndex)
+                              }
                               disabled={rowIndex === 0}
                               className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
                             >
@@ -673,7 +857,9 @@ const ProductsCreateEditModel = ({
                             </button>
                             <button
                               type="button"
-                              onClick={() => moveFieldDown(sectionIndex, rowIndex)}
+                              onClick={() =>
+                                moveFieldDown(sectionIndex, rowIndex)
+                              }
                               disabled={rowIndex === section.body.length - 1}
                               className="text-emerald-400 hover:text-emerald-700 disabled:opacity-30 p-0.5"
                             >
@@ -739,7 +925,6 @@ const ProductsCreateEditModel = ({
           </div>
         </div>
 
-        {/* Action Bottom Operations Control Panel */}
         <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex justify-end gap-3 shrink-0">
           <button type="button" onClick={onClose} className={secondaryButton}>
             Cancel

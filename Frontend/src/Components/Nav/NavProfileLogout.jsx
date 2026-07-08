@@ -29,6 +29,7 @@ const NavProfileLogout = ({
 
   useEffect(() => {
     if (expanded) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDropdownOpen(false);
       if (onDropdownToggle) onDropdownToggle(false);
     }
