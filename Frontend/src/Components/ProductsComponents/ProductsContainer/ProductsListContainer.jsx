@@ -1,11 +1,8 @@
-// ProductsListContainer.jsx
 import { useMemo } from "react";
 import { FiSearch, FiPackage } from "react-icons/fi";
 import ProductsList from "./ProductsList";
 
 // TODO: replace with data fetched from `/api/products/:warehouseId` once
-// that endpoint exists. Exported so ProductsComponentsIndex can lift it
-// into state (needed so Create/Edit/Delete can actually mutate the list).
 export const initialProductsData = [
   {
     _id: "64a2b1f8e4b0c25a1f8b4567",
@@ -145,11 +142,10 @@ const getTotals = (store = []) => {
   return { totalStock, totalCapacity };
 };
 
-// Simple local thresholds for the Stock Status filter - swap for whatever
-// occupancyColor() considers "low" if that logic differs.
 const getStockStatus = ({ totalStock, totalCapacity }) => {
   if (totalStock === 0) return "Out of Stock";
-  if (totalCapacity > 0 && totalStock / totalCapacity <= 0.3) return "Low Stock";
+  if (totalCapacity > 0 && totalStock / totalCapacity <= 0.3)
+    return "Low Stock";
   return "In Stock";
 };
 

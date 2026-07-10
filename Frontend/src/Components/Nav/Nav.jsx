@@ -8,6 +8,7 @@ import { primaryButton } from "../../Theme/primaryButton";
 import TimeZoneClock from "../Common/TimeZoneClock";
 import NavLinks from "./NavLinks";
 import NavProfileLogout from "./NavProfileLogout";
+import { MdLogin } from "react-icons/md";
 
 const BASE = import.meta.env.VITE_BACKEND_API_HEADER;
 
@@ -193,7 +194,6 @@ const Nav = () => {
             ))}
           </ul>
 
-          {/* Dynamic User Profile / Login Panel */}
           {user ? (
             <NavProfileLogout 
               user={user} 
@@ -214,7 +214,7 @@ const Nav = () => {
                   transition: "all 0.3s ease",
                 }}
               >
-                {expanded ? "Login" : "🔑"}
+                {expanded ? "Login" : <MdLogin size={20}/>}
               </button>
             </NavLink>
           )}

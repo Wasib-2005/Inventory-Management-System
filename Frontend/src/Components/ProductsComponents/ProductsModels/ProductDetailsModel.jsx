@@ -1,4 +1,3 @@
-// ProductDetailsModel.jsx
 import { useState, useEffect } from "react";
 import { FiX, FiPackage, FiMapPin, FiEdit2 } from "react-icons/fi";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
@@ -15,7 +14,7 @@ const ProductDetailsModel = ({
 }) => {
   const [activeImage, setActiveImage] = useState(productData?.image?.header);
 
-  // Reset the active (hero) image whenever a different product is opened
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveImage(productData?.image?.header);

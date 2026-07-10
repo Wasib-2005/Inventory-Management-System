@@ -62,7 +62,6 @@ const ProductsComponentsIndex = () => {
       }
 
       // TODO: the backend will assign the real _id on create; this is a
-      // placeholder so new products still get a stable key locally.
       return [...prev, { ...formData, _id: `local-${Date.now()}` }];
     });
   };

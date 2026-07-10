@@ -29,9 +29,6 @@ const ProductsToolbarIndex = ({
     variant: "",
   });
 
-  // Only free-text search is debounced. Warehouse/sort/filter changes
-  // are discrete choices, not something the user is actively typing,
-  // so they should apply immediately.
   const debouncedSearch = useDebounce(searchInput, 400);
 
   useEffect(() => {
@@ -87,7 +84,7 @@ const ProductsToolbarIndex = ({
           </div>
 
           {/* Search */}
-          <div className="relative flex-1 min-w-[140px] order-2">
+          <div className="relative flex-1 min-w-35 order-2">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400"
               fill="none"
