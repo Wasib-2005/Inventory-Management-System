@@ -20,6 +20,8 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
 
   const [scanningBarcodeIndex, setScanningBarcodeIndex] = useState(null);
 
+  const [activeAddModal, setActiveAddModal] = useState(null);
+
   useEffect(() => {
     if (isOpen) {
       if (editProduct) {
@@ -37,7 +39,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
           compliance: { ...emptyProduct.compliance, ...editProduct.compliance },
           barcodes: editProduct.barcodes || [],
           categoryIds: editProduct.categoryIds || [],
-          supplierIds: editProduct.supplierIds || [],
+          supplierData: editProduct.supplierData || [],
           tags: editProduct.tags || [],
           specifications: editProduct.specifications || [],
           extraDetails: editProduct.extraDetails || [],
@@ -282,6 +284,58 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     });
   };
 
+  const setCategoryData = (categoryData) => {
+    setFormData((prev) => ({ ...prev, categoryData }));
+  };
+
+  const openAddModal = (type) => setActiveAddModal(type);
+  const closeAddModal = () => setActiveAddModal(null);
+
+  const handleCategoryCreated = (category) => {
+    setFormData((prev) => ({
+      ...prev,
+      categoryData: {
+        _id: category._id,
+        category: category.category,
+        subcategory: "",
+      },
+    }));
+  };
+
+  const addSupplier = (supplier) => {
+    setFormData((prev) => {
+      if (prev.supplierData.some((s) => s._id === supplier._id)) return prev;
+      return { ...prev, supplierData: [...prev.supplierData, supplier] };
+    });
+  };
+
+  const removeSupplier = (supplierId) => {
+    setFormData((prev) => ({
+      ...prev,
+      supplierData: prev.supplierData.filter((s) => s._id !== supplierId),
+    }));
+  };
+
+  const handleSupplierCreated = (supplier) => {
+    addSupplier(supplier);
+  };
+
+  const addTag = (tag) => {
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    setFormData((prev) => {
+      if (prev.tags.includes(trimmed)) return prev;
+      return { ...prev, tags: [...prev.tags, trimmed] };
+    });
+  };
+
+  const removeTag = (tag) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tag),
+    }));
+  };
+
   const handleVariantToggle = (checked) => {
     setIsVariant(checked);
     if (!checked) {
@@ -393,8 +447,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     console.log(formData);
     if (!formData.name.trim()) errs.name = "Product name is required";
     if (!formData.sku.trim()) errs.sku = "SKU is required";
-    if (formData.categoryIds.length === 0)
-      errs.categoryIds = "At least one category is required";
+    if (!formData.categoryData?._id) errs.categoryData = "Category is required";
     if (formData.pricing.mrp === "" || Number(formData.pricing.mrp) <= 0)
       errs.mrp = "MRP is required";
     if (
@@ -445,6 +498,17 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     setDraggingExtraIndex,
 
     scanningBarcodeIndex,
+
+    activeAddModal,
+    openAddModal,
+    closeAddModal,
+    setCategoryData,
+    handleCategoryCreated,
+    addSupplier,
+    removeSupplier,
+    handleSupplierCreated,
+    addTag,
+    removeTag,
 
     handleChange,
     handlePriceChange,

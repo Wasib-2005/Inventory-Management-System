@@ -12,6 +12,7 @@ const ManageAccountsRoute = require("./src/routes/AccountsRelated/manageAccounts
 const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
 const WarehouseRouter = require("./src/routes/Warehouse.Routes/Warehouse.route.js");
 const CategoryRouter = require("./src/routes/Products.Routes/Category.route.js");
+const SupplierRouter = require("./src/routes/supplier.route.js");
 
 const app = express();
 
@@ -89,5 +90,6 @@ app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
 app.use("/api/warehouses", WarehouseRouter);
 app.use("/api/category", CategoryRouter);
+app.use("/api/suppliers", SupplierRouter);
 
 module.exports = app;

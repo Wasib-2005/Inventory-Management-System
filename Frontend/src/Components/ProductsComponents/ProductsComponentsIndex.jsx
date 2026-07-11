@@ -22,12 +22,8 @@ const ProductsComponentsIndex = () => {
   const [isProductsCreateEditModel, setIsProductsCreateEditModel] =
     useState(false);
 
-  // Lifted out of the list container so Create/Edit/Delete can actually
-  // mutate it. Once the backend exists, this becomes state populated by
-  // a fetch keyed on query.warehouseId instead of local mock data.
   const [productsData, setProductsData] = useState(initialProductsData);
 
-  // Single source of truth for search/sort/filter/warehouse, fed by the toolbar.
   const [query, setQuery] = useState({
     warehouseId: "",
     search: "",

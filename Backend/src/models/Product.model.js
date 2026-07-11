@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    supplierIds: [
+    supplierData: [
       {
         type: mongoose.Schema.Types.ObjectId,
         //  ref: "Supplier",
@@ -103,7 +103,6 @@ productSchema.index({ sku: 1 });
 productSchema.index({ displayId: 1 });
 productSchema.index({ name: "text", brand: "text", tags: "text" }); // Enables fuzzy search across names/brands
 
-const Product =
-  mongoose.models.Product || mongoose.model("Product", productSchema);
+const Product = mongoose.model("Product", productSchema);
 
 export default Product;

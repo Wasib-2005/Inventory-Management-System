@@ -9,8 +9,10 @@ export const emptyProduct = {
   variantAttributes: {},
 
   barcodes: [],
-  categoryIds: [],
-  supplierIds: [],
+  // Single category (not an array): { _id, category, subcategory } | null
+  categoryData: null,
+  // Array of full supplier objects: { _id, suppliersName, code, place }
+  supplierData: [],
   tags: [],
 
   flags: {
