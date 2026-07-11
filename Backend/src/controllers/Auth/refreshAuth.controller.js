@@ -1,9 +1,12 @@
 import logger from "../../config/logger.js";
 import User from "../../models/user.model.js";
-import { clearAuthCookies, generateAccessToken, rotateRefreshToken } from "../../utility/tokenService.js";
+import {
+  clearAuthCookies,
+  generateAccessToken,
+  rotateRefreshToken,
+} from "../../utility/tokenService.js";
 import { sendResponse } from "./helper/sendResponse.js";
 
-// ── REFRESH ───────────────────────────────────────────────────────────────────
 export const refreshAuth = async (req, res) => {
   try {
     const rawRefresh = req.cookies?.refresh_token;
@@ -25,7 +28,7 @@ export const refreshAuth = async (req, res) => {
     return sendResponse(res, 200, newAccessToken, newRefreshToken, user);
   } catch (err) {
     logger.error("Refresh Error:", err.message);
-    clearAuthCookies(res); // force re-login on any rotation failure
+    clearAuthCookies(res);
     return res.status(401).json({ message: "Session expired" });
   }
 };

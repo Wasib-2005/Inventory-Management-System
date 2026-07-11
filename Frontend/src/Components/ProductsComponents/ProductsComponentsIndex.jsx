@@ -4,7 +4,7 @@ import ProductsListContainer, {
 } from "./ProductsContainer/ProductsListContainer";
 import ProductsToolbarIndex from "./ProductsToolbar/ProductsToolbarIndex";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
-import ProductsCreateEditModel from "./ProductsModels/ProductsCreateEditModel";
+import ProductsCreateEditModel from "./ProductsModels/ProductsCreateEditModel/ProductsCreateEditModel";
 import ProductDetailsModel from "./ProductsModels/ProductDetailsModel";
 
 const MOCK_WAREHOUSES = [
@@ -51,14 +51,13 @@ const ProductsComponentsIndex = () => {
   };
 
   const handleSaveProduct = (formData) => {
+    console.log(formData);
     setProductsData((prev) => {
       const isExisting =
         formData._id && prev.some((p) => p._id === formData._id);
 
       if (isExisting) {
-        return prev.map((p) =>
-          p._id === formData._id ? { ...formData } : p,
-        );
+        return prev.map((p) => (p._id === formData._id ? { ...formData } : p));
       }
 
       // TODO: the backend will assign the real _id on create; this is a

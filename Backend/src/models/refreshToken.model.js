@@ -7,18 +7,18 @@ const refreshTokenSchema = new mongoose.Schema({
     required: true,
     index: true,
   },
-  tokenHash: {      // store ONLY the SHA-256 hash — never the raw JWT
+  tokenHash: {
     type: String,
     required: true,
   },
-  family: {         // rotation family — one refresh per family allowed
+  family: {
     type: String,
     required: true,
   },
   expiresAt: {
     type: Date,
     required: true,
-    index: { expireAfterSeconds: 0 }, 
+    index: { expireAfterSeconds: 0 },
   },
   createdAt: {
     type: Date,

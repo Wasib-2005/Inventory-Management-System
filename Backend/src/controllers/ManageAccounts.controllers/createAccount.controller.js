@@ -21,7 +21,6 @@ export const createAccountController = async (req, res) => {
 
     const { role } = plain;
 
-    // findOne returns a single object document, not an array
     const getRole = await Role.findOne({ roleTitle: role });
 
     if (!getRole) {
@@ -32,24 +31,25 @@ export const createAccountController = async (req, res) => {
     const rankCheck = checkHierarchy(req.roleRank, getRole.roleRank);
     if (!rankCheck) {
       return res.status(400).json({
-        message: "You cannot create a user that has higher rank or equal than you!",
+        message:
+          "You cannot create a user that has higher rank or equal than you!",
       });
     }
 
     const hasPermissionForCreatingThisUser = checkHasPermissionInRole(
       req.permission,
-      getRole.permissions
+      getRole.permissions,
     );
 
     if (!hasPermissionForCreatingThisUser) {
       return res.status(400).json({
-        message: "You do not have the permission to create the account with selected role!",
+        message:
+          "You do not have the permission to create the account with selected role!",
       });
     }
 
     plain.role = getRole._id;
 
-    // Handle optional manager object safe extraction
     if (plain.manager && plain.manager._id) {
       const managerUser = await User.findById(plain.manager._id).select("_id");
 
@@ -58,10 +58,9 @@ export const createAccountController = async (req, res) => {
       }
       plain.manager = managerUser._id;
     } else {
-      delete plain.manager; // Clear if empty string or missing values
+      delete plain.manager;
     }
 
-    // Changed from .insertOne() to Mongoose compatible .create()
     const createUser = await User.create(plain);
 
     if (!createUser) {
@@ -73,7 +72,7 @@ export const createAccountController = async (req, res) => {
   } catch (error) {
     logger.error("Error in create account controller");
     logger.error(error.msg || error.message || error);
-    
+
     if (error.code === 11000) {
       const duplicateField = Object.keys(error.keyValue)[0];
       return res.status(403).json({

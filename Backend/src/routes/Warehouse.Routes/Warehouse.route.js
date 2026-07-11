@@ -5,7 +5,7 @@ const {
   getAllWarehouses,
   updateWarehouse,
   deleteWarehouse,
-} = require("../../controllers/Warehouse.Controllers/Warehouse.Controllers");
+} = require("../../controllers/Warehouse.controllers/Warehouse.controllers");
 const router = express.Router();
 
 router.get("/", verifyAccess, getAllWarehouses);

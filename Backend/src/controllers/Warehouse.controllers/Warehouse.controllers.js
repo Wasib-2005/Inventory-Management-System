@@ -17,7 +17,6 @@ export const createWarehouse = async (req, res) => {
     `Trying to create warehouse with ID: ${warehouseId}, Name: ${warehouseName}, Place: ${place}, Address: ${address}, Rack Rows: ${rackRows}, Racks Per Row: ${racksPerRow} by User ID: ${req.userId}`,
   );
 
-  // 1. Validation
   if (
     !warehouseName ||
     !warehouseId ||
@@ -30,13 +29,11 @@ export const createWarehouse = async (req, res) => {
   }
 
   try {
-    // 2. Fetch User
     const UserData = await User.findById(req.userId);
     if (!UserData) {
       return res.status(404).json({ message: "Authenticated user not found." });
     }
 
-    // 3. Check Duplicates (fast path; unique index is the real guard below)
     const warehouseExists = await Warehouse.findOne({ warehouseId });
     if (warehouseExists) {
       return res.status(400).json({ message: "Warehouse ID already exists." });
@@ -64,7 +61,6 @@ export const createWarehouse = async (req, res) => {
       data: newWarehouse,
     });
   } catch (error) {
-    // Handle race condition on unique index (E11000)
     if (error.code === 11000) {
       logger.error(`Duplicate warehouseId on create: ${warehouseId}`);
       return res.status(400).json({ message: "Warehouse ID already exists." });
@@ -93,18 +89,15 @@ export const updateWarehouse = async (req, res) => {
     const userId = req.userId;
     logger.info(`Updating warehouse: ${warehouseId}, User ID: ${userId}`);
 
-    // 1. Validation
     if (!warehouseId) {
       return res.status(400).json({ message: "Warehouse ID is required." });
     }
 
-    // 2. Check if warehouse exists
     const warehouse = await Warehouse.findOne({ warehouseId });
     if (!warehouse) {
       return res.status(404).json({ message: "Warehouse not found." });
     }
 
-    // 3. Update the warehouse
     if (updateData.warehouseName) {
       warehouse.warehouseName = updateData.warehouseName;
     }
@@ -121,7 +114,6 @@ export const updateWarehouse = async (req, res) => {
       warehouse.racksPerRow = updateData.racksPerRow;
     }
 
-    // 4. Save the updated warehouse
     await warehouse.save();
 
     logger.info(
@@ -146,18 +138,15 @@ export const deleteWarehouse = async (req, res) => {
     const userId = req.userId;
     logger.info(`Deleting warehouse: ${warehouseId}, User ID: ${userId}`);
 
-    // 1. Validation
     if (!warehouseId) {
       return res.status(400).json({ message: "Warehouse ID is required." });
     }
 
-    // 2. Check if warehouse exists
     const warehouse = await Warehouse.findById(warehouseId);
     if (!warehouse) {
       return res.status(404).json({ message: "Warehouse not found." });
     }
 
-    // 3. Delete the warehouse
     await Warehouse.deleteOne({ _id: warehouseId });
 
     logger.info(

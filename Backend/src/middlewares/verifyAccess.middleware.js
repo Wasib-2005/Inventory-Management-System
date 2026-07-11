@@ -13,7 +13,7 @@ export const verifyAccess = async (req, res, next) => {
       return res.status(401).json({ message: "No access token" });
     }
 
-    const payload = verifyAccessToken(token); // throws if expired or invalid
+    const payload = verifyAccessToken(token);
     const userData = await User.findById(payload.sub)
       .select("_id role")
       .populate("role");
@@ -23,14 +23,12 @@ export const verifyAccess = async (req, res, next) => {
     req.userId = payload.sub;
     req.permission = userData.role.permissions;
     req.roleRank = userData.role.roleRank;
-    req.roleTitle = userData.role.roleTitle
-
-    // console.log(req.userId, req.permission, req.roleRank);
+    req.roleTitle = userData.role.roleTitle;
 
     next();
   } catch (err) {
     logger.warn("Access token invalid:", err.message);
-    // Tell the client to refresh — don't log them out
+
     return res
       .status(401)
       .json({ message: "Access token expired", code: "TOKEN_EXPIRED" });

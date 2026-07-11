@@ -11,7 +11,6 @@ export const updateAccount = async (req, res) => {
     const data = req.body;
     const plain = hybridDecryption(data);
 
-    // 1. Completely remove permissions from root payload to prevent hijacking
     delete plain.permissions;
 
     const { roleTitle, manager, _id: userId } = plain;
@@ -22,13 +21,11 @@ export const updateAccount = async (req, res) => {
         .json({ message: "User ID is required for updating account" });
     }
 
-    // Fetch existing target user to compare roles/permissions during update
     const existingUser = await User.findById(userId).populate("role");
     if (!existingUser) {
       return res.status(404).json({ message: "Target user not found" });
     }
 
-    // 2. Handle Manager Object to ObjectId Mapping
     if (manager && manager._id) {
       const actualManager = await User.findOne({
         _id: manager._id,
@@ -43,14 +40,12 @@ export const updateAccount = async (req, res) => {
       delete plain.manager;
     }
 
-    // 3. Handle Role Title to ObjectId Mapping (If provided)
     if (roleTitle) {
       const roleDoc = await Role.findOne({ roleTitle });
       if (!roleDoc) {
         return res.status(404).json({ message: "Specified role not found" });
       }
 
-      // Hierarchy validation check
       const rankCheck = checkHierarchy(req.roleRank, roleDoc.roleRank);
       if (!rankCheck) {
         return res.status(400).json({
@@ -58,8 +53,6 @@ export const updateAccount = async (req, res) => {
             "You cannot change this user role because you are lower than the selected user rank!",
         });
       }
-
-      // Permission delta check (Pass original role permissions vs new role permissions)
 
       console.log(existingUser.role?.permissions);
       const hasPermissionForChangeThisUser = checkHasPermissionInRole(
@@ -79,12 +72,10 @@ export const updateAccount = async (req, res) => {
       delete plain.roleTitle;
     }
 
-    // 4. Clean up metadata / immutable fields
     delete plain._id;
     delete plain.__v;
     delete plain.createdAt;
 
-    // 5. Execute the Update
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: plain },

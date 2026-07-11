@@ -17,23 +17,18 @@ const parseAdvancedSearch = (searchStr) => {
 
   const andConditions = [];
 
-  // Regex captures key:value OR key:"value with spaces"
-  // It handles text up to the next valid token or the end of the string
   const tokenRegex = /(\w+):\s*(?:"([^"]*)"|(.+?)(?=\s+\w+:|$))/g;
   let match;
   let cleanedSearch = searchStr;
 
-  // 1. Extract and process explicit key-value pairs
   while ((match = tokenRegex.exec(searchStr)) !== null) {
     const key = match[1].toLowerCase();
     const rawValue = (match[2] || match[3]).trim();
     if (!rawValue) continue;
 
-    // Safely convert value to case-insensitive regex (escaped)
     const regexVal = { $regex: escapeRegex(rawValue), $options: "i" };
 
     if (key === "address") {
-      // Map 'address' keyword against all nested sub-document values
       andConditions.push({
         $or: [
           { "address.street": regexVal },
@@ -43,20 +38,16 @@ const parseAdvancedSearch = (searchStr) => {
         ],
       });
     } else if (key === "name") {
-      // Map 'name' keyword against both first and last name values
       andConditions.push({
         $or: [{ firstName: regexVal }, { lastName: regexVal }],
       });
     } else if (["username", "email", "phone"].includes(key)) {
-      // Match explicit properties directly
       andConditions.push({ [key]: regexVal });
     }
 
-    // Strip out processed tokens from the string to evaluate the remainder
     cleanedSearch = cleanedSearch.replace(match[0], "");
   }
 
-  // 2. Process leftover general terms (e.g. text containing no colons)
   const generalTerms = cleanedSearch.trim();
   if (generalTerms) {
     const generalRegex = { $regex: escapeRegex(generalTerms), $options: "i" };
@@ -70,12 +61,9 @@ const parseAdvancedSearch = (searchStr) => {
     });
   }
 
-  // Combine conditions safely into an executable MongoDB expression
   return andConditions.length > 0 ? { $and: andConditions } : {};
 };
 
-// Whitelisted enum values — must mirror the Mongoose schema enums.
-// Keeps bad/unexpected query params from ever reaching the DB query.
 const ALLOWED_STATUS = [
   "active",
   "onboarding",
@@ -128,44 +116,34 @@ export const getAccountsAndPermissions = async (req, res) => {
       gender = "all",
     } = req.query;
 
-    // Build standard filters base
     let queryFilter = {};
 
-    // Apply advanced structural token parsing to the search string
     if (search.trim()) {
       queryFilter = parseAdvancedSearch(search);
     }
 
-    // Apply employmentStatus / employmentType / gender filters
     Object.assign(queryFilter, buildEnumFilters({ status, type, gender }));
 
-    // Add soft-delete filter security layer
     queryFilter.isDeleted = false;
 
-    // Process Role-specific structural filters
     if (role && role !== "all") {
       const roleDoc = await Role.findOne({ roleTitle: role });
       if (roleDoc) {
         queryFilter.role = roleDoc._id;
       } else {
-        // Unknown role requested — return no results instead of silently
-        // ignoring the filter and returning everyone.
         return res.status(200).json([]);
       }
     }
 
-    // Determine sorting options
     let sortOptions = {};
     if (sortBy === "name-asc") sortOptions = { username: 1 };
     else if (sortBy === "name-desc") sortOptions = { username: -1 };
     else sortOptions = { createdAt: -1 };
 
-    // Calculate pagination offsets
     const parsedPage = Math.max(1, parseInt(page, 10) || 1);
     const parsedLimit = Math.max(1, parseInt(limit, 10) || 15);
     const skip = (parsedPage - 1) * parsedLimit;
 
-    // Execute query with database optimizations
     const users = await User.find(queryFilter)
       .sort(sortOptions)
       .skip(skip)
@@ -174,7 +152,6 @@ export const getAccountsAndPermissions = async (req, res) => {
       .populate("manager", "displayName username email")
       .lean();
 
-    // Map and sanitize standard data response payloads
     const transformedData = users.map((user) => {
       const {
         password,

@@ -1,12 +1,12 @@
 const express = require("express");
 const {
   createAccountController,
-} = require("../../controllers/ManageAccounts.Controllers/createAccount.Controller.js");
+} = require("../../controllers/ManageAccounts.controllers/createAccount.controller.js");
 const { verifyAccess } = require("../../middlewares/verifyAccess.middleware.js");
 const {
   updateAccount,
-} = require("../../controllers/ManageAccounts.Controllers/updateAccount.Controller.js");
-const { updateOwnData } = require("../../controllers/ManageAccounts.Controllers/updateOwnData.Controller.js");
+} = require("../../controllers/ManageAccounts.controllers/updateAccount.controller.js");
+const { updateOwnData } = require("../../controllers/ManageAccounts.controllers/updateOwnData.controller.js");
 
 
 const router = express.Router();

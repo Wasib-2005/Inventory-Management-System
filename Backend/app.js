@@ -11,6 +11,7 @@ const RoleRoute = require("./src/routes/roles.route.js");
 const ManageAccountsRoute = require("./src/routes/AccountsRelated/manageAccounts.route.js");
 const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
 const WarehouseRouter = require("./src/routes/Warehouse.Routes/Warehouse.route.js");
+const CategoryRouter = require("./src/routes/Products.Routes/Category.route.js");
 
 const app = express();
 
@@ -87,4 +88,6 @@ app.use("/api/", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
 app.use("/api/warehouses", WarehouseRouter);
+app.use("/api/category", CategoryRouter);
+
 module.exports = app;

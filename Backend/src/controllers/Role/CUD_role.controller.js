@@ -4,9 +4,6 @@ import {
   checkHierarchy,
 } from "../../utility/checkRoleForCreatingOrUpdatingRoles.js";
 
-// ==========================================
-// 1. CREATE ROLE
-// ==========================================
 export const createRole = async (req, res) => {
   const roleData = req.body;
 
@@ -14,14 +11,12 @@ export const createRole = async (req, res) => {
     return res.status(400).json({ message: "Role title is required." });
   }
 
-  // Handle both string "0" and numeric 0 safely
   if (!roleData.roleRank || Number(roleData.roleRank) === 0) {
     return res
       .status(400)
       .json({ message: "Role rank is required and cannot be 0." });
   }
 
-  // 1. Hierarchy Check
   const rankCheck = checkHierarchy(req.roleRank, roleData.roleRank);
   if (!rankCheck) {
     return res.status(403).json({
@@ -30,7 +25,6 @@ export const createRole = async (req, res) => {
     });
   }
 
-  // 2. Permission Check
   const hasPermissionForCreatingRole = checkHasPermissionInRole(
     req.permission,
     roleData.permissions,
@@ -42,7 +36,6 @@ export const createRole = async (req, res) => {
     });
   }
 
-  // 3. Admin Identity Check
   if (roleData.roleTitle.toLowerCase() === "admin") {
     return res
       .status(400)
@@ -68,9 +61,6 @@ export const createRole = async (req, res) => {
   }
 };
 
-// ==========================================
-// 2. UPDATE ROLE
-// ==========================================
 export const updateRole = async (req, res) => {
   const roleData = req.body;
 
@@ -81,30 +71,25 @@ export const updateRole = async (req, res) => {
   }
 
   try {
-    // FIX 1: Fetch and check existence FIRST to prevent application crashes
     const roleInDD = await Role.findById(roleData._id);
     if (!roleInDD) {
       return res.status(404).json({ message: "Role not found." });
     }
 
-    // FIX 2: Check if the role being targeted is the core Admin role
     if (roleInDD.roleTitle.toLowerCase() === "admin") {
       return res.status(403).json({
         message: "Action Forbidden: Cannot update the core Admin role.",
       });
     }
 
-    // FIX 3: Prevent renaming an existing role TO "admin"
     if (roleData.roleTitle && roleData.roleTitle.toLowerCase() === "admin") {
       return res
         .status(400)
         .json({ message: "Cannot rename a role to 'Admin'." });
     }
 
-    // Fallback to existing rank if not explicitly changing it in payload
     const targetRank = roleData.roleRank || roleInDD.roleRank;
 
-    // 1. Hierarchy Check
     const rankCheck = checkHierarchy(req.roleRank, targetRank);
 
     console.log("Hierarchy Check", rankCheck);
@@ -115,10 +100,9 @@ export const updateRole = async (req, res) => {
       });
     }
 
-    // 2. Permission Check (Passing old database permissions correctly)
     const hasPermissionForUpdatingRole = checkHasPermissionInRole(
       req.permission,
-      roleData.permissions || roleInDD.permissions, // fallback if payload omitted permissions
+      roleData.permissions || roleInDD.permissions,
       roleInDD.permissions,
     );
     if (!hasPermissionForUpdatingRole) {
@@ -145,9 +129,6 @@ export const updateRole = async (req, res) => {
   }
 };
 
-// ==========================================
-// 3. DELETE ROLE
-// ==========================================
 export const deleteRole = async (req, res) => {
   const { id } = req.query;
 
@@ -171,7 +152,6 @@ export const deleteRole = async (req, res) => {
         .json({ message: "Cannot delete the core Admin role." });
     }
 
-    // FIX 4: Add Hierarchy protection so lower roles cannot delete equal/higher roles
     const rankCheck = checkHierarchy(req.roleRank, roleToDelete.roleRank);
     if (!rankCheck) {
       return res.status(403).json({

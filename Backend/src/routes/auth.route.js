@@ -3,10 +3,10 @@ const {
   signUpLogic,
   signInLogic,
   logout,
-} = require("../controllers/Auth/auth.Controller.js");
+} = require("../controllers/Auth/auth.controller.js");
 const {
   refreshAuth,
-} = require("../controllers/Auth/refreshAuth.Controller.js");
+} = require("../controllers/Auth/refreshAuth.controller.js");
 const {
   blockRouteMiddleware,
 } = require("../middlewares/blockRoute.middleware.js");

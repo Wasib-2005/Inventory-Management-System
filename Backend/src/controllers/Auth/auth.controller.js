@@ -19,7 +19,6 @@ import Role from "../../models/role.model.js";
 import { sendResponse } from "./helper/sendResponse.js";
 import { hybridDecryption } from "../../utility/encryptionDecryption.js";
 
-// ── SIGN UP ───────────────────────────────────────────────────────────────────
 export const signUpLogic = async (req, res) => {
   return res.status(404).send("");
   try {
@@ -45,8 +44,7 @@ export const signUpLogic = async (req, res) => {
 
     await newUser.populate("role");
 
-    // Issue tokens
-    const family = crypto.randomUUID(); // one family per session
+    const family = crypto.randomUUID();
     const accessToken = generateAccessToken(newUser._id.toString());
     const refreshToken = generateRefreshToken(newUser._id.toString(), family);
     await saveRefreshToken(newUser._id.toString(), refreshToken, family);
@@ -59,7 +57,6 @@ export const signUpLogic = async (req, res) => {
   }
 };
 
-// ── SIGN IN ───────────────────────────────────────────────────────────────────
 export const signInLogic = async (req, res) => {
   try {
     const plain = hybridDecryption(req.body);
@@ -68,12 +65,10 @@ export const signInLogic = async (req, res) => {
 
     const user = await User.findOne({ email }).populate("role");
 
-    // Unknown email — don't hint which field was wrong
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Account locked?
     if (user.isLocked) {
       const remaining = Math.ceil((user.lockUntil - Date.now()) / 1000 / 60);
       return res.status(429).json({
@@ -94,7 +89,6 @@ export const signInLogic = async (req, res) => {
       });
     }
 
-    // Success — reset counter and issue fresh tokens
     await user.resetLoginAttempts();
 
     const family = crypto.randomUUID();
@@ -110,14 +104,11 @@ export const signInLogic = async (req, res) => {
   }
 };
 
-// ── LOGOUT ────────────────────────────────────────────────────────────────────
 export const logout = async (req, res) => {
   try {
     const rawRefresh = req.cookies?.refresh_token;
 
     if (rawRefresh) {
-      // Best-effort: delete this specific token family from DB
-      // rotateRefreshToken would verify first, but on logout we just nuke it
       const crypto = await import("crypto");
       const hash = crypto.createHash("sha256").update(rawRefresh).digest("hex");
       await RefreshToken.deleteOne({ tokenHash: hash });
@@ -127,7 +118,7 @@ export const logout = async (req, res) => {
     return res.status(200).json({ message: "Logged out" });
   } catch (err) {
     logger.error("Logout Error:", err);
-    clearAuthCookies(res); // still clear cookies even if DB op failed
+    clearAuthCookies(res);
     return res.status(200).json({ message: "Logged out" });
   }
 };
