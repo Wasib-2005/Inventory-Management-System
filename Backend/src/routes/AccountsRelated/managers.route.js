@@ -1,10 +1,10 @@
-const express = require("express");
-const logger = require("../../config/logger.js");
-const { verifyAccess } = require("../../middlewares/verifyAccess.middleware.js");
-const { getManagers } = require("../../controllers/ManageAccounts.controllers/managers.controller.js");
+import express from "express";
+import { logger } from "../../config/logger.js";
+import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
+import { getManagers } from "../../controllers/ManageAccounts.controllers/managers.controller.js";
 
 const router = express.Router();
 
 router.get("/get-managers", verifyAccess, getManagers);
 
-module.exports = router;
+export default router;

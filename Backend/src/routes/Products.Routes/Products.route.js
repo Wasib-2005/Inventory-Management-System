@@ -1,18 +1,14 @@
-const express = require("express");
-const {
-  verifyAccess,
-} = require("../../middlewares/verifyAccess.middleware.js");
-const {
+import express from "express";
+import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
+import {
   createProduct,
   getProducts,
-} = require("../../controllers/Products.controllers/Products.controller.js");
-const {
-  imageUploadPipeline,
-} = require("../../middlewares/handleImageUploadPipeline.js");
+} from "../../controllers/Products.controllers/Products.controller.js";
+import { imageUploadPipeline } from "../../middlewares/handleImageUploadPipeline.js";
 
 const router = express.Router();
 
 router.get("/get", getProducts);
 router.post("/create", verifyAccess, imageUploadPipeline, createProduct);
 
-module.exports = router;
+export default router;

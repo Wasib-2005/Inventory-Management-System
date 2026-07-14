@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import logger from "../config/logger.js";
+import {logger} from "../config/logger.js";
 
 // 1. Create a Helper Collection for the Counter
 const counterSchema = new mongoose.Schema({

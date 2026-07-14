@@ -1,4 +1,4 @@
-import logger from "../config/logger.js";
+import {logger} from "../config/logger.js";
 import Supplier from "../models/supplier.model.js";
 
 export const getSuppliers = async (req, res) => {

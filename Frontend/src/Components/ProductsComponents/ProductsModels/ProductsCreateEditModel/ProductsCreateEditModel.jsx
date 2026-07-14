@@ -106,13 +106,6 @@ const ProductsCreateEditModel = ({
                 form.setField("parentProductId", v)
               }
               parentProductIdError={errors.parentProductId}
-              variantAttributes={formData.variantAttributes}
-              onRemoveVariantAttr={form.removeVariantAttr}
-              newVariantAttrKey={form.newVariantAttrKey}
-              setNewVariantAttrKey={form.setNewVariantAttrKey}
-              newVariantAttrValue={form.newVariantAttrValue}
-              setNewVariantAttrValue={form.setNewVariantAttrValue}
-              onAddVariantAttr={form.addVariantAttr}
             />
 
             <CategorySelector

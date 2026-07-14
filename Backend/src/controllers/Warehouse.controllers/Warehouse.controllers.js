@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import logger from "../../config/logger.js";
+import {logger} from "../../config/logger.js";
 import User from "../../models/user.model.js";
 import { Warehouse } from "../../models/Warehouse.models/warehouseId.models.js";
 

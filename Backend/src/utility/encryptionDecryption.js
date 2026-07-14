@@ -4,7 +4,7 @@ import {
   serverPrivateKey,
   serverSeasonKey,
 } from "../config/keyManager.js";
-import logger from "../config/logger.js";
+import {logger} from "../config/logger.js";
 
 const AES_ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12;

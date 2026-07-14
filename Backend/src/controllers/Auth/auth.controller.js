@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import User from "../../models/user.model.js";
 import RefreshToken from "../../models/refreshToken.model.js";
-import logger from "../../config/logger.js";
+import {logger} from "../../config/logger.js";
 import {
   hashPass,
   compHashPass,

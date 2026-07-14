@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const logger = require("./logger.js");
+import mongoose from "mongoose";
+import { logger } from "./logger.js";
 
 const connectMongoDB = async () => {
   const MONGOURL = process.env.MONGOURL;
@@ -20,4 +20,4 @@ const connectMongoDB = async () => {
   }
 };
 
-module.exports = connectMongoDB;
+export default connectMongoDB;

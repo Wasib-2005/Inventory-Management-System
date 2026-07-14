@@ -1,13 +1,13 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   getSuppliers,
   createSupplier,
-} = require("../controllers/supplier.controller.js");
-const { verifyAccess } = require("../middlewares/verifyAccess.middleware.js");
+} from "../controllers/supplier.controller.js";
+import { verifyAccess } from "../middlewares/verifyAccess.middleware.js";
 
 const router = express.Router();
 
 router.get("", verifyAccess, getSuppliers);
 router.post("", verifyAccess, createSupplier);
 
-module.exports = router;
+export default router;

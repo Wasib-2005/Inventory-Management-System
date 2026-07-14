@@ -1,4 +1,4 @@
-import logger from "../../config/logger.js";
+import {logger} from "../../config/logger.js";
 import Category from "../../models/Category.model.js";
 
 export const getCategory = async (req, res) => {

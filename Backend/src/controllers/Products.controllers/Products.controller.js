@@ -1,4 +1,4 @@
-import logger from "../../config/logger.js";
+import { logger } from "../../config/logger.js";
 import Category from "../../models/Category.model.js";
 import Product from "../../models/Product.model.js";
 import Supplier from "../../models/supplier.model.js";
@@ -34,6 +34,7 @@ const verifyProductData = (data) => {
 export const createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.data);
+
     logger.info(
       `${req.username} trying to create a product name: ${productData.name}`,
     );
@@ -161,5 +162,75 @@ export const createProduct = async (req, res) => {
 };
 
 export const getProducts = async (req, res) => {
-  const params = req.params;
+  try {
+    const {
+      search,
+      status,
+      category,
+      subcategory,
+      brand,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 10,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const filter = {};
+
+    if (search) {
+      filter.$text = { $search: search };
+    }
+
+    if (status) {
+      filter.status = status;
+    }
+    if (brand) {
+      filter.brand = { $regex: brand, $options: "i" };
+    }
+    if (category) {
+      filter["categoryData.category"] = category;
+    }
+    if (subcategory) {
+      filter["categoryData.subcategory"] = subcategory;
+    }
+
+    if (minPrice || maxPrice) {
+      filter["pricing.sellPrice"] = {};
+      if (minPrice) filter["pricing.sellPrice"].$gte = Number(minPrice);
+      if (maxPrice) filter["pricing.sellPrice"].$lte = Number(maxPrice);
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    const [products, totalCount] = await Promise.all([
+      Product.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit))
+        .populate("categoryData.category", "category")
+        .lean(),
+      Product.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      pagination: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: Number(page),
+        limit: Number(limit),
+      },
+      data: products,
+    });
+  } catch (error) {
+    console.error("Error in getProducts:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching products.",
+      error: error.message,
+    });
+  }
 };

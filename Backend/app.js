@@ -1,23 +1,20 @@
-require("dotenv").config();
-const cors = require("cors");
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const connectMongoDB = require("./src/config/connectMongoDB.js");
-const healthRoute = require("./src/routes/health.route.js");
-const authRoute = require("./src/routes/auth.route.js");
-const PublicKeyGeneratorRoute = require("./src/routes/publicKey.route.js");
-const AccountsAndPermissionsRoute = require("./src/routes/AccountsRelated/accountsAndPermissions.route.js");
-const RoleRoute = require("./src/routes/roles.route.js");
-const ManageAccountsRoute = require("./src/routes/AccountsRelated/manageAccounts.route.js");
-const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
-const WarehouseRouter = require("./src/routes/Warehouse.Routes/Warehouse.route.js");
-const CategoryRouter = require("./src/routes/Products.Routes/Category.route.js");
-const SupplierRouter = require("./src/routes/supplier.route.js");
-const ProductRouter = require("./src/routes/Products.Routes/Products.route.js");
-const {
-  generateImageName,
-} = require("./src/utility/image/imageNameGenetator.js");
-const logger = require("./src/config/logger.js");
+import cors from "cors";
+import express from "express";
+import cookieParser from "cookie-parser";
+import connectMongoDB from "./src/config/connectMongoDB.js";
+import healthRoute from "./src/routes/health.route.js";
+import authRoute from "./src/routes/auth.route.js";
+import PublicKeyGeneratorRoute from "./src/routes/publicKey.route.js";
+import AccountsAndPermissionsRoute from "./src/routes/AccountsRelated/accountsAndPermissions.route.js";
+import RoleRoute from "./src/routes/roles.route.js";
+import ManageAccountsRoute from "./src/routes/AccountsRelated/manageAccounts.route.js";
+import ManagerRouter from "./src/routes/AccountsRelated/managers.route.js";
+import WarehouseRouter from "./src/routes/Warehouse.Routes/Warehouse.route.js";
+import CategoryRouter from "./src/routes/Products.Routes/Category.route.js";
+import SupplierRouter from "./src/routes/supplier.route.js";
+import ProductRouter from "./src/routes/Products.Routes/Products.route.js";
+import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
+import {logger} from "./src/config/logger.js";
 
 const app = express();
 
@@ -91,6 +88,7 @@ app.use((req, res, next) => {
 app.use("/", healthRoute);
 app.use("/api/auth/", authRoute);
 app.use("/api/", PublicKeyGeneratorRoute);
+
 app.use("/api/", AccountsAndPermissionsRoute);
 app.use("/api/", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
@@ -100,4 +98,4 @@ app.use("/api/category", CategoryRouter);
 app.use("/api/suppliers", SupplierRouter);
 app.use("/api/product", ProductRouter);
 
-module.exports = app;
+export default app;

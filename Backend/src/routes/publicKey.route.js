@@ -1,9 +1,10 @@
-const express = require("express");
-const logger = require('../config/logger.js');
-const { PublicKeyGenerator } = require("../controllers/publicKey.controller.js");
+import express from "express";
+
+import { logger } from "../config/logger.js";
+import { PublicKeyGenerator } from "../controllers/publicKey.controller.js";
 
 const router = express.Router();
 
 router.get("/publickey", PublicKeyGenerator);
 
-module.exports = router; 
+export default router;

@@ -18,7 +18,12 @@ const productSchema = new mongoose.Schema(
       default: null,
     },
 
-    barcodes: [{ type: String, trim: true }],
+    barcodes: [
+      {
+        code: { type: String, trim: true },
+        type: { type: String, trim: true },
+      },
+    ],
     categoryData: {
       category: {
         type: mongoose.Schema.Types.ObjectId,
@@ -110,6 +115,12 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ name: "text", brand: "text", tags: "text" });
+
+productSchema.index({ barcodes: 1 });
+productSchema.index({ "categoryData.category": 1 });
+productSchema.index({ "categoryData.subcategory": 1 });
+productSchema.index({ supplierData: 1 });
+productSchema.index({ status: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 

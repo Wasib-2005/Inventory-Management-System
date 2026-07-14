@@ -1,4 +1,4 @@
-const pino = require("pino");
+import pino from "pino";
 
 const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 
@@ -40,11 +40,11 @@ function makeLog(level) {
   };
 }
 
-const logger = {
+export const logger = {
   info: makeLog("info"),
   debug: makeLog("debug"),
   warn: makeLog("warn"),
   error: makeLog("error"),
 };
 
-module.exports = logger;
+

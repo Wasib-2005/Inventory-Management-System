@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import logger from "./logger.js";
+import {logger} from "./logger.js";
 
 const KEY_DIR = path.join(process.cwd(), "keys");
 const PRIVATE_KEY_PATH = path.join(KEY_DIR, "asymmetricKey/private.pem");

@@ -5,7 +5,7 @@ import {
   cloudinary,
 } from "../../config/connectImageStorage.js";
 import { generateImageName } from "./imageNameGenetator.js";
-import logger from "../../config/logger.js";
+import {logger} from "../../config/logger.js";
 
 async function uploadToS3(file, bucket) {
   const fileKey = generateImageName(file);

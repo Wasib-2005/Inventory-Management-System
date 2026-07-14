@@ -1,18 +1,16 @@
-const express = require("express");
-const logger = require("../config/logger.js");
-const {
+import express from "express";
+import { logger } from "../config/logger.js";
+import {
   getRoles,
   getRolesForEditing,
-} = require("../controllers/Role/get_roles.controller.js");
-const { verifyAccess } = require("../middlewares/verifyAccess.middleware.js");
-const {
+} from "../controllers/Role/get_roles.controller.js";
+import { verifyAccess } from "../middlewares/verifyAccess.middleware.js";
+import {
   updateRole,
   deleteRole,
   createRole,
-} = require("../controllers/Role/CUD_role.controller.js");
-const {
-  checkPermission,
-} = require("../middlewares/checkPermission.middleware.js");
+} from "../controllers/Role/CUD_role.controller.js";
+import { checkPermission } from "../middlewares/checkPermission.middleware.js";
 
 const router = express.Router();
 
@@ -20,7 +18,7 @@ router.get("/roles", getRoles);
 router.get(
   "/get-role-for-edit",
   verifyAccess,
-  checkPermission(["hasReadRolePermission",]),
+  checkPermission(["hasReadRolePermission"]),
   getRolesForEditing,
 );
 
@@ -29,4 +27,4 @@ router.post("/create-role", verifyAccess, createRole);
 router.patch("/update_role", verifyAccess, updateRole);
 router.delete("/delete-role", verifyAccess, deleteRole);
 
-module.exports = router;
+export default router;

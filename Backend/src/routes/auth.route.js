@@ -1,15 +1,11 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   signUpLogic,
   signInLogic,
   logout,
-} = require("../controllers/Auth/auth.controller.js");
-const {
-  refreshAuth,
-} = require("../controllers/Auth/refreshAuth.controller.js");
-const {
-  blockRouteMiddleware,
-} = require("../middlewares/blockRoute.middleware.js");
+} from "../controllers/Auth/auth.controller.js";
+import { refreshAuth } from "../controllers/Auth/refreshAuth.controller.js";
+import { blockRouteMiddleware } from "../middlewares/blockRoute.middleware.js";
 
 const router = express.Router();
 
@@ -18,4 +14,4 @@ router.post("/singup", blockRouteMiddleware, signUpLogic);
 router.post("/refresh", refreshAuth);
 router.post("/logout", logout);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const checkPermission = (requiredPermissions) => {
+export const checkPermission = (requiredPermissions) => {
   return async (req, res, next) => {
     const userPermissions = req.permission;
 
@@ -22,4 +22,4 @@ const checkPermission = (requiredPermissions) => {
   };
 };
 
-module.exports = { checkPermission };
+

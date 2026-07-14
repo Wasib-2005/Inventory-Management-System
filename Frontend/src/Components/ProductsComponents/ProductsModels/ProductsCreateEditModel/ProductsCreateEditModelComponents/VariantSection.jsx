@@ -7,13 +7,6 @@ const VariantSection = ({
   parentProductId,
   onParentProductIdChange,
   parentProductIdError,
-  variantAttributes,
-  onRemoveVariantAttr,
-  newVariantAttrKey,
-  setNewVariantAttrKey,
-  newVariantAttrValue,
-  setNewVariantAttrValue,
-  onAddVariantAttr,
 }) => {
   return (
     <div className="p-3 sm:p-4 rounded-lg bg-white border border-emerald-200 flex flex-col gap-3">
