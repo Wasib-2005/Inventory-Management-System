@@ -33,11 +33,12 @@ const VariantSection = ({
         <>
           <div className="flex flex-col gap-1">
             <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-              Parent Product ID *
+              Parent Product
+              <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
-              placeholder="Paste the parent product's _id"
+              placeholder="Paste the parent product"
               value={parentProductId || ""}
               onChange={(e) => onParentProductIdChange(e.target.value)}
               className={commonInputField}

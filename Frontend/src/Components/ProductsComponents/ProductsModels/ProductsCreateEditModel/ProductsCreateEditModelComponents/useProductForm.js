@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
 import { emptyProduct } from "./constants";
+import { createProduct, updateProduct } from "./api";
 
 export const useProductForm = ({ isOpen, editProduct, onSave }) => {
   const [formData, setFormData] = useState(emptyProduct);
   const [isVariant, setIsVariant] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  // Real File objects for any image the user picked from disk or dropped.
+  // formData.image only ever holds strings (existing URLs or local blob:
+  // previews) — the actual binary has to travel separately in FormData.
+  const [headerImageFile, setHeaderImageFile] = useState(null);
+  const [extraImageFiles, setExtraImageFiles] = useState([]);
 
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [newSupplierInput, setNewSupplierInput] = useState("");
@@ -57,6 +66,11 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
       }
       setErrors({});
       setScanningBarcodeIndex(null);
+      setHeaderImageFile(null);
+      setExtraImageFiles(
+        new Array(editProduct?.image?.extra?.length || 0).fill(null),
+      );
+      setSaveError("");
     }
   }, [editProduct, isOpen]);
 
@@ -128,6 +142,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(file);
+      setHeaderImageFile(file);
       setFormData((prev) => ({
         ...prev,
         image: { ...prev.image, header: localUrl },
@@ -146,6 +161,11 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(file);
+      setExtraImageFiles((prev) => {
+        const updated = [...prev];
+        updated[index] = file;
+        return updated;
+      });
       setFormData((prev) => {
         const updatedExtra = [...prev.image.extra];
         updatedExtra[index] = localUrl;
@@ -158,6 +178,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     const file = e.target.files[0];
     if (file) {
       const localUrl = URL.createObjectURL(file);
+      setHeaderImageFile(file);
       setFormData((prev) => ({
         ...prev,
         image: { ...prev.image, header: localUrl },
@@ -169,6 +190,11 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     const file = e.target.files[0];
     if (file) {
       const localUrl = URL.createObjectURL(file);
+      setExtraImageFiles((prev) => {
+        const updated = [...prev];
+        updated[index] = file;
+        return updated;
+      });
       setFormData((prev) => {
         const updatedExtra = [...prev.image.extra];
         updatedExtra[index] = localUrl;
@@ -177,10 +203,20 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     }
   };
 
-  const handleHeaderImageChange = (val) =>
+  // Typing/pasting a URL means the person is no longer using the file they
+  // may have previously picked, so clear it — otherwise a stale File would
+  // silently keep overriding the typed URL on submit.
+  const handleHeaderImageChange = (val) => {
+    setHeaderImageFile(null);
     setFormData((prev) => ({ ...prev, image: { ...prev.image, header: val } }));
+  };
 
   const handleExtraImageChange = (index, val) => {
+    setExtraImageFiles((prev) => {
+      const updated = [...prev];
+      updated[index] = null;
+      return updated;
+    });
     setFormData((prev) => {
       const updatedExtra = [...prev.image.extra];
       updatedExtra[index] = val;
@@ -194,6 +230,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
       image: { ...prev.image, extra: [...prev.image.extra, ""] },
     }));
     setExtraUploadModes((prev) => [...prev, "url"]);
+    setExtraImageFiles((prev) => [...prev, null]);
   };
 
   const removeExtraImageField = (index) => {
@@ -205,6 +242,7 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
       },
     }));
     setExtraUploadModes((prev) => prev.filter((_, i) => i !== index));
+    setExtraImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleExtraMode = (index) => {
@@ -370,81 +408,127 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
   };
 
   const handleSectionHeaderChange = (text, sectionIndex) => {
-    const updatedDetails = [...formData.extraDetails];
-    updatedDetails[sectionIndex].header = text;
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) =>
+        i === sectionIndex ? { ...section, header: text } : section,
+      ),
+    }));
   };
 
   const handleFieldChange = (text, sectionIndex, rowIndex, fieldKey) => {
-    const updatedDetails = [...formData.extraDetails];
-    updatedDetails[sectionIndex].body[rowIndex][fieldKey] = text;
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) =>
+        i === sectionIndex
+          ? {
+              ...section,
+              body: section.body.map((row, j) =>
+                j === rowIndex ? { ...row, [fieldKey]: text } : row,
+              ),
+            }
+          : section,
+      ),
+    }));
   };
 
   const addSection = () => {
-    setFormData({
-      ...formData,
-      extraDetails: [...formData.extraDetails, { header: "", body: [] }],
-    });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: [...prev.extraDetails, { header: "", body: [] }],
+    }));
   };
 
   const addDetailField = (sectionIndex) => {
-    const updatedDetails = [...formData.extraDetails];
-    updatedDetails[sectionIndex].body.push({ label: "", value: "" });
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) =>
+        i === sectionIndex
+          ? { ...section, body: [...section.body, { label: "", value: "" }] }
+          : section,
+      ),
+    }));
   };
 
   const removeDetailField = (sectionIndex, rowIndex) => {
-    const updatedDetails = [...formData.extraDetails];
-    updatedDetails[sectionIndex].body.splice(rowIndex, 1);
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) =>
+        i === sectionIndex
+          ? {
+              ...section,
+              body: section.body.filter((_, j) => j !== rowIndex),
+            }
+          : section,
+      ),
+    }));
   };
 
   const removeSection = (sectionIndex) => {
-    const updatedDetails = [...formData.extraDetails];
-    updatedDetails.splice(sectionIndex, 1);
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.filter((_, i) => i !== sectionIndex),
+    }));
   };
 
   const moveFieldUp = (sectionIndex, rowIndex) => {
     if (rowIndex === 0) return;
-    const updatedDetails = [...formData.extraDetails];
-    const body = updatedDetails[sectionIndex].body;
-    [body[rowIndex - 1], body[rowIndex]] = [body[rowIndex], body[rowIndex - 1]];
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) => {
+        if (i !== sectionIndex) return section;
+        const body = [...section.body];
+        [body[rowIndex - 1], body[rowIndex]] = [
+          body[rowIndex],
+          body[rowIndex - 1],
+        ];
+        return { ...section, body };
+      }),
+    }));
   };
 
   const moveFieldDown = (sectionIndex, rowIndex) => {
-    const updatedDetails = [...formData.extraDetails];
-    const body = updatedDetails[sectionIndex].body;
-    if (rowIndex === body.length - 1) return;
-    [body[rowIndex + 1], body[rowIndex]] = [body[rowIndex], body[rowIndex + 1]];
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => ({
+      ...prev,
+      extraDetails: prev.extraDetails.map((section, i) => {
+        if (i !== sectionIndex) return section;
+        if (rowIndex === section.body.length - 1) return section;
+        const body = [...section.body];
+        [body[rowIndex + 1], body[rowIndex]] = [
+          body[rowIndex],
+          body[rowIndex + 1],
+        ];
+        return { ...section, body };
+      }),
+    }));
   };
 
   const moveSectionUp = (sectionIndex) => {
     if (sectionIndex === 0) return;
-    const updatedDetails = [...formData.extraDetails];
-    [updatedDetails[sectionIndex - 1], updatedDetails[sectionIndex]] = [
-      updatedDetails[sectionIndex],
-      updatedDetails[sectionIndex - 1],
-    ];
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => {
+      const updated = [...prev.extraDetails];
+      [updated[sectionIndex - 1], updated[sectionIndex]] = [
+        updated[sectionIndex],
+        updated[sectionIndex - 1],
+      ];
+      return { ...prev, extraDetails: updated };
+    });
   };
 
   const moveSectionDown = (sectionIndex) => {
-    if (sectionIndex === formData.extraDetails.length - 1) return;
-    const updatedDetails = [...formData.extraDetails];
-    [updatedDetails[sectionIndex + 1], updatedDetails[sectionIndex]] = [
-      updatedDetails[sectionIndex],
-      updatedDetails[sectionIndex + 1],
-    ];
-    setFormData({ ...formData, extraDetails: updatedDetails });
+    setFormData((prev) => {
+      if (sectionIndex === prev.extraDetails.length - 1) return prev;
+      const updated = [...prev.extraDetails];
+      [updated[sectionIndex + 1], updated[sectionIndex]] = [
+        updated[sectionIndex],
+        updated[sectionIndex + 1],
+      ];
+      return { ...prev, extraDetails: updated };
+    });
   };
 
   const validateRequired = () => {
     const errs = {};
-    console.log(formData);
     if (!formData.name.trim()) errs.name = "Product name is required";
     if (!formData.sku.trim()) errs.sku = "SKU is required";
     if (!formData.categoryData?._id) errs.categoryData = "Category is required";
@@ -458,17 +542,50 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     if (isVariant && !formData.parentProductId?.trim())
       errs.parentProductId = "Parent product ID is required for a variant";
     setErrors(errs);
-    console.log(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateRequired()) return;
-    const payload = {
-      ...formData,
-    };
-    console.log(payload);
-    onSave?.(payload);
+
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      const payload = {
+        ...formData,
+        image: {
+          header: headerImageFile ? "" : formData.image.header,
+          extra: formData.image.extra.map((url, i) =>
+            extraImageFiles[i] ? "" : url,
+          ),
+        },
+      };
+
+      console.log(11111,payload);
+
+      const body = new FormData();
+      body.append("data", JSON.stringify(payload));
+      if (headerImageFile) body.append("headerImage", headerImageFile);
+      extraImageFiles.forEach((file, i) => {
+        if (file) body.append(`extraImage_${i}`, file);
+      });
+
+      const isEdit = !!editProduct?._id;
+      const res = isEdit
+        ? await updateProduct(editProduct._id, body)
+        : await createProduct(body);
+
+      if (res.data?.success) {
+        onSave?.(res.data.data);
+      } else {
+        setSaveError(res.data?.message || "Could not save product");
+      }
+    } catch (err) {
+      setSaveError(err.response?.data?.message || "Could not save product");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return {

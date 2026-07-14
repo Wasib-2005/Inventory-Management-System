@@ -6,7 +6,8 @@ const UomSection = ({ uom, onUnitChange, onConversionFactorChange }) => {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-          Base Unit *
+          Base Unit
+          <span className="text-red-600">*</span>
         </label>
         <UnitSelect
           value={uom.baseUnit}
@@ -16,6 +17,7 @@ const UomSection = ({ uom, onUnitChange, onConversionFactorChange }) => {
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
           Sales Unit
+          <span className="text-red-600">*</span>
         </label>
         <UnitSelect
           value={uom.salesUnit}
@@ -25,6 +27,7 @@ const UomSection = ({ uom, onUnitChange, onConversionFactorChange }) => {
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
           Purchase Unit
+          <span className="text-red-600">*</span>
         </label>
         <UnitSelect
           value={uom.purchaseUnit}
@@ -34,6 +37,7 @@ const UomSection = ({ uom, onUnitChange, onConversionFactorChange }) => {
       <div className="flex flex-col gap-1">
         <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
           Conversion Factor
+          <span className="text-red-600">*</span>
         </label>
         <input
           type="text"

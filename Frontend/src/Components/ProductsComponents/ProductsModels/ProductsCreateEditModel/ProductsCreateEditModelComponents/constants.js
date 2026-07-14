@@ -44,6 +44,13 @@ export const emptyProduct = {
 
   image: { header: "", extra: [] },
   extraDetails: [],
+
+  // Added SEO / SCO defaults to match the new UI section
+  seo: {
+    metaTitle: "",
+    metaDescription: "",
+    keywords: [],
+  },
 };
 
 export const BARCODE_TYPES = ["unit", "case", "pallet"];

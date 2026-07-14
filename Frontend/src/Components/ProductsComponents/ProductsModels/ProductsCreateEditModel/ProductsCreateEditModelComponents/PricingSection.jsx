@@ -8,7 +8,7 @@ const PricingSection = ({ pricing, errors, onPriceChange }) => {
       <div className="flex flex-col md:flex-row gap-2 w-full">
         <div className="flex flex-col gap-1 md:w-[35%]">
           <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-            Sell Price & % *
+            Sell Price & %<span className="text-red-600">*</span>
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -41,12 +41,13 @@ const PricingSection = ({ pricing, errors, onPriceChange }) => {
 
         <div className="flex flex-col gap-1 md:w-[35%]">
           <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-            Buy Price & %
+            Buy Price & %<span className="text-red-600">*</span>
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <input
                 type="text"
+                required
                 value={pricing.buyPrice}
                 onChange={(e) => onPriceChange(e, "buyPrice")}
                 className={commonInputField}
@@ -71,7 +72,8 @@ const PricingSection = ({ pricing, errors, onPriceChange }) => {
 
         <div className="flex flex-col gap-1 md:w-[30%]">
           <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-            MRP *
+            MRP
+            <span className="text-red-600">*</span>
           </label>
           <div className="relative w-full">
             <input

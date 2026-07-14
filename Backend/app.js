@@ -13,6 +13,11 @@ const ManagerRouter = require("./src/routes/AccountsRelated/managers.route.js");
 const WarehouseRouter = require("./src/routes/Warehouse.Routes/Warehouse.route.js");
 const CategoryRouter = require("./src/routes/Products.Routes/Category.route.js");
 const SupplierRouter = require("./src/routes/supplier.route.js");
+const ProductRouter = require("./src/routes/Products.Routes/Products.route.js");
+const {
+  generateImageName,
+} = require("./src/utility/image/imageNameGenetator.js");
+const logger = require("./src/config/logger.js");
 
 const app = express();
 
@@ -42,6 +47,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
 app.options("/{*path}", cors(corsOptions));
+
+logger.info(`Image probider is ${process.env.UPLOAD_PROVIDER}`);
 
 // app.use((req, res, next) => {
 //   const start = Date.now();
@@ -91,5 +98,6 @@ app.use("/api/", ManagerRouter);
 app.use("/api/warehouses", WarehouseRouter);
 app.use("/api/category", CategoryRouter);
 app.use("/api/suppliers", SupplierRouter);
+app.use("/api/product", ProductRouter);
 
 module.exports = app;

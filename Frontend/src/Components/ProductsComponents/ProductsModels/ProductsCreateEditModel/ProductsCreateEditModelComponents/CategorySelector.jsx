@@ -34,7 +34,11 @@ const CategorySelector = ({ value, onChange, onOpenAddModal, error }) => {
   }, [value?._id]);
 
   const handleSelect = (suggestion) => {
-    onChange({ _id: suggestion._id, category: suggestion.category, subcategory: "" });
+    onChange({
+      _id: suggestion._id,
+      category: suggestion.category,
+      subcategory: "",
+    });
     setSubCategoryOptions(suggestion.subCategories || []);
     setQuery("");
     setShowSuggestions(false);
@@ -48,7 +52,8 @@ const CategorySelector = ({ value, onChange, onOpenAddModal, error }) => {
   return (
     <div ref={containerRef} className="flex flex-col gap-1.5 relative">
       <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
-        Category *
+        Category
+        <span className="text-red-600">*</span>
       </label>
 
       {value ? (
@@ -62,12 +67,16 @@ const CategorySelector = ({ value, onChange, onOpenAddModal, error }) => {
 
           <select
             value={value.subcategory || ""}
-            onChange={(e) => onChange({ ...value, subcategory: e.target.value })}
+            onChange={(e) =>
+              onChange({ ...value, subcategory: e.target.value })
+            }
             disabled={subCategoryOptions.length === 0}
             className={`${commonInputField} cursor-pointer flex-1`}
           >
             <option value="">
-              {subCategoryOptions.length ? "Select subcategory" : "No subcategories"}
+              {subCategoryOptions.length
+                ? "Select subcategory"
+                : "No subcategories"}
             </option>
             {subCategoryOptions.map((sub) => (
               <option key={sub._id} value={sub.name}>
@@ -101,7 +110,10 @@ const CategorySelector = ({ value, onChange, onOpenAddModal, error }) => {
             <div className="absolute top-[100%] left-0 w-[calc(100%-2.75rem)] bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto mt-1">
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2 py-4 text-xs text-gray-400">
-                  <FiLoader className="animate-spin text-emerald-600" size={16} />
+                  <FiLoader
+                    className="animate-spin text-emerald-600"
+                    size={16}
+                  />
                   <span>Searching...</span>
                 </div>
               ) : results.length > 0 ? (

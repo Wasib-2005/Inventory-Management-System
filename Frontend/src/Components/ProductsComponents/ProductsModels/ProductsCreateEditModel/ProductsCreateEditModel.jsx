@@ -19,6 +19,7 @@ import PricingSection from "./ProductsCreateEditModelComponents/PricingSection";
 import ComplianceSection from "./ProductsCreateEditModelComponents/ComplianceSection";
 import SpecificationsSection from "./ProductsCreateEditModelComponents/SpecificationsSection";
 import ExtraDetailsSection from "./ProductsCreateEditModelComponents/ExtraDetailsSection";
+import SeoSection from "./ProductsCreateEditModelComponents/ScoSection";
 
 const ProductsCreateEditModel = ({
   isProductsCreateEditModel,
@@ -180,6 +181,11 @@ const ProductsCreateEditModel = ({
               onRemoveDetailField={form.removeDetailField}
               onMoveFieldUp={form.moveFieldUp}
               onMoveFieldDown={form.moveFieldDown}
+            />
+
+            <SeoSection
+              seo={formData.seo}
+              onChange={(key, value) => form.setField(["seo", key], value)}
             />
           </div>
 

@@ -25,3 +25,9 @@ export const createSupplier = (payload) =>
 
 export const searchTags = (search, signal) =>
   axios.get(`${API_BASE}/tags`, { params: { search }, signal });
+
+export const createProduct = (payload) => {
+  console.log(payload)
+  axios.post(`${API_BASE}/product/create`, payload, { withCredentials: true });
+};
+export const updateProduct = () => axios.post(`${API_BASE}/update_product`);

@@ -15,12 +15,15 @@ export const verifyAccess = async (req, res, next) => {
 
     const payload = verifyAccessToken(token);
     const userData = await User.findById(payload.sub)
-      .select("_id role")
+      .select("_id role username")
       .populate("role");
 
     if (!userData) req.status(404).json({ message: "No user Find" });
 
-    req.userId = payload.sub;
+    console.log(userData);
+
+    req.userId = userData._id;
+    req.username = userData.username;
     req.permission = userData.role.permissions;
     req.roleRank = userData.role.roleRank;
     req.roleTitle = userData.role.roleTitle;

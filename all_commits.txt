@@ -1,0 +1,520 @@
+commit e8d0e9324642b40526e4ffa9cc7621be672e1a5d
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jul 11 22:36:49 2026 +0600
+
+    feat: Implement product creation and editing features with category and supplier management
+    
+    - Updated product model to include categoryData and supplierData.
+    - Enhanced product form handling to manage categories and suppliers.
+    - Added CategoryAddModal and CategorySelector components for category management.
+    - Introduced SupplierAddModal and SupplierSelector components for supplier management.
+    - Created API endpoints for category and supplier operations in the backend.
+    - Developed supplier and category models in the backend.
+    - Implemented search functionality for categories, suppliers, and tags.
+    - Added utility hooks for handling click outside and entity search.
+
+commit 5bcea8091558ec4d95eace547370c176bef0100d
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jul 11 16:40:17 2026 +0600
+
+    feat: add product creation and editing components
+    
+    - Implemented FlagsSection for product flags management.
+    - Created ImagesSection for handling product images with drag-and-drop support.
+    - Developed PricingSection for managing product pricing details.
+    - Added SpecificationsSection for product specifications input.
+    - Introduced UnitSelect and UomSection for unit of measurement selection.
+    - Created VariantSection for managing product variants.
+    - Established constants for default product values and options.
+    - Implemented useProductForm hook for managing product form state and validation.
+    - Start working on backend for adding product ( add basic product Schema and category Schema also category route only get)
+
+commit 5510ef121e3debd9fd8f6dc6b9fa14546ac9499e
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jul 11 00:07:06 2026 +0600
+
+    feat: Add CameraScanner component for barcode and QR code scanning functionality; update package.json with html5-qrcode dependency
+
+commit 3801066eb0cb69daab9bed384c88ca14b80b65e4
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed Jul 8 17:24:30 2026 +0600
+
+    feat: Update ProductsCreateEditModel to enhance pricing structure and validation; refactor NavProfileLogout for improved dropdown handling
+
+commit 1041bcb80947f7d3312e4475103386839787803e
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jul 7 21:17:42 2026 +0600
+
+    refactor: Improve code formatting and readability in NavProfileLogout component
+
+commit 6e4d54a659192fee9ef0c68dd2360c47f246c174
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jul 7 21:08:15 2026 +0600
+
+    feat: Enhance Products and UserProfile components with warehouse management
+    
+    - Introduced warehouse selection and management in UserProfile.
+    - Added default warehouse display and modal for warehouse selection.
+    - Implemented filtering and querying for warehouses in UserProfile.
+    - Refactored ProductsComponents to support warehouse-specific product management.
+    - Improved ProductsToolbar with warehouse selection and enhanced filtering options.
+    - Updated ProductsListContainer to handle product data based on selected warehouse.
+    - Added new components for warehouse selection modal and cart.
+    - Cleaned up unused code and improved overall component structure.
+
+commit 571aae1ebb15f01b25ac5a52fbd34be979bd703c
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jul 7 00:18:16 2026 +0600
+
+    refactor: Clean up code and improve formatting across multiple utility files
+
+commit 52a24e94489f4d9ecf7583704a91999d6d28bd1d
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jul 7 00:09:41 2026 +0600
+
+    feat: Add S3 and Cloudinary integration for image storage; implement upload service with error handling
+
+commit fb4abb1b215399127b989e0511642c6ef096aa43
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon Jul 6 23:06:47 2026 +0600
+
+    Refactor ProductsToolbarIndex component for improved readability and functionality; update Products page structure
+
+commit 227120a2f0078abe23b64e50ab8fa0e502ca674b
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon Jul 6 00:23:03 2026 +0600
+
+    Refactor product management components:
+    - Updated ProductsComponentsIndex to handle product details and editing separately. (edit isnt done)
+
+commit 7231063dd4253a782db07dfd050b7a8f432a483b
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jul 4 21:51:18 2026 +0600
+
+    feat: Refactor createWarehouse function for improved error handling and logging; update WarehouseRackModal and Warehouse components for better state management
+    also add mongo transaction
+
+commit 3ac1c26310b624e1ae2cd8167da24c9130e862be
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jul 4 18:06:10 2026 +0600
+
+    feat: Enhance warehouse management; implement delete functionality with confirmation and improve logging ('' change to "" )
+
+commit 8c04fe5fcdee75a3c04a8a05b01f55ab1860bbf8
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 23:07:21 2026 +0600
+
+    feat: Implement warehouse update and delete functionality; refactor WarehouseSelectorModal and add WarehouseSelectorCart component
+
+commit 35ecfba7c2af9c91e28a705f710f9465a896b479
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 22:02:26 2026 +0600
+
+    feat: Implement warehouse deletion functionality and refactor WarehouseCreateModal to WarehouseFormModal
+
+commit 5ddd0a970ee9d65c01a0f0ad2d2e486f999028cb
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 21:01:58 2026 +0600
+
+    feat: Enhance warehouse management functionality; add get and create warehouse functionality.
+
+commit 8f03df015da640935dfd4bcbf37a41aea3e4d85a
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 01:20:27 2026 +0600
+
+    feat: Update README with development warning and enhance project structure details
+
+commit 47ba53c3aedf07c8e9801c41e36edd15c1deb45b
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 01:10:53 2026 +0600
+
+    feat: Update warehouse management routes and models; enhance WarehouseCreateModal functionality
+
+commit ee4aa18f9c8089ae41f0726c1f353d48ae3fc02d
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Fri Jul 3 00:18:35 2026 +0600
+
+    feat: Implement warehouse management features with CRUD operations
+    
+    - Added Warehouse creation and editing functionality in the frontend and backend.
+    - Introduced new Warehouse model and controller for handling warehouse data.
+    - Enhanced WarehouseSelectorModal to include edit functionality for warehouses.
+    - Created WarehouseProductSearch component for searching products within racks.
+    - Developed WarehouseRackModal for managing products and shelves in racks.
+    - Implemented WarehouseRackDetailPanel and WarehouseShelfCard for displaying rack and shelf details.
+    - Updated Warehouse component to manage state and interactions for warehouses, racks, and products.
+    - Added mock data generation for warehouses and racks to facilitate testing.
+
+commit fc6f641eb91153e233bbc567aa45c868c0144c14
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed Jul 1 00:55:44 2026 +0600
+
+    feat: Add warehouse management components and functionality
+    
+    - Added mock data for warehouses and racks in Mockdata.js (temp).
+    - Developed WarehouseCreateModal for creating new warehouses.
+    - Introduced WarehouseHeader for displaying current warehouse info.
+    - Built WarehouseRack and WarehouseRackContainer for rack management.
+    - Added WarehouseRackDetailPanel for displaying selected rack details.
+    - Created WarehouseSelectorModal for selecting and filtering warehouses.
+    - Implemented Warehouse page to integrate all components and manage state.
+
+commit 33d9190f5a930bb6adf523efd5935802f75e84b0
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed Jun 24 00:33:09 2026 +0600
+
+    feat: Enhance User List and Role Management UI; Add Products Components Index and Model
+
+commit 39c481fea4dd4e0e1e740f5b22aa0f724416db94
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon Jun 22 23:31:03 2026 +0600
+
+    Refactor User Profile and Role Management Components; Enhance Navbar Interactivity
+    
+    - Updated UserListItem component to adjust the size of the status indicator.
+    - Enhanced Nav component with hover interactions and improved dropdown handling.
+    - Refactored RoleManagement component into a new RolePage directory for better organization.
+    - Introduced NavProfileLogout component to streamline user profile and logout functionalities.
+    - Implemented user permission checks in UserProfileIndex for editing capabilities.
+    - Added confirmation dialog for profile updates and improved error handling.
+    - Created backend controller for updating user data with permission checks.
+    - Integrated Helmet for dynamic page titles in UserProfile and Products pages.
+
+commit 057250a2bd904663a5be39f9b9dad5ae8545ace4
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jun 16 20:43:30 2026 +0600
+
+    feat: Implement user profile management and product page
+    
+    - Added UserProfile and Products components with routing.
+    - Created UserProfileIndex for detailed user information editing.
+    - Introduced ProtectedRouteUser for user authentication checks.
+    - Developed accounts and permissions management in the backend.
+    - Implemented role management functionalities including create, update, and delete operations.
+    - Added encryption and decryption utilities for secure data handling.
+    - Enhanced navigation links to include new routes for products and user profiles.
+    - Updated README to reflect changes in environment variables.
+
+commit 6c2a0c537de981fc5ff2c694ce1e76a72bb4c045
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon Jun 15 22:01:54 2026 +0600
+
+    feat: Enhance account management with role validation and permission checks; refactor create and update account controllers
+    
+    i dont know how but it is working
+
+commit 530b830dffdd474beb485fd916de71443be62a58
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sun Jun 14 22:43:28 2026 +0600
+
+    docs: Update MongoDB connection string in README for improved clarity
+
+commit 46c2d4018b5052506fb16fae65318abdbb968875
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sun Jun 14 22:40:41 2026 +0600
+
+    docs: Update README with comprehensive project details, tech stack, environment setup, and features
+
+commit b07d999822ded92faa85f4f719a988dee9b2c078
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sun Jun 14 22:25:36 2026 +0600
+
+    feat: Implement role creation and update functionalities with permission checks; add role rank validation and network delay simulation
+
+commit 4259ec160b1acb041768d2564e287d7261ee1d1b
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jun 13 23:12:39 2026 +0600
+
+    feat: Enhance role management with role rank validation and UI improvements; add tooltip component for better user guidance
+
+commit 1925b520892521c459925fb190fe8307b7d3553e
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat Jun 13 20:50:09 2026 +0600
+
+    feat: Refactor role management system with new role creation, update, and deletion functionalities; enhance permission handling and UI components
+
+commit f9d1630fc89cae729bdaddbb8f56936fd6136563
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Thu Jun 11 23:26:28 2026 +0600
+
+    feat: Implement Role Management and User Creation Features
+    
+    - Added CreateUserModal component for user creation with form validation and submission.
+    - Introduced EditField and ManagerField components for editing user details.
+    - Created RoleManagement component to manage user roles and permissions.
+    - Implemented CreateRole component for adding new roles with permission toggles.
+    - Added RoleCard component to display roles and their permissions.
+    - Integrated permission management with Toggle component for better UX.
+    - Updated commonComponentBG to support different background styles based on side.
+    - Enhanced useDebounce hook for better performance with a longer delay.
+    - Added new role management routes and navigation links.
+    - Improved input handling and validation across various components.
+
+commit 14beef99e7db9b6664aac3c551811f9911011537
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jun 9 19:12:59 2026 +0600
+
+    feat: Implement advanced search functionality and debounce input in user filtering
+
+commit 757b7c55ecf2ba28e051f50cf0aa81ac55ad4d25
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue Jun 9 18:53:20 2026 +0600
+
+    feat: Implement user management components with detailed tabs and editing capabilities
+    
+    - Added DetailTabs component for user information, address, emergency contacts, and flags.
+    - Created EditField component for inline editing of user attributes.
+    - Introduced StatusBadge component for displaying user status.
+    - Developed Toggle component for boolean fields.
+    - Implemented UserAvatar component to display user initials.
+    - Added UserDetailEmpty component for empty state in user details.
+    - Created UserDetailPanel for displaying and editing user details.
+    - Implemented UserList and UserListItem components for user selection.
+    - Added helper functions for fetching roles and managing user data.
+    - Included sample user data for testing and demonstration purposes.
+
+commit 16ed3f140f864c5a0d63cad8918b693bd72aaf1e
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon Jun 1 19:23:36 2026 +0600
+
+    chore: Update dependencies in package.json for improved stability and performance
+
+commit c7017e34240b72647075a3f57a9913f5c14566b7
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sun May 31 13:26:14 2026 -0400
+
+    feat: Enhance account creation and management features, update role handling, and improve UI components
+
+commit 409d5d3fcccdb66faa01a340b4fffb24a41ec2f6
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 30 04:14:45 2026 -0400
+
+    feat: Implement account creation functionality and add timezone components
+
+commit b3912277cff77f9f906d19f0d038110f6ed322ec
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 30 02:47:50 2026 -0400
+
+    Create account and filter ui updated fully I think
+
+commit a447c392b6dd45d6ec59ffd6ebdda6c0db9caf31
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 20 22:16:08 2026 +0600
+
+    fix: Add overflow-hidden class to enhance layout in App component
+
+commit 2f260bab947916675a6d9d433d7b253c1c801d90
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 20 22:11:01 2026 +0600
+
+    feat: Add AccountsList component and enhance layout in AccountsAndPermissions page
+
+commit da34eec3878a6710ed9a9a0d721a2685cde6db03
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 20 21:40:11 2026 +0600
+
+    Refactor authentication components and update role model
+    
+    - Update signUpLogic to return a 404 status response.
+    - Change userType field to jobTitle in role model.
+    - Remove department and jobTitle fields from user model.
+    - Add @animateicons/react dependency for password visibility icons.
+    - Delete PasswordInput component and replace its functionality in SignIn and SignUp components.
+    - Adjust import paths for PasswordInput in SignIn component.
+    - Remove SignUp component and integrate its functionality into FilterCreateIndex.
+    - Create new AccountsCreateButton and AccountsCreateForm components for account creation.
+    - Implement AccountsFiltersForm and AccountFilterButton for filtering accounts.
+    - Update common input and field components for better reusability.
+    - Modify common styles for input fields and components.
+
+commit 68075b9e3d19d0535bda89c38a15d74255a4e237
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 18 22:29:47 2026 +0600
+
+    Refactor account management components and hooks
+    
+    - Removed NewAccountForm, NewAccountFormInnerElement, and NewAccountFormButton components.
+    - Updated AccountsAndPermissions page to remove references to the deleted components.
+    - Refactored SignIn and SignUp components to use the new useGetName hook instead of the removed getName service.
+    - Moved useGetRole hook to a new location under Hooks and updated imports accordingly.
+    - Deleted obsolete GetAppName service.
+
+commit a310b50e613a64d1237bddcd85fcaee6c2d8e9bc
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 16 00:55:55 2026 +0600
+
+    feat: Simplify AuthPage by removing signup tab and directly rendering SignIn form
+
+commit b29c0abde1cb9a8009f795fdc81cd221c4dbdfd3
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 16 00:34:50 2026 +0600
+
+    feat: Enhance Accounts and Permissions UI with New Account Form and Role Management
+    
+    - Added NewAccountForm component for creating new user accounts with detailed input fields.
+    - Introduced NewAccountFormInnerElement for reusable form input elements.
+    - Implemented NewAccountFormButton to trigger the new user form.
+    - Integrated useGetRole hook to fetch user roles dynamically for role selection.
+    - Updated AccountItem component to display enhanced user details and employment information.
+    - Refactored AccountsFilterForm to utilize the new role fetching mechanism.
+    - Improved layout and styling for better user experience across components.
+
+commit 3cfd3183451c2262eb390cea3a4874a95134e9ea
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Thu May 14 23:08:49 2026 +0600
+
+    Refactor Accounts and Permissions Management
+    
+    - Removed the old AccountsAndPermissions.Controller.js and AccountsAndPermissions.route.js files.
+    - Created a new accountsAndPermissions.Controller.js to handle fetching accounts and permissions.
+    - Created a new accountsAndPermissions.route.js for routing related to accounts and permissions.
+    - Updated the frontend to fetch roles dynamically and apply filters in AccountsFilterForm.
+    - Refactored AccountsList to handle pagination and role changes using Axios.
+    - Introduced roles.controller.js and roles.route.js for managing roles, including fetching and changing user roles.
+    - Improved UI components for better user experience and responsiveness.
+
+commit e48f155ab3dfa1c05716d5a73dd0f13a0217f5a7
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Thu May 14 01:56:44 2026 +0600
+
+    feat: implement accounts and permissions management; add API routes, controllers, and frontend components for account listing and role management
+
+commit 0893ae5c48e31a1501a436e4da9de0de877559a1
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 13 21:35:24 2026 +0600
+
+    Refactor navigation and authentication components; implement user context for state management
+    
+    - Deleted old Nav component and created a new one with user context integration for logout functionality.
+    - Moved AuthPage to a new directory structure and updated its logic to handle user authentication with context.
+    - Added UserContext and UserContextProvider to manage user state across the application.
+    - Updated routing to reflect new paths for AuthPage and adjusted imports accordingly.
+    - Created AccountsList component to display account data and integrated it into AccountsAndPermissions page.
+    - Refactored palette colors for better UI consistency.
+    - Enhanced auth service functions for cleaner API calls.
+
+commit e013bd493e440362360137c23d5cfd4208c77fc2
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 13 09:35:36 2026 +0600
+
+    feat: enhance layout and styling for Accounts & Permissions page, add filter component, and refactor theme structure
+
+commit c119ccb2be83cdf9b0482e3c55030274052fc44b
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 13 00:37:43 2026 +0600
+
+    feat: update navigation and add Accounts & Permissions page with styling enhancements
+
+commit c937c31b1c1b3fe291285e086a57b6ef51f58a77
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue May 12 23:15:35 2026 +0600
+
+    feat: add navigation component, authentication page, home page, and palette service
+    
+    - Implemented a responsive navigation component with links to Home and Accounts.
+    - Created an authentication page with Sign In and Sign Up forms, including loading states and success notifications.
+    - Added a Home page with dynamic page title using react-helmet-async.
+    - Introduced a palette service for consistent color usage across components.
+
+commit 973d59f81a547d26d4b70006c1af918b795bbb7f
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 11 23:10:54 2026 +0600
+
+    feat: Integrate react-helmet-async for dynamic document head management and update package.json for module type
+
+commit 027933675f2ea042c95ac073878242f5623a275c
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 11 22:35:24 2026 +0600
+
+    feat: Document authentication functions for sign-in, sign-up, and refresh
+
+commit 47ab7f839bcbfb1943b9c91960d30bc3752075b2
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 11 22:31:55 2026 +0600
+
+    Refactor authentication components and restructure project directory
+    
+    - Moved PasswordInput, SignIn, SignUp, and Home components to a new Components directory.
+    - Recreated PasswordInput component with improved styling and functionality.
+    - Recreated SignIn and SignUp components to utilize the new PasswordInput component.
+    - Created AuthPage component to manage authentication views and handle form submissions.
+    - Updated MainRouter to reflect new component paths.
+    - Added fade-in animation to the CSS for better user experience.
+    - Removed old component files that were replaced by the new structure.
+
+commit 5fb1a9a3227e12d89565e2d852bab1ab113d6c34
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 11 22:12:27 2026 +0600
+
+    feat: Enhance authentication flow with password strength validation and toast notifications
+
+commit 294262ba0777738694d9421c1a3c755718746fc4
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Mon May 11 01:28:41 2026 +0600
+
+    work on fontend for login ui
+
+commit 91de1e4bea1c5851a8816ac762839bd233cd6dc9
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 9 00:21:30 2026 +0600
+
+    feat: Add user role model and update authentication API endpoints in documentation
+
+commit 2e9dc1c7aa9461cb2b8c81ae95942f44d18232b5
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 9 00:11:09 2026 +0600
+
+    feat: Refactor authentication routes and logic and add role
+
+commit f56edef6f7ee65fd0e90b410786815ac0afd022a
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 6 21:58:44 2026 +0600
+
+    auth system done ✅
+
+commit 3fa2ccbe1755f75e5bcd9e0b824764f69bc6c151
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 6 21:52:20 2026 +0600
+
+    refactor: Clean up code formatting and improve readability across multiple files
+
+commit 576ff8f81ca08e9f7636064d6f832f7b0fd43ec5
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Wed May 6 10:03:04 2026 +0600
+
+    feat: Refactor authentication and token management logic with new routes and controllers
+
+commit 2bf87f07158080e895aca097a264d5dc60a1c641
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Tue May 5 01:02:15 2026 +0600
+
+    feat: Implement authentication logic with JWT and hybrid encryption
+    
+    - Refactored signUpLogic and signInLogic to use JWT for token generation and hybrid encryption for secure data transmission.
+    - Added refreshAuth endpoint to handle session refresh using JWT.
+    - Removed deprecated decryptPayload utility and replaced it with hybridDecryption for handling incoming requests.
+    - Introduced symmetricEncryption and asymmetricEncryption utilities for encrypting and decrypting data.
+    - Updated password hashing utilities to include comparison function.
+    - Enhanced error handling and logging throughout the authentication process.
+    - Updated frontend to support new authentication flow and added refresh auth button.
+    - Removed unused README.md from frontend and added local HTTPS setup instructions in note.txt.
+
+commit 12cb5ee44a818802357b64dc133df9d17b381733
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 2 23:43:39 2026 +0600
+
+    Add initial README with project overview and setup instructions
+    
+    Co-authored-by: Copilot <copilot@github.com>
+
+commit 39b89abba6eac4d343e52265de45cc6d421b538e
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 2 23:30:46 2026 +0600
+
+    Refactor backend structure and update configurations for HTTPS support
+
+commit 2bcb7d76a5092f0f859823a5b8cdc17958218870
+Author: waslla <wasibulislam8984@gmail.com>
+Date:   Sat May 2 01:00:00 2026 +0600
+
+    Publish in github

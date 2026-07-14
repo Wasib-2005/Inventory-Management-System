@@ -20,18 +20,21 @@ const productSchema = new mongoose.Schema(
 
     barcodes: [{ type: String, trim: true }],
     categoryData: {
-      type: mongoose.Schema.Types.ObjectId,
-      //  ref: "Category",
-      trim: true,
+      category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        trim: true,
+      },
+      subcategory: {
+        type: String,
+        trim: true,
+      },
     },
-    subCategoryName: {
-      type: String,
-      trim: true,
-    },
+
     supplierData: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        //  ref: "Supplier",
+        ref: "Supplier",
         trim: true,
       },
     ],
@@ -74,12 +77,19 @@ const productSchema = new mongoose.Schema(
       extra: [{ type: String }],
     },
 
+    seo: {
+      metaTitle: { type: String, default: "" },
+      metaDescription: { type: String, default: "" },
+    },
+
     createdBy: {
-      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
 
     updatedBy: {
-      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
 
     extraDetails: [
@@ -99,9 +109,7 @@ const productSchema = new mongoose.Schema(
   },
 );
 
-productSchema.index({ sku: 1 });
-productSchema.index({ displayId: 1 });
-productSchema.index({ name: "text", brand: "text", tags: "text" }); // Enables fuzzy search across names/brands
+productSchema.index({ name: "text", brand: "text", tags: "text" });
 
 const Product = mongoose.model("Product", productSchema);
 
