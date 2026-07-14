@@ -8,6 +8,7 @@ import Products from "./Pages/Products/Products";
 import UserProfile from "./Pages/UserProfile/UserProfile";
 import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
 import Warehouse from "./Pages/Warehouse/Warehouse";
+import Register from "./Pages/Register/Register";
 
 const MainRouter = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ const MainRouter = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
+      { path: "/register", element: <Register /> },
       { path: "/products", element: <Products /> },
       { path: "/role-management", element: <RoleManagement /> },
       {

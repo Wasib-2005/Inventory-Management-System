@@ -1,0 +1,49 @@
+1. Daily Operations
+
+    HiClipboardDocument (Make an Order)
+
+        Why: Looks like an official sales clipboard or invoice sheet. It represents filling out documentation for processing customer checkout demands.
+
+    HiArrowDownLeft (Receive Inbound)
+
+        Why: A thick arrow pointing down and inward. It clearly signifies incoming logistics shipments hitting your loading docks from suppliers.
+
+    HiArrowUpRight (Dispatch Outbound)
+
+        Why: A thick arrow pointing up and outward. It represents stock leaving the warehouse floor to fulfill customer delivery fulfillments.
+
+    AiOutlineBarcode (Cycle Count)
+
+        Why: A scanning barcode pattern. This aligns with standard inventory routines where employees walk aisles scanning physical products to audit counts.
+
+2. Catalog & Infrastructure
+
+    IoCreate (New Product)
+
+        Why: A document page alongside a pen icon. Represents manual master data configuration for adding a fresh product SKU into the registry.
+
+    MdCategory (New Category)
+
+        Why: An arrangement of geometric shapes (square, triangle, circle). It visually indicates structural sorting, grouping, or segmenting unrelated stock items.
+
+    IoLocation (New Location)
+
+        Why: A standard geographic map marker pin. Perfect for micro-mapping spatial locations inside the building—like specific storage aisles, pick-shelves, or bins.
+
+    FiSliders (Adjust Stock)
+
+        Why: Graphic equalization sliders. It implies exact calibration adjustments, used here to fine-tune quantities manually during stock write-offs or corrections.
+
+3. Partners & Supply Chain
+
+    GiCargoCrane (Chain Node)
+
+        Why: An industrial dockyard crane. It represents heavy freight handling hubs and strategic supply chain transit connections.
+
+    FiUsers (Register Supplier)
+
+        Why: Multiple silhouette figures. This indicates external B2B partner management, profiles, and vendor contacts.
+
+    MdOutlinePrecisionManufacturing (Purchase Order)
+
+        Why: A factory production building icon. It means you are placing institutional factory-level reorders directly with a manufacturer or vendor to resupply stock levels.
