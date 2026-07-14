@@ -20,7 +20,11 @@ export const normalizeCategoryData = (categoryData) => {
 
   // Not populated — only the raw id survived, no display name available.
   if (category) {
-    return { _id: category, category: "", subcategory: categoryData.subcategory || "" };
+    return {
+      _id: category,
+      category: "",
+      subcategory: categoryData.subcategory || "",
+    };
   }
 
   return null;
@@ -44,21 +48,4 @@ export const normalizePricing = (pricing, fallback) => {
     if (merged[key] === null || merged[key] === undefined) merged[key] = "";
   });
   return merged;
-};
-
-// Uploaded images are stored as relative object-storage keys
-// (e.g. "products/headerImage--...jpeg"), not full URLs. Local blob:
-// previews and any already-absolute URL are left alone.
-const ASSET_BASE = (import.meta.env.VITE_AWS_HEADER ||
-  import.meta.env.VITE_ASSET_BASE_URL ||
-  import.meta.env.VITE_BACKEND_API_HEADER ||
-  ""
-).replace(/\/$/, "");
-
-export const resolveImageUrl = (path) => {
-  if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("blob:")) {
-    return path;
-  }
-  return `${ASSET_BASE}/${path.replace(/^\//, "")}`;
 };

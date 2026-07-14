@@ -1,9 +1,7 @@
 import { FiPackage, FiEdit2, FiTrash2, FiTag } from "react-icons/fi";
 import { CiBarcode } from "react-icons/ci";
-import {
-  resolveImageUrl,
-  normalizeCategoryData,
-} from "../ProductsModels/ProductsCreateEditModel/ProductsCreateEditModelComponents/productAdapters";
+import { normalizeCategoryData } from "../ProductsModels/ProductsCreateEditModel/ProductsCreateEditModelComponents/productAdapters";
+import { makeImageUrl } from "../../../Service/auth/makeImageUrl";
 
 const STATUS_STYLES = {
   ACTIVE: "bg-emerald-50 text-emerald-600 border-emerald-200",
@@ -14,7 +12,13 @@ const STATUS_STYLES = {
 
 const VISIBLE_TAGS = 3;
 
-const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }) => {
+const ProductsList = ({
+  productData,
+  canEditProduct,
+  onClick,
+  onEdit,
+  onDelete,
+}) => {
   const {
     displayId,
     parentProductId,
@@ -45,7 +49,7 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
       <div className="relative h-50 w-full md:w-30 md:h-30 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 flex-shrink-0 group-hover:scale-105 transition-transform">
         {headerImage ? (
           <img
-            src={resolveImageUrl(headerImage)}
+            src={makeImageUrl(headerImage)}
             alt={name}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -83,7 +87,9 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
 
         <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
           {name}
-          {brand && <span className="text-slate-400 font-normal"> · {brand}</span>}
+          {brand && (
+            <span className="text-slate-400 font-normal"> · {brand}</span>
+          )}
         </h3>
 
         <p className="text-[12px] truncate flex items-center gap-1">
@@ -98,7 +104,10 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
           {category?.category && (
             <>
               {" "}
-              · <span className="text-slate-500 font-medium">{category.category}</span>
+              ·{" "}
+              <span className="text-slate-500 font-medium">
+                {category.category}
+              </span>
               {category.subcategory && ` / ${category.subcategory}`}
             </>
           )}
@@ -117,7 +126,9 @@ const ProductsList = ({ productData, canEditProduct, onClick, onEdit, onDelete }
                 </span>
               ))}
               {extraTagCount > 0 && (
-                <span className="text-[10px] text-slate-400">+{extraTagCount}</span>
+                <span className="text-[10px] text-slate-400">
+                  +{extraTagCount}
+                </span>
               )}
             </div>
           )}

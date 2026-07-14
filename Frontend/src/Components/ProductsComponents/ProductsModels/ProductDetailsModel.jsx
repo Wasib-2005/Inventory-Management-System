@@ -5,10 +5,10 @@ import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../Theme/secondaryButton";
 import { primaryButton } from "../../../Theme/primaryButton";
 import {
-  resolveImageUrl,
   normalizeCategoryData,
   normalizeSupplierData,
 } from "./ProductsCreateEditModel/ProductsCreateEditModelComponents/productAdapters";
+import { makeImageUrl } from "../../../Service/auth/makeImageUrl";
 
 const STATUS_STYLES = {
   ACTIVE: "bg-emerald-50 text-emerald-600 border-emerald-200",
@@ -119,7 +119,7 @@ const ProductDetailsModel = ({
           <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/60 rounded-xl p-4 h-64 w-full">
             {displayedImage ? (
               <img
-                src={resolveImageUrl(displayedImage)}
+                src={makeImageUrl(displayedImage)}
                 alt={name}
                 className="max-w-full max-h-full object-contain mix-blend-multiply drop-shadow-sm"
               />
@@ -144,7 +144,7 @@ const ProductDetailsModel = ({
                   }`}
                 >
                   <img
-                    src={resolveImageUrl(src)}
+                    src={makeImageUrl(src)}
                     alt={`${name} gallery ${i + 1}`}
                     className="w-full h-full object-contain mix-blend-multiply"
                   />
@@ -167,12 +167,21 @@ const ProductDetailsModel = ({
               <div className="text-sm flex items-center gap-1.5 text-slate-500 mt-2 bg-slate-50 px-2 py-1 rounded border border-slate-200/50 w-fit">
                 <CiBarcode size={18} className="text-slate-400 shrink-0" />
                 <span className="font-mono tracking-wider">
-                  {barcodes.length > 0 ? barcodes.map((b) => b.code).join(", ") : "No Barcode"}
+                  {barcodes.length > 0
+                    ? barcodes.map((b) => b.code).join(", ")
+                    : "No Barcode"}
                 </span>
               </div>
 
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-2">
-                SKU: <span className="text-slate-700 font-semibold font-mono">{sku}</span> · ID: <span className="text-slate-700 font-semibold font-mono">{displayId}</span>
+                SKU:{" "}
+                <span className="text-slate-700 font-semibold font-mono">
+                  {sku}
+                </span>{" "}
+                · ID:{" "}
+                <span className="text-slate-700 font-semibold font-mono">
+                  {displayId}
+                </span>
                 {category?.category && ` · ${category.category}`}
                 {category?.subcategory && ` / ${category.subcategory}`}
               </p>
@@ -200,13 +209,17 @@ const ProductDetailsModel = ({
                   Pricing Metrics
                 </span>
                 <div className="text-slate-900 font-extrabold text-lg">
-                  {currency}{Number(pricing.sellPrice || 0).toFixed(2)}
+                  {currency}
+                  {Number(pricing.sellPrice || 0).toFixed(2)}
                 </div>
                 <div className="text-slate-500 text-[11px] mt-1">
-                  MRP: {currency}{Number(pricing.mrp || 0).toFixed(2)}
+                  MRP: {currency}
+                  {Number(pricing.mrp || 0).toFixed(2)}
                 </div>
                 <div className="text-slate-400 text-[11px] mt-0.5">
-                  Cost: {currency}{Number(pricing.buyPrice || 0).toFixed(2)} · Tax: {pricing.taxRatePercentage || 0}%
+                  Cost: {currency}
+                  {Number(pricing.buyPrice || 0).toFixed(2)} · Tax:{" "}
+                  {pricing.taxRatePercentage || 0}%
                 </div>
               </div>
 
@@ -215,7 +228,10 @@ const ProductDetailsModel = ({
                   Unit Measurements
                 </span>
                 <div className="text-slate-900 font-semibold text-sm">
-                  Base Unit: <span className="font-bold text-slate-800">{uom.baseUnit || "-"}</span>
+                  Base Unit:{" "}
+                  <span className="font-bold text-slate-800">
+                    {uom.baseUnit || "-"}
+                  </span>
                 </div>
                 <div className="text-slate-500 text-[11px] mt-1.5">
                   Sales: {uom.salesUnit || "-"}
@@ -259,7 +275,10 @@ const ProductDetailsModel = ({
                         key={key}
                         className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded capitalize shadow-sm"
                       >
-                        {key.replace(/^is/, "").replace(/([A-Z])/g, " $1").trim()}
+                        {key
+                          .replace(/^is/, "")
+                          .replace(/([A-Z])/g, " $1")
+                          .trim()}
                       </span>
                     ),
                 )}
@@ -298,8 +317,12 @@ const ProductDetailsModel = ({
                         i % 2 === 0 ? "bg-white" : "bg-slate-50/50"
                       } ${i !== 0 ? "border-t border-slate-100" : ""}`}
                     >
-                      <span className="text-slate-500 font-medium">{spec.key}</span>
-                      <span className="text-slate-900 font-semibold text-right">{spec.value}</span>
+                      <span className="text-slate-500 font-medium">
+                        {spec.key}
+                      </span>
+                      <span className="text-slate-900 font-semibold text-right">
+                        {spec.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -319,8 +342,12 @@ const ProductDetailsModel = ({
                         j % 2 === 0 ? "bg-white" : "bg-slate-50/50"
                       } ${j !== 0 ? "border-t border-slate-100" : ""}`}
                     >
-                      <span className="text-slate-500 font-medium">{row.label}</span>
-                      <span className="text-slate-900 font-semibold text-right">{row.value}</span>
+                      <span className="text-slate-500 font-medium">
+                        {row.label}
+                      </span>
+                      <span className="text-slate-900 font-semibold text-right">
+                        {row.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -329,7 +356,10 @@ const ProductDetailsModel = ({
           </div>
 
           <div className="flex gap-3 pt-3 border-t border-slate-100 sticky bottom-0 bg-white">
-            <button onClick={close} className={`${secondaryButton} flex-1 justify-center py-2 text-sm`}>
+            <button
+              onClick={close}
+              className={`${secondaryButton} flex-1 justify-center py-2 text-sm`}
+            >
               Close Window
             </button>
             {canEditProduct && (
