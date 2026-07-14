@@ -1,16 +1,11 @@
-import { useContext, useMemo, useState } from "react";
-import ProductsListContainer, {
-  initialProductsData,
-} from "./ProductsContainer/ProductsListContainer";
+import { useContext, useEffect, useMemo, useState } from "react";
+import ProductsListContainer from "./ProductsContainer/ProductsListContainer";
 import ProductsToolbarIndex from "./ProductsToolbar/ProductsToolbarIndex";
 import { UserContext } from "../../Contexts/UserContexts/UserContext";
 import ProductsCreateEditModel from "./ProductsModels/ProductsCreateEditModel/ProductsCreateEditModel";
 import ProductDetailsModel from "./ProductsModels/ProductDetailsModel";
-
-const MOCK_WAREHOUSES = [
-  { warehouseId: "wh-1", warehouseName: "Main Warehouse" },
-  { warehouseId: "wh-2", warehouseName: "Secondary Storage" },
-];
+import { getProduct } from "./ProductsModels/ProductsCreateEditModel/ProductsCreateEditModelComponents/api";
+import axios from "axios";
 
 const ProductsComponentsIndex = () => {
   const { user } = useContext(UserContext);
@@ -21,11 +16,11 @@ const ProductsComponentsIndex = () => {
   const [createEditProduct, setCreateEditProduct] = useState(null);
   const [isProductsCreateEditModel, setIsProductsCreateEditModel] =
     useState(false);
+  const [isLoadingEditProduct, setIsLoadingEditProduct] = useState(false);
 
-  const [productsData, setProductsData] = useState(initialProductsData);
+  const [productsData, setProductsData] = useState([]);
 
   const [query, setQuery] = useState({
-    warehouseId: "",
     search: "",
     sortBy: "Recently Added",
     filters: { category: "", stockStatus: "", variant: "" },
@@ -34,7 +29,13 @@ const ProductsComponentsIndex = () => {
   const canEditProduct = !!user?.permissions?.hasProductChangePermission;
 
   const categories = useMemo(
-    () => [...new Set(productsData.map((p) => p.category).filter(Boolean))],
+    () => [
+      ...new Set(
+        productsData
+          .map((p) => p.categoryData?.category || p.category)
+          .filter(Boolean),
+      ),
+    ],
     [productsData],
   );
 
@@ -46,19 +47,20 @@ const ProductsComponentsIndex = () => {
     setProductsData((prev) => prev.filter((p) => p._id !== productId));
   };
 
-  const handleSaveProduct = (formData) => {
-    console.log(formData);
+  const handleSaveProduct = (savedProduct) => {
     setProductsData((prev) => {
       const isExisting =
-        formData._id && prev.some((p) => p._id === formData._id);
+        savedProduct._id && prev.some((p) => p._id === savedProduct._id);
 
       if (isExisting) {
-        return prev.map((p) => (p._id === formData._id ? { ...formData } : p));
+        return prev.map((p) =>
+          p._id === savedProduct._id ? { ...savedProduct } : p,
+        );
       }
 
-      // TODO: the backend will assign the real _id on create; this is a
-      return [...prev, { ...formData, _id: `local-${Date.now()}` }];
+      return [...prev, savedProduct];
     });
+    setIsProductsCreateEditModel(false);
   };
 
   const openCreateModal = () => {
@@ -66,16 +68,35 @@ const ProductsComponentsIndex = () => {
     setIsProductsCreateEditModel(true);
   };
 
-  const openEditModal = (productData) => {
-    setCreateEditProduct(productData);
+  const openEditModal = async (productData) => {
     setIsProductsCreateEditModel(true);
+    setIsLoadingEditProduct(true);
+    setCreateEditProduct(null);
+    try {
+      const res = await getProduct(productData._id);
+      setCreateEditProduct(res.data?.data || productData);
+    } catch (err) {
+      console.error("Failed to load product for editing:", err);
+      setCreateEditProduct(productData);
+    } finally {
+      setIsLoadingEditProduct(false);
+    }
   };
+
+  useEffect(() => {
+    const getData = async () => {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/product/get`,
+      );
+      setProductsData(res.data.data);
+    };
+    getData();
+  }, []);
 
   return (
     <div>
       <ProductsToolbarIndex
         openCreateProductModel={openCreateModal}
-        warehouses={MOCK_WAREHOUSES}
         categories={categories}
         onQueryChange={setQuery}
       />
@@ -99,6 +120,7 @@ const ProductsComponentsIndex = () => {
 
       <ProductsCreateEditModel
         isProductsCreateEditModel={isProductsCreateEditModel}
+        isLoadingEditProduct={isLoadingEditProduct}
         onClose={() => setIsProductsCreateEditModel(false)}
         editProduct={createEditProduct}
         onSave={handleSaveProduct}

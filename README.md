@@ -193,6 +193,10 @@ npm run dev
 
 ---
 
+## Note
+- Certs if https not given 
+- Must give aws buckets anonymous access 
+
 ## Security Notes
 
 - Passwords hashed with **Argon2**

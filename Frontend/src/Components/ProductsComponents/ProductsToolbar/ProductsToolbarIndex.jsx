@@ -15,12 +15,10 @@ const stockStatusOptions = ["In Stock", "Low Stock", "Out of Stock"];
 
 const ProductsToolbarIndex = ({
   openCreateProductModel,
-  warehouses = [],
   categories = [],
   onQueryChange,
 }) => {
   const [filterOpen, setFilterOpen] = useState(false);
-  const [warehouseId, setWarehouseId] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("Recently Added");
   const [filters, setFilters] = useState({
@@ -32,59 +30,21 @@ const ProductsToolbarIndex = ({
   const debouncedSearch = useDebounce(searchInput, 400);
 
   useEffect(() => {
-    onQueryChange?.({ warehouseId, search: debouncedSearch, sortBy, filters });
-    // TODO: once /api/products/:warehouseId exists, a warehouseId change
-    // here is what should trigger the actual fetch (this effect already
-    // isolates that dependency, so swapping mock filtering for a real
-    // request later is a small change).
+    onQueryChange?.({ search: debouncedSearch, sortBy, filters });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [warehouseId, debouncedSearch, sortBy, filters]);
+  }, [debouncedSearch, sortBy, filters]);
 
   const clearFilters = () => {
     setFilters({ category: "", stockStatus: "", variant: "" });
   };
-
-  const noWarehouseSelected = !warehouseId;
 
   return (
     <div>
       {/* Toolbar */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 items-center">
-          {/* Warehouse selector - gates everything else */}
-          <div className="relative shrink-0 order-1 w-full sm:w-auto">
-            <select
-              value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-              className={`h-10 w-full sm:w-auto pl-3 pr-8 rounded-md text-[12px] font-medium border appearance-none cursor-pointer focus:outline-none transition-colors ${
-                noWarehouseSelected
-                  ? "bg-amber-500/10 text-amber-400 border-amber-600/40"
-                  : "bg-transparent text-emerald-300 border-emerald-700/40 hover:bg-emerald-900/20"
-              }`}
-            >
-              <option value="" className="bg-[#0B2B22] text-amber-300">
-                Select warehouse
-              </option>
-              {warehouses.map((w) => (
-                <option
-                  key={w.warehouseId}
-                  value={w.warehouseId}
-                  className="bg-[#0B2B22] text-emerald-300"
-                >
-                  {w.warehouseName}
-                </option>
-              ))}
-            </select>
-            <FiChevronDown
-              size={12}
-              className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${
-                noWarehouseSelected ? "text-amber-400" : "text-emerald-400"
-              }`}
-            />
-          </div>
-
           {/* Search */}
-          <div className="relative flex-1 min-w-35 order-2">
+          <div className="relative flex-1 min-w-35 order-1">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400"
               fill="none"
@@ -102,21 +62,15 @@ const ProductsToolbarIndex = ({
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              disabled={noWarehouseSelected}
-              placeholder={
-                noWarehouseSelected
-                  ? "Select a warehouse first..."
-                  : "Search products..."
-              }
-              className={`${commonInputField} pl-10 w-full disabled:opacity-50 disabled:cursor-not-allowed`}
+              placeholder="Search products..."
+              className={`${commonInputField} pl-10 w-full`}
             />
           </div>
 
           {/* Filter toggle - icon only on mobile */}
           <button
             onClick={() => setFilterOpen((p) => !p)}
-            disabled={noWarehouseSelected}
-            className={`flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-md text-[12px] font-medium border transition-colors shrink-0 order-3 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-md text-[12px] font-medium border transition-colors shrink-0 order-2 ${
               filterOpen
                 ? "bg-[#1D9E75] text-white border-[#0F6E56]"
                 : "bg-transparent text-emerald-300 border-emerald-700/40 hover:bg-emerald-900/20"
@@ -127,12 +81,11 @@ const ProductsToolbarIndex = ({
           </button>
 
           {/* Sort */}
-          <div className="relative shrink-0 order-5 sm:order-4 w-full sm:w-auto">
+          <div className="relative shrink-0 order-4 sm:order-3 w-full sm:w-auto">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              disabled={noWarehouseSelected}
-              className="h-10 w-full sm:w-auto pl-3 pr-8 rounded-md bg-transparent text-emerald-400 text-[12px] font-medium border border-emerald-700/40 hover:bg-emerald-900/20 transition-colors appearance-none cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-10 w-full sm:w-auto pl-3 pr-8 rounded-md bg-transparent text-emerald-400 text-[12px] font-medium border border-emerald-700/40 hover:bg-emerald-900/20 transition-colors appearance-none cursor-pointer focus:outline-none"
             >
               {sortOptions.map((opt) => (
                 <option
@@ -153,7 +106,7 @@ const ProductsToolbarIndex = ({
           {/* Create */}
           <button
             onClick={openCreateProductModel}
-            className="flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-md bg-[#1D9E75] text-white text-[12px] font-medium border border-[#0F6E56] hover:bg-[#0F6E56] transition-colors shrink-0 whitespace-nowrap order-4 sm:order-5"
+            className="flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-md bg-[#1D9E75] text-white text-[12px] font-medium border border-[#0F6E56] hover:bg-[#0F6E56] transition-colors shrink-0 whitespace-nowrap order-3 sm:order-4"
           >
             <IoIosAddCircleOutline size={16} />
             <span className="hidden sm:inline">Create Product</span>
@@ -162,7 +115,7 @@ const ProductsToolbarIndex = ({
         </div>
 
         {/* Filter panel */}
-        {filterOpen && !noWarehouseSelected && (
+        {filterOpen && (
           <div className="flex flex-wrap gap-2 sm:gap-3 p-3 rounded-md border border-emerald-800/40 bg-emerald-950/20">
             <select
               value={filters.category}

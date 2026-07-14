@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { emptyProduct } from "./constants";
 import { createProduct, updateProduct } from "./api";
+import {
+  normalizeCategoryData,
+  normalizeSupplierData,
+  normalizePricing,
+} from "./productAdapters";
 
 export const useProductForm = ({ isOpen, editProduct, onSave }) => {
   const [formData, setFormData] = useState(emptyProduct);
@@ -44,11 +49,11 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
           },
           flags: { ...emptyProduct.flags, ...editProduct.flags },
           uom: { ...emptyProduct.uom, ...editProduct.uom },
-          pricing: { ...emptyProduct.pricing, ...editProduct.pricing },
+          pricing: normalizePricing(editProduct.pricing, emptyProduct.pricing),
           compliance: { ...emptyProduct.compliance, ...editProduct.compliance },
           barcodes: editProduct.barcodes || [],
-          categoryIds: editProduct.categoryIds || [],
-          supplierData: editProduct.supplierData || [],
+          categoryData: normalizeCategoryData(editProduct.categoryData),
+          supplierData: normalizeSupplierData(editProduct.supplierData),
           tags: editProduct.tags || [],
           specifications: editProduct.specifications || [],
           extraDetails: editProduct.extraDetails || [],
@@ -562,8 +567,6 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
         },
       };
 
-      console.log(11111,payload);
-
       const body = new FormData();
       body.append("data", JSON.stringify(payload));
       if (headerImageFile) body.append("headerImage", headerImageFile);
@@ -593,6 +596,8 @@ export const useProductForm = ({ isOpen, editProduct, onSave }) => {
     setField,
     errors,
     isVariant,
+    isSaving,
+    saveError,
 
     newCategoryInput,
     setNewCategoryInput,

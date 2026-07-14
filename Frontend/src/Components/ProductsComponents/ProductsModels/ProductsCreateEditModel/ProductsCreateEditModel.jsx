@@ -23,6 +23,7 @@ import SeoSection from "./ProductsCreateEditModelComponents/ScoSection";
 
 const ProductsCreateEditModel = ({
   isProductsCreateEditModel,
+  isLoadingEditProduct,
   onClose,
   editProduct,
   onSave,
@@ -35,7 +36,25 @@ const ProductsCreateEditModel = ({
 
   if (!isProductsCreateEditModel) return null;
 
-  const { formData, errors, isVariant } = form;
+  if (isLoadingEditProduct) {
+    return (
+      <div
+        onClick={onClose}
+        className="fixed inset-0 z-50 bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`${commonComponentBG()} w-full max-w-sm rounded-2xl cursor-default p-8 flex items-center justify-center`}
+        >
+          <p className="text-sm font-medium text-emerald-800">
+            Loading product...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { formData, errors, isVariant, isSaving, saveError } = form;
 
   return (
     <>
@@ -182,18 +201,29 @@ const ProductsCreateEditModel = ({
             />
           </div>
 
-          <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex justify-end gap-3 shrink-0">
-            <button type="button" onClick={onClose} className={secondaryButton}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={form.handleSubmit}
-              className={`${primaryButton} bg-[#1D9E75] text-white flex items-center gap-1.5`}
-            >
-              <FiSave size={14} />
-              Save Product
-            </button>
+          <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex flex-col gap-2 shrink-0">
+            {saveError && (
+              <p className="text-[12px] text-red-600 font-medium">{saveError}</p>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSaving}
+                className={`${secondaryButton} disabled:opacity-50`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={form.handleSubmit}
+                disabled={isSaving}
+                className={`${primaryButton} bg-[#1D9E75] text-white flex items-center gap-1.5 disabled:opacity-60`}
+              >
+                <FiSave size={14} />
+                {isSaving ? "Saving..." : "Save Product"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

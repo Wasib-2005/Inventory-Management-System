@@ -26,8 +26,17 @@ export const createSupplier = (payload) =>
 export const searchTags = (search, signal) =>
   axios.get(`${API_BASE}/tags`, { params: { search }, signal });
 
-export const createProduct = (payload) => {
-  console.log(payload)
-  axios.post(`${API_BASE}/product/create`, payload, { withCredentials: true });
-};
-export const updateProduct = () => axios.post(`${API_BASE}/update_product`);
+export const getProduct = (productId) =>
+  axios.get(`${API_BASE}/product/get/${productId}`, { withCredentials: true });
+
+export const createProduct = (formData) =>
+  axios.post(`${API_BASE}/product/create`, formData, {
+    withCredentials: true,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+export const updateProduct = (productId, formData) =>
+  axios.put(`${API_BASE}/product/update/${productId}`, formData, {
+    withCredentials: true,
+    headers: { "Content-Type": "multipart/form-data" },
+  });

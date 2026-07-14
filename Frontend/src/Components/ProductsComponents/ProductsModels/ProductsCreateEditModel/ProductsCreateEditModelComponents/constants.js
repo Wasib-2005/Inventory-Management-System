@@ -49,12 +49,15 @@ export const emptyProduct = {
   seo: {
     metaTitle: "",
     metaDescription: "",
-    keywords: [],
+    keywords: "",
   },
 };
 
 export const BARCODE_TYPES = ["unit", "case", "pallet"];
-export const STATUS_OPTIONS = ["ACTIVE", "INACTIVE", "DISCONTINUED"];
+// Must match the Product schema's status enum exactly, or the backend
+// rejects the save. ("INACTIVE" isn't a valid value; DRAFT/ARCHIVED were
+// missing.)
+export const STATUS_OPTIONS = ["ACTIVE", "DRAFT", "ARCHIVED", "DISCONTINUED"];
 export const UNIT_OPTIONS = [
   "pcs",
   "box",
