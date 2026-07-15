@@ -1,0 +1,31 @@
+import { useNavigate } from "react-router";
+import ActionButton from "./ActionButton";
+import { CATALOG_ACTIONS } from "./constants";
+
+const CatalogFolder = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h3 className="text-sm font-bold text-emerald-900">
+          Catalog & Physical Infrastructure
+        </h3>
+        <p className="text-xs text-emerald-700/50 mt-0.5">
+          Register nodes, locations, and parameters
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {CATALOG_ACTIONS.map((action) => (
+          <ActionButton
+            key={action.label}
+            {...action}
+            onClick={action.to ? () => navigate(action.to) : undefined}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default CatalogFolder;

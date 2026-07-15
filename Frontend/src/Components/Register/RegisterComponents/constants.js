@@ -1,0 +1,115 @@
+import {
+  HiClipboardDocument,
+  HiArrowDownLeft,
+  HiArrowUpRight,
+} from "react-icons/hi2";
+import { AiOutlineBarcode } from "react-icons/ai";
+import {
+  MdCategory,
+  MdOutlinePrecisionManufacturing,
+} from "react-icons/md";
+import {
+  IoCreateOutline,
+  IoLocationOutline,
+} from "react-icons/io5";
+import { FiSliders, FiUsers } from "react-icons/fi";
+import { GiCargoCrane } from "react-icons/gi";
+
+// TODO: there's no Sale/Transaction schema yet, so this is static mock data.
+// Once that model exists, replace this with a GET (e.g. /api/sales/today)
+// and keep the shape below the same so SalesLedgerPanel doesn't need changes.
+export const initialSales = [
+  {
+    id: "1",
+    username: "John Doe",
+    mobile: "+1 555-0199",
+    receipt: "REC-2026-0891",
+    mrp: 1200,
+    discount: 200,
+    boughtPrice: 1000,
+    status: "Paid",
+    type: "Cash",
+  },
+  {
+    id: "2",
+    username: "Sarah Smith",
+    mobile: "+1 555-0143",
+    receipt: "REC-2026-0892",
+    mrp: 450,
+    discount: 0,
+    boughtPrice: 450,
+    status: "Credit",
+    type: "Net-30",
+  },
+  {
+    id: "3",
+    username: "Alex Rivera",
+    mobile: "+1 555-0177",
+    receipt: "REC-2026-0893",
+    mrp: 3500,
+    discount: 500,
+    boughtPrice: 3000,
+    status: "Partial",
+    type: "Split-Credit",
+  },
+];
+
+// TODO: also no Credit/Ledger schema yet - static mock until that exists.
+export const initialCreditLedger = [
+  {
+    id: "c1",
+    customer: "Sarah Smith",
+    outstanding: 450,
+    limit: 5000,
+    dueDate: "Aug 12, 2026",
+  },
+  {
+    id: "c2",
+    customer: "Alex Rivera",
+    outstanding: 1200,
+    limit: 3000,
+    dueDate: "Jul 28, 2026",
+  },
+  {
+    id: "c3",
+    customer: "Apex Builders",
+    outstanding: 8400,
+    limit: 10000,
+    dueDate: "Overdue",
+  },
+];
+
+export const SALE_STATUS_STYLES = {
+  Paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Credit: "bg-rose-50 text-rose-700 border-rose-200",
+  Partial: "bg-amber-50 text-amber-700 border-amber-200",
+};
+
+// Action tiles rendered inside each folder. `to` is a route to navigate to
+// (only wired up for pages that actually exist yet - Products & Warehouse);
+// actions without a `to` don't have a destination built yet, so they're
+// visual-only until that feature exists.
+export const OPERATIONS_ACTIONS = [
+  { icon: HiClipboardDocument, label: "Make an Order", color: "blue" },
+  { icon: HiArrowDownLeft, label: "Receive Inbound", color: "emerald" },
+  { icon: HiArrowUpRight, label: "Dispatch Outbound", color: "amber" },
+  { icon: AiOutlineBarcode, label: "Cycle Count", color: "purple" },
+];
+
+export const CATALOG_ACTIONS = [
+  { icon: IoCreateOutline, label: "New Product", color: "slate", to: "/products" },
+  { icon: MdCategory, label: "New Category", color: "slate", to: "/products" },
+  { icon: IoLocationOutline, label: "New Location", color: "slate", to: "/warehouse" },
+  { icon: FiSliders, label: "Adjust Stock", color: "rose", to: "/warehouse" },
+];
+
+export const SUPPLY_ACTIONS = [
+  { icon: GiCargoCrane, label: "Chain Node", color: "slate" },
+  { icon: FiUsers, label: "Register Supplier", color: "slate", to: "/products" },
+  {
+    icon: MdOutlinePrecisionManufacturing,
+    label: "Purchase Order",
+    color: "cyan",
+    wide: true,
+  },
+];

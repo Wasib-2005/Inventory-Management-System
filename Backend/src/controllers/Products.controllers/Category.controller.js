@@ -1,4 +1,4 @@
-import {logger} from "../../config/logger.js";
+import { logger } from "../../config/logger.js";
 import Category from "../../models/Category.model.js";
 
 export const getCategory = async (req, res) => {
@@ -84,4 +84,10 @@ export const createCategory = async (req, res) => {
   }
 };
 
+export const deleteCategory = async (req, res) => {
+  console.log("deleteCategory not done");
+};
 
+export const restoreCategory = async (req, res) => {
+  console.log("deleteCategory not done");
+};
