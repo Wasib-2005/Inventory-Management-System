@@ -81,7 +81,7 @@ logger.info(`Image probider is ${process.env.UPLOAD_PROVIDER}`);
 
 // Simulate network delay remove it
 app.use((req, res, next) => {
-  const DELAY_MS = 1000;
+  const DELAY_MS = 1;
   setTimeout(next, DELAY_MS);
 });
 

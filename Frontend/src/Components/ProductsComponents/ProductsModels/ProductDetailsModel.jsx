@@ -355,10 +355,11 @@ const ProductDetailsModel = ({
             ))}
           </div>
 
-          <div className="flex gap-3 pt-3 border-t border-slate-100 sticky bottom-0 bg-white">
+        </div>
+          <div className="flex bg-white gap-3 p-3  sticky bottom-0 ">
             <button
               onClick={close}
-              className={`${secondaryButton} flex-1 justify-center py-2 text-sm`}
+              className={`${secondaryButton}  flex-1 justify-center py-2 text-sm`}
             >
               Close Window
             </button>
@@ -375,7 +376,6 @@ const ProductDetailsModel = ({
               </button>
             )}
           </div>
-        </div>
       </div>
     </div>
   );

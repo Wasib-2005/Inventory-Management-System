@@ -5,7 +5,7 @@ import {
   cloudinary,
 } from "../../config/connectImageStorage.js";
 import { generateImageName } from "./imageNameGenetator.js";
-import {logger} from "../../config/logger.js";
+import { logger } from "../../config/logger.js";
 
 async function uploadToS3(file, bucket) {
   const fileKey = generateImageName(file);
@@ -26,10 +26,7 @@ async function uploadToS3(file, bucket) {
 async function uploadToCloudinary(file, folder) {
   const base64Data = file.buffer.toString("base64");
   const fileUri = `data:${file.mimetype};base64,${base64Data}`;
-
-  // 1. Generate the secure filename block
   const secureNameWithExt = generateImageName(file);
-  // 2. Cloudinary expects public_id WITHOUT the trailing extension (.jpg/.png)
   const secureNameWithoutExt = secureNameWithExt.substring(
     0,
     secureNameWithExt.lastIndexOf("."),
@@ -37,9 +34,10 @@ async function uploadToCloudinary(file, folder) {
 
   const result = await cloudinary.uploader.upload(fileUri, {
     folder: folder,
-    public_id: secureNameWithoutExt, // Sets your readable string format
+    public_id: secureNameWithoutExt,
     use_filename: true,
-    unique_filename: false, // Prevents Cloudinary from appending its own random characters
+    unique_filename: false,
+    timeout: 30000,
   });
   console.log(result.secure_url);
   return { url: result.secure_url, key: result.public_id };

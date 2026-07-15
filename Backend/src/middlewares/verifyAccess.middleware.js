@@ -20,8 +20,6 @@ export const verifyAccess = async (req, res, next) => {
 
     if (!userData) req.status(404).json({ message: "No user Find" });
 
-    console.log(userData);
-
     req.userId = userData._id;
     req.username = userData.username;
     req.permission = userData.role.permissions;

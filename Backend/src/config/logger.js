@@ -1,50 +1,22 @@
 import pino from "pino";
 
 const LOG_LEVEL = process.env.LOG_LEVEL || "info";
+const isProduction = process.env.NODE_ENV === "production";
 
-const baseLogger = pino({
+export const logger = pino({
   level: LOG_LEVEL,
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "SYS:standard",
-      ignore: "pid,hostname",
-    },
-  },
+
+  transport: isProduction // TODO: addd !
+    ? {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "SYS:standard",
+          ignore: "pid,hostname",
+        },
+      }
+    : undefined,
+
+  // 3. Automatically formats Error object stack traces safely
+  serializers: pino.stdSerializers,
 });
-
-function buildCtx(args) {
-  if (!args.length) return { ctx: {}, suffix: "" };
-
-  const ctx = {};
-  const strings = [];
-
-  for (const arg of args) {
-    if (arg instanceof Error) {
-      ctx.err = arg;
-    } else if (arg && typeof arg === "object") {
-      Object.assign(ctx, arg);
-    } else {
-      strings.push(String(arg));
-    }
-  }
-
-  return { ctx, suffix: strings.join(" ") };
-}
-
-function makeLog(level) {
-  return (msg, ...args) => {
-    const { ctx, suffix } = buildCtx(args);
-    baseLogger[level](ctx, suffix ? `${msg} ${suffix}` : msg);
-  };
-}
-
-export const logger = {
-  info: makeLog("info"),
-  debug: makeLog("debug"),
-  warn: makeLog("warn"),
-  error: makeLog("error"),
-};
-
-
