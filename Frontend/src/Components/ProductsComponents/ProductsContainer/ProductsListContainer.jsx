@@ -45,6 +45,7 @@ const ProductsListContainer = ({
   setIsDetailsOpen,
   onEditProduct,
   onDeleteProduct,
+  onRestoreProduct,
 }) => {
   const { search, sortBy, filters } = query;
 
@@ -107,6 +108,7 @@ const ProductsListContainer = ({
           }}
           onEdit={() => onEditProduct?.(productData)}
           onDelete={() => onDeleteProduct?.(productData._id)}
+          onRestore={() => onRestoreProduct?.(productData._id)}
         />
       ))}
     </div>

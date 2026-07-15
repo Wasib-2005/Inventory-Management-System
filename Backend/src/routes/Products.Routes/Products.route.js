@@ -2,8 +2,10 @@ import express from "express";
 import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
 import {
   createProduct,
+  deleteProduct,
   getProducts,
   getProductsId,
+  restoreProduct,
   updateProduct,
 } from "../../controllers/Products.controllers/Products.controller.js";
 import { imageUploadPipeline } from "../../middlewares/handleImageUploadPipeline.js";
@@ -19,5 +21,7 @@ router.put(
   imageUploadPipeline,
   updateProduct,
 );
+router.delete("/delete/:productId", verifyAccess, deleteProduct);
+router.patch("/restore/:productId", verifyAccess, restoreProduct);
 
 export default router;

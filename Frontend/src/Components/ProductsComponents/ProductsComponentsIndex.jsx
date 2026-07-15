@@ -6,6 +6,7 @@ import ProductsCreateEditModel from "./ProductsModels/ProductsCreateEditModel/Pr
 import ProductDetailsModel from "./ProductsModels/ProductDetailsModel";
 import { getProduct } from "./ProductsModels/ProductsCreateEditModel/ProductsCreateEditModelComponents/api";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const ProductsComponentsIndex = () => {
   const { user } = useContext(UserContext);
@@ -39,12 +40,95 @@ const ProductsComponentsIndex = () => {
     [productsData],
   );
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (!productId) return;
-    if (!window.confirm("Delete this product? This cannot be undone.")) {
-      return;
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Delete this product?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.delete(
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/product/delete/${productId}`,
+          { withCredentials: true },
+        );
+
+        const updatedProduct = response.data.data;
+
+        setProductsData((prev) =>
+          prev.map((p) => (p._id === productId ? updatedProduct : p)),
+        );
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "The product has been marked as deleted.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error!",
+          text: error.response?.data?.message || "Something went wrong.",
+          icon: "error",
+        });
+      }
     }
-    setProductsData((prev) => prev.filter((p) => p._id !== productId));
+  };
+
+  const handleRestoreProduct = async (productId) => {
+    if (!productId) return;
+
+    const result = await Swal.fire({
+      title: "Restore Product?",
+      text: "This will recover the product and mark it as active again.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981", // emerald-500
+      cancelButtonColor: "#64748b", // slate-500
+      confirmButtonText: "Yes, restore it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // Calling a PATCH endpoint to restore the deleted flag
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/product/restore/${productId}`,
+          {},
+          { withCredentials: true },
+        );
+
+        const restoredProduct = response.data.data;
+
+        // Update state with restored product payload
+        setProductsData((prev) =>
+          prev.map((p) => (p._id === productId ? restoredProduct : p)),
+        );
+
+        Swal.fire({
+          title: "Restored!",
+          text: "The product has been successfully recovered.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error!",
+          text: error.response?.data?.message || "Failed to restore product.",
+          icon: "error",
+        });
+      }
+    }
   };
 
   const handleSaveProduct = (savedProduct) => {
@@ -108,6 +192,7 @@ const ProductsComponentsIndex = () => {
         setIsDetailsOpen={setIsDetailsOpen}
         onEditProduct={openEditModal}
         onDeleteProduct={handleDeleteProduct}
+        onRestoreProduct={handleRestoreProduct}
       />
 
       <ProductDetailsModel

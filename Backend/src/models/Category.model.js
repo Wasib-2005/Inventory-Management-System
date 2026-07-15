@@ -26,6 +26,15 @@ const categorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deleteBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true },
 );

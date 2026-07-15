@@ -14,21 +14,6 @@ const verifyProductData = (data) => {
   if (!displayId || !sku || !name || !categoryData) {
     return "Missing required root fields: displayId, sku, and name are mandatory.";
   }
-
-  // if (extraDetails && Array.isArray(extraDetails)) {
-  //   for (const section of extraDetails) {
-  //     if (!section.header || !Array.isArray(section.body)) {
-  //       return "Invalid extraDetails structure. Every section requires a 'header' and a 'body' array.";
-  //     }
-
-  //     for (const row of section.body) {
-  //       if (!row.label || !row.value) {
-  //         return "Invalid extraDetails body row. Every item requires a 'label' and a 'value'.";
-  //       }
-  //     }
-  //   }
-  // }
-
   return null;
 };
 
@@ -47,6 +32,7 @@ export const getProducts = async (req, res) => {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
+
     logger.info(
       { search, status, category, subcategory, brand, page, limit },
       "Fetching products with query filters",
@@ -56,7 +42,6 @@ export const getProducts = async (req, res) => {
     if (search) {
       filter.$text = { $search: search };
     }
-
     if (status) {
       filter.status = status;
     }
@@ -86,6 +71,9 @@ export const getProducts = async (req, res) => {
         .limit(Number(limit))
         .populate("categoryData.category", "category")
         .populate("supplierData")
+        .populate("createdBy", "username email")
+        .populate("updatedBy", "username email")
+        .populate("deleteBy", "username email")
         .lean(),
       Product.countDocuments(filter),
     ]);
@@ -128,6 +116,9 @@ export const getProductsId = async (req, res) => {
     const product = await Product.findById(id)
       .populate("categoryData.category", "category")
       .populate("supplierData")
+      .populate("createdBy", "username email")
+      .populate("updatedBy", "username email")
+      .populate("deleteBy", "username email")
       .lean();
 
     if (!product) {
@@ -181,14 +172,12 @@ export const createProduct = async (req, res) => {
 
         if (element.fieldname.startsWith("extraImage_")) {
           const slotIndex = parseInt(element.fieldname.split("_")[1], 10);
-
           productData.image.extra[slotIndex] = getImgUrl[0];
         }
       }
     }
 
     const validationError = verifyProductData(productData);
-
     if (validationError) {
       return res.status(400).json({
         success: false,
@@ -197,15 +186,12 @@ export const createProduct = async (req, res) => {
     }
 
     const userId = req.userId;
-
     productData.createdBy = userId;
     productData.updatedBy = userId;
 
     const categoryId = productData?.categoryData?._id;
-
     const supplierIds =
       productData?.supplierData?.map((supplier) => supplier._id) || [];
-
     const parentId = productData?.parentProductId;
 
     const validationPromises = [];
@@ -244,7 +230,6 @@ export const createProduct = async (req, res) => {
     }
 
     const validationResults = await Promise.all(validationPromises);
-
     for (const result of validationResults) {
       if (!result.exists) {
         return res.status(400).json({
@@ -261,12 +246,18 @@ export const createProduct = async (req, res) => {
       });
     }
     productData.categoryData.category = productData.categoryData._id;
-
     delete productData.categoryData._id;
-
     productData.supplierData = supplierIds;
 
     const addProductToDB = await Product.create(productData);
+
+    await addProductToDB.populate([
+      { path: "categoryData.category", select: "category" },
+      { path: "supplierData" },
+      { path: "createdBy", select: "username email" },
+      { path: "updatedBy", select: "username email" },
+      { path: "deleteBy", select: "username email" },
+    ]);
 
     logger.info(
       `${req.username} (${userId}) created product: ${addProductToDB.name} (SKU: ${addProductToDB.sku})`,
@@ -275,7 +266,7 @@ export const createProduct = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Product verified and ready for database entry.",
-      data: addProductToDB,
+      data: addProductToDB.toObject(),
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -309,6 +300,7 @@ export const updateProduct = async (req, res) => {
     }
 
     const existingProduct = await Product.findById(productId);
+
     if (!existingProduct) {
       return res.status(404).json({
         success: false,
@@ -418,7 +410,6 @@ export const updateProduct = async (req, res) => {
     };
 
     productDataReq.supplierData = supplierIds;
-
     productDataReq.updatedBy = req.userId;
 
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -427,7 +418,11 @@ export const updateProduct = async (req, res) => {
       { returnDocument: "after" },
     )
       .populate("categoryData.category", "category")
-      .populate("supplierData");
+      .populate("supplierData")
+      .populate("createdBy", "username email")
+      .populate("updatedBy", "username email")
+      .populate("deleteBy", "username email")
+      .lean();
 
     logger.info(
       `${req.username} successfully updated product ID: ${productId}`,
@@ -448,4 +443,97 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+export const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID format.",
+      });
+    }
+
+    const productData = await Product.findByIdAndUpdate(
+      productId,
+      { deleteBy: req.userId, isDeleted: true },
+      { new: true },
+    );
+
+    if (!productData) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    await productData.populate([
+      { path: "categoryData.category", select: "category" },
+      { path: "supplierData" },
+      { path: "createdBy", select: "username email" },
+      { path: "updatedBy", select: "username email" },
+      { path: "deleteBy", select: "username email" },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+      data: productData.toObject(),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const restoreProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID format.",
+      });
+    }
+
+    const productData = await Product.findByIdAndUpdate(
+      productId,
+      {
+        isDeleted: false,
+        $unset: { deleteBy: "" },
+        updatedBy: req.userId,
+      },
+      { new: true },
+    );
+
+    if (!productData) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // Populate the newly restored data structures so the frontend has up-to-date values
+    await productData.populate([
+      { path: "categoryData.category", select: "category" },
+      { path: "supplierData" },
+      { path: "createdBy", select: "username email" },
+      { path: "updatedBy", select: "username email" },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Product restored successfully",
+      data: productData.toObject(),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server Error during product recovery.",
+      error: error.message,
+    });
+  }
+};

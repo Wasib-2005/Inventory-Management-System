@@ -87,6 +87,16 @@ const productSchema = new mongoose.Schema(
       metaDescription: { type: String, default: "" },
     },
 
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deleteBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
