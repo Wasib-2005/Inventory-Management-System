@@ -20,13 +20,9 @@ const warehouseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    rackRows: {
-      type: [String],
-      required: true,
-    },
-    racksPerRow: {
-      type: Number,
-      required: true,
+    rackdata: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Rack",
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,6 +1,6 @@
 import { FiPlus, FiTrash2, FiImage, FiUpload, FiLink } from "react-icons/fi";
 import { commonInputField } from "../../../../../Theme/commonInputField";
-import { makeImageUrl } from "../../../../../Service/auth/makeImageUrl";
+import { resolveImageUrl } from "./productAdapters";
 
 const ImagesSection = ({
   image,
@@ -56,7 +56,7 @@ const ImagesSection = ({
         <div className="w-20 h-20 bg-slate-50 border border-emerald-100 rounded-md shrink-0 flex items-center justify-center overflow-hidden shadow-inner">
           {image.header ? (
             <img
-              src={makeImageUrl(image.header)}
+              src={resolveImageUrl(image.header)}
               alt="Header Preview"
               className="w-full h-full object-cover"
             />
@@ -144,7 +144,7 @@ const ImagesSection = ({
               <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded shrink-0 flex items-center justify-center overflow-hidden shadow-inner">
                 {url ? (
                   <img
-                    src={makeImageUrl(url)}
+                    src={resolveImageUrl(url)}
                     alt={`Extra ${index}`}
                     className="w-full h-full object-cover"
                   />

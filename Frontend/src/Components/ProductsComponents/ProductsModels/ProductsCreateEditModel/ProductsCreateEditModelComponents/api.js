@@ -12,6 +12,10 @@ export const searchCategories = (search, signal) =>
 export const createCategory = (payload) =>
   axios.post(`${API_BASE}/category`, payload, { withCredentials: true });
 
+
+export const deleteCategory = (categoryId) =>
+  axios.delete(`${API_BASE}/category/${categoryId}`, { withCredentials: true });
+
 export const searchSuppliers = (search, signal) =>
   axios.get(`${API_BASE}/suppliers`, {
     params: { search },
@@ -19,9 +23,11 @@ export const searchSuppliers = (search, signal) =>
     withCredentials: true,
   });
 
-// payload: { suppliersName, code, place }
 export const createSupplier = (payload) =>
   axios.post(`${API_BASE}/suppliers`, payload, { withCredentials: true });
+
+export const deleteSupplier = (supplierId) =>
+  axios.delete(`${API_BASE}/suppliers/${supplierId}`, { withCredentials: true });
 
 export const searchTags = (search, signal) =>
   axios.get(`${API_BASE}/tags`, { params: { search }, signal });

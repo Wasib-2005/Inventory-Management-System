@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { FiX, FiPlus, FiTrash2 } from "react-icons/fi";
 import { commonComponentBG } from "../../../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../../../Theme/secondaryButton";
@@ -49,26 +50,26 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[60] bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+      className="fixed inset-0 z-[60] bg-emerald-950/40 backdrop-blur-sm flex items-stretch sm:items-center sm:justify-center sm:p-6 cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${commonComponentBG()} w-full max-w-md rounded-2xl cursor-default flex flex-col`}
+        className={`${commonComponentBG()} w-full h-full sm:h-auto sm:max-w-lg rounded-none sm:rounded-2xl cursor-default flex flex-col`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl">
-          <h3 className="text-base font-bold text-emerald-900">Add Category</h3>
+        <div className="flex items-center justify-between p-5 border-b border-emerald-300/40 bg-emerald-50 sm:rounded-t-2xl shrink-0">
+          <h3 className="text-lg font-bold text-emerald-900">Add Category</h3>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md bg-white/80 hover:bg-white text-emerald-800"
           >
-            <FiX size={16} />
+            <FiX size={18} />
           </button>
         </div>
 
-        <div className="p-4 flex flex-col gap-3">
+        <div className="p-5 flex flex-col gap-4 overflow-y-auto">
           <div className="flex flex-col gap-1">
             <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
               Category Name *
@@ -119,7 +120,7 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
           {error && <p className="text-[11px] text-red-500">{error}</p>}
         </div>
 
-        <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex justify-end gap-3">
+        <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 sm:rounded-b-2xl flex justify-end gap-3 shrink-0">
           <button type="button" onClick={onClose} className={secondaryButton}>
             Cancel
           </button>
@@ -133,7 +134,8 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

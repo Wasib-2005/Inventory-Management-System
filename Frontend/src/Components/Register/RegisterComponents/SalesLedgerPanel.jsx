@@ -5,18 +5,11 @@ const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
 const SalesLedgerPanel = ({ sales }) => (
   <div className={`${commonComponentBG()} overflow-hidden`}>
-    <div className="p-5 border-b border-emerald-300/40 flex justify-between items-center">
-      <div>
-        <h2 className="font-bold text-emerald-900 text-lg">
-          Today's Sales & Credit Records
-        </h2>
-        <p className="text-xs text-emerald-700/50 mt-0.5">
-          Real-time settlement and clearance tracker
-        </p>
-      </div>
-      <span className="px-3 py-1 text-xs font-bold rounded-full text-white bg-[#1D9E75] animate-pulse shrink-0">
-        Live Feed
-      </span>
+    <div className="p-5 border-b border-emerald-300/40">
+      <h2 className="font-bold text-emerald-900 text-lg">Recent Sales</h2>
+      <p className="text-xs text-emerald-700/50 mt-0.5">
+        Today's receipts, at a glance
+      </p>
     </div>
 
     {/* Desktop table */}

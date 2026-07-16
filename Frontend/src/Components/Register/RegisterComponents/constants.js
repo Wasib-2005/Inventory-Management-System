@@ -4,20 +4,11 @@ import {
   HiArrowUpRight,
 } from "react-icons/hi2";
 import { AiOutlineBarcode } from "react-icons/ai";
-import {
-  MdCategory,
-  MdOutlinePrecisionManufacturing,
-} from "react-icons/md";
-import {
-  IoCreateOutline,
-  IoLocationOutline,
-} from "react-icons/io5";
-import { FiSliders, FiUsers } from "react-icons/fi";
-import { GiCargoCrane } from "react-icons/gi";
 
 // TODO: there's no Sale/Transaction schema yet, so this is static mock data.
 // Once that model exists, replace this with a GET (e.g. /api/sales/today)
-// and keep the shape below the same so SalesLedgerPanel doesn't need changes.
+// and keep the shape below the same so OperationsFolder's list doesn't
+// need changes.
 export const initialSales = [
   {
     id: "1",
@@ -85,31 +76,10 @@ export const SALE_STATUS_STYLES = {
   Partial: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
-// Action tiles rendered inside each folder. `to` is a route to navigate to
-// (only wired up for pages that actually exist yet - Products & Warehouse);
-// actions without a `to` don't have a destination built yet, so they're
-// visual-only until that feature exists.
+// "Sell" tab action tiles - no order/dispatch backend yet, visual only.
 export const OPERATIONS_ACTIONS = [
   { icon: HiClipboardDocument, label: "Make an Order", color: "blue" },
   { icon: HiArrowDownLeft, label: "Receive Inbound", color: "emerald" },
   { icon: HiArrowUpRight, label: "Dispatch Outbound", color: "amber" },
   { icon: AiOutlineBarcode, label: "Cycle Count", color: "purple" },
-];
-
-export const CATALOG_ACTIONS = [
-  { icon: IoCreateOutline, label: "New Product", color: "slate", to: "/products" },
-  { icon: MdCategory, label: "New Category", color: "slate", to: "/products" },
-  { icon: IoLocationOutline, label: "New Location", color: "slate", to: "/warehouse" },
-  { icon: FiSliders, label: "Adjust Stock", color: "rose", to: "/warehouse" },
-];
-
-export const SUPPLY_ACTIONS = [
-  { icon: GiCargoCrane, label: "Chain Node", color: "slate" },
-  { icon: FiUsers, label: "Register Supplier", color: "slate", to: "/products" },
-  {
-    icon: MdOutlinePrecisionManufacturing,
-    label: "Purchase Order",
-    color: "cyan",
-    wide: true,
-  },
 ];

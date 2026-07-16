@@ -23,7 +23,7 @@ const MainRouter = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      { path: "/register", element: <Register /> },
+      { path: "/register/:selection", element: <Register /> },
       { path: "/products", element: <Products /> },
       { path: "/role-management", element: <RoleManagement /> },
       {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { commonComponentBG } from "../../../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../../../Theme/secondaryButton";
@@ -80,30 +81,34 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
     }
   };
 
-  return (
+  // Rendered via a portal straight onto <body> - this always covers the
+  // full viewport now, even when opened from somewhere with a
+  // backdrop-blur/filter ancestor (which would otherwise trap a
+  // position:fixed child inside that small box instead of the full page).
+  return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[60] bg-emerald-950/30 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+      className="fixed inset-0 z-[60] bg-emerald-950/40 backdrop-blur-sm flex items-stretch sm:items-center sm:justify-center sm:p-6 cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`${commonComponentBG()} w-full max-w-2xl rounded-2xl cursor-default flex flex-col max-h-[90vh]`}
+        className={`${commonComponentBG()} w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-3xl rounded-none sm:rounded-2xl cursor-default flex flex-col`}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-emerald-300/40 bg-emerald-50 rounded-t-2xl">
-          <h3 className="text-base font-bold text-emerald-900">
+        <div className="flex items-center justify-between p-5 border-b border-emerald-300/40 bg-emerald-50 sm:rounded-t-2xl shrink-0">
+          <h3 className="text-lg font-bold text-emerald-900">
             Add New Supplier
           </h3>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md bg-white/80 hover:bg-white text-emerald-800"
           >
-            <FiX size={16} />
+            <FiX size={18} />
           </button>
         </div>
 
         {/* Modal Body - Scrollable if content grows */}
-        <div className="p-4 flex flex-col gap-5 overflow-y-auto">
+        <div className="p-5 flex flex-col gap-6 overflow-y-auto">
           {/* Section: Basic Info */}
           <div>
             <h4 className="text-xs font-bold text-emerald-800 mb-2 tracking-wide uppercase">
@@ -291,7 +296,7 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 rounded-b-2xl flex justify-end gap-3">
+        <div className="p-4 border-t border-emerald-300/40 bg-emerald-50 sm:rounded-b-2xl flex justify-end gap-3 shrink-0">
           <button type="button" onClick={onClose} className={secondaryButton}>
             Cancel
           </button>
@@ -305,7 +310,8 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

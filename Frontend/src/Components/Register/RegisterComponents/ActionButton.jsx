@@ -18,10 +18,10 @@ const ActionButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`${wide ? "col-span-2" : ""} py-6 px-3 flex flex-col items-center justify-center gap-2 rounded-lg border transition-colors group ${COLOR_STYLES[color]}`}
+    className={`${wide ? "col-span-2" : ""} py-2 px-2 flex flex-col items-center justify-center gap-1 rounded-lg border transition-colors group ${COLOR_STYLES[color]}`}
   >
-    <Icon className="text-2xl group-hover:scale-105 transition-transform" />
-    <span className="font-semibold text-xs text-center">{label}</span>
+    <Icon className="text-base group-hover:scale-105 transition-transform" />
+    <span className="font-semibold text-[10px] text-center">{label}</span>
   </button>
 );
 

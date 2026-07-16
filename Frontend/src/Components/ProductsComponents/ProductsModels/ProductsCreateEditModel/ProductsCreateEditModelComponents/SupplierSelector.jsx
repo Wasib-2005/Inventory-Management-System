@@ -31,7 +31,7 @@ const SupplierSelector = ({ suppliers, onAdd, onRemove, onOpenAddModal }) => {
             key={s._id}
             className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] px-2 py-1 rounded-full"
           >
-            <span className="font-semibold">{s.code}</span>
+            <span className="font-semibold">{s.supplierCode}</span>
             <span className="text-emerald-600">· {s.suppliersName}</span>
             <button type="button" onClick={() => onRemove(s._id)}>
               <FiX size={11} />
@@ -76,7 +76,7 @@ const SupplierSelector = ({ suppliers, onAdd, onRemove, onOpenAddModal }) => {
                 >
                   <span>{supplier.suppliersName}</span>
                   <span className="text-[10px] text-gray-400">
-                    {supplier.code}
+                    {supplier.supplierCode}
                   </span>
                 </div>
               ))
