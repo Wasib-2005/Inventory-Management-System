@@ -9,7 +9,7 @@ const useGetRole = () => {
     const fetchRoles = async () => {
       try {
         const { data } = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles`
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/get`
         );
         // Ensure data is handled as an array if your API returns the direct list
         setRoles(Array.isArray(data) ? data : []);

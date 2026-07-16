@@ -35,7 +35,7 @@ const CreateRole = ({ setRoles, showRoleModel, setShowRoleModel }) => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/create-role`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/create`,
         payload,
         { withCredentials: true },
       );

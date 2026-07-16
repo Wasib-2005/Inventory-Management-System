@@ -59,7 +59,7 @@ const UserProfileIndex = () => {
     const fetchWarehouses = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses`,
+          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/get`,
           { withCredentials: true },
         );
 

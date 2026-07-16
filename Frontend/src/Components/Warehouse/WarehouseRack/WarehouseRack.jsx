@@ -1,15 +1,26 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, Inbox, Layers, CornerDownRight } from "lucide-react";
-import { occupancyColor } from "../MockData";
+import {
+  occupancyColor,
+  computeRackStats,
+  computeShelfStats,
+  getGroupColour,
+  hexToRgba,
+} from "../utils";
 
 const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [tooltipPos, setTooltipPos] = useState("bottom");
 
-  const rackColor = occupancyColor(rack.itemCount, rack.capacity);
-  const pct = rack.capacity > 0 ? (rack.itemCount / rack.capacity) * 100 : 0;
-  const availableSpace = Math.max(rack.capacity - rack.itemCount, 0);
+  const shelves = rack.shelfData || [];
+  const { itemCount, capacity } = computeRackStats(rack);
+  const rackColor = occupancyColor(itemCount, capacity);
+  const pct = capacity > 0 ? (itemCount / capacity) * 100 : 0;
+  const availableSpace = Math.max(capacity - itemCount, 0);
+
+  const groupColour = getGroupColour(rack.group);
+  const groupName = rack.group?.groupName;
 
   const handleMouseEnter = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -20,30 +31,35 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
 
   return (
     <div
-      id={`rack-${rack.code}`}
+      id={`rack-${rack.rackCode}`}
       className="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Rack frame: vertical posts + stacked horizontal shelf slats */}
+      {/* Rack frame: background tinted with the rack's group colour */}
       <button
         onClick={() => onSelect(rack)}
-        className={`relative w-full rounded-md border-x-[3px] border-t-[3px] border-b-[6px] border-slate-500/70 bg-slate-200/50 flex flex-col gap-[3px] p-1.5 pb-1 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] ${
+        style={{
+          backgroundColor: hexToRgba(groupColour, 0.22),
+          borderColor: groupColour,
+        }}
+        className={`relative w-full rounded-md border-x-[3px] border-t-[3px] border-b-[6px] flex flex-col gap-[3px] p-1.5 pb-1 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] ${
           isHighlighted
             ? "ring-4 ring-amber-400 ring-offset-2 shadow-[0_0_22px_rgba(251,191,36,0.85)] scale-[1.06]"
             : ""
         }`}
       >
-        <span className="text-[9px] font-black text-slate-700 text-center leading-none">
-          {rack.code}
+        <span className="text-[9px] font-black text-slate-700 text-center leading-none truncate px-0.5">
+          {rack.rackCode}
         </span>
 
         <div className="flex flex-col gap-[3px]">
-          {rack.shelves.map((shelf) => {
-            const shelfColor = occupancyColor(shelf.itemCount, shelf.capacity);
+          {shelves.map((shelf) => {
+            const shelfStats = computeShelfStats(shelf);
+            const shelfColor = occupancyColor(shelfStats.itemCount, shelfStats.capacity);
             return (
               <div
-                key={shelf.id}
+                key={shelf._id}
                 style={shelfColor.style}
                 className="h-2.5 rounded-[2px] border border-black/10 shadow-sm"
               />
@@ -55,7 +71,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
           className="text-[8px] font-bold text-center leading-none mt-0.5 px-1 py-0.5 rounded"
           style={rackColor.style}
         >
-          {rack.itemCount}/{rack.capacity}
+          {itemCount}/{capacity}
         </span>
       </button>
 
@@ -76,17 +92,30 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
           >
             <div className="flex items-center justify-between border-b border-emerald-100 pb-1.5">
               <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950">
-                Rack {rack.code}
+                Rack {rack.rackCode}
               </span>
               <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded">
                 {Math.round(pct)}% Full
               </span>
             </div>
 
+            {groupName && (
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-800/80 -mt-1.5">
+                <span
+                  className="w-2 h-2 rounded-full border border-black/10 shrink-0"
+                  style={{ backgroundColor: groupColour }}
+                />
+                {groupName}
+                <span className="text-emerald-700/40 font-semibold">
+                  · Column {rack.column}
+                </span>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-1.5 text-[10px]">
               <div className="flex items-center gap-1 text-emerald-800">
                 <Package size={11} className="text-emerald-600" />
-                <span>Stored: <b>{rack.itemCount}</b></span>
+                <span>Stored: <b>{itemCount}</b></span>
               </div>
               <div className="flex items-center gap-1 text-emerald-800">
                 <Inbox size={11} className="text-emerald-600" />
@@ -107,22 +136,31 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
               </span>
 
               <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-0.5">
-                {rack.shelves.map((shelf) => {
+                {shelves.length === 0 && (
+                  <p className="text-[10px] text-emerald-700/40 font-semibold py-1 text-center">
+                    No shelves yet.
+                  </p>
+                )}
+                {shelves.map((shelf) => {
+                  const shelfStats = computeShelfStats(shelf);
                   const shelfPct =
-                    shelf.capacity > 0 ? (shelf.itemCount / shelf.capacity) * 100 : 0;
+                    shelfStats.capacity > 0
+                      ? (shelfStats.itemCount / shelfStats.capacity) * 100
+                      : 0;
+                  const products = shelf.productData || [];
 
                   return (
                     <div
-                      key={shelf.id}
+                      key={shelf._id}
                       className="flex flex-col gap-0.5 py-0.5 border-b border-slate-50 last:border-0"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-700 flex items-center gap-0.5">
                           <CornerDownRight size={9} className="text-emerald-500 shrink-0" />
-                          {shelf.name}
+                          {shelf.shelfCode}
                         </span>
                         <span className="text-[9px] font-bold text-emerald-900 bg-emerald-50 px-1 rounded shrink-0">
-                          {shelf.itemCount}/{shelf.capacity}
+                          {shelfStats.itemCount}/{shelfStats.capacity}
                         </span>
                       </div>
                       <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden ml-3.5">
@@ -132,16 +170,18 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
                         />
                       </div>
 
-                      {shelf.products.length > 0 && (
+                      {products.length > 0 && (
                         <div className="flex flex-col gap-0.5 ml-3.5 mt-0.5">
-                          {shelf.products.map((p) => (
+                          {products.map((p) => (
                             <div
-                              key={p.id}
+                              key={p._id}
                               className="flex items-center justify-between text-[9px] text-slate-600"
                             >
-                              <span className="truncate max-w-[110px]">{p.name}</span>
+                              <span className="truncate max-w-[110px]">
+                                {p.productInfo?.name}
+                              </span>
                               <span className="font-semibold shrink-0">
-                                {p.qty}/{p.maxQty}
+                                {p.stock?.inStock ?? 0}/{p.stock?.maxStock ?? 0}
                               </span>
                             </div>
                           ))}

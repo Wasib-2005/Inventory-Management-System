@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TbSearch, TbPackage, TbX } from "react-icons/tb";
+import { TbSearch, TbPackage, TbBuildingWarehouse, TbX } from "react-icons/tb";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { commonFieldColour } from "../../Theme/commonFieldColour";
 import { commonInputField } from "../../Theme/commonInputField";
 
+// racks: flat array from the selected warehouse's rackdata (populated)
+// onLocateRack(rackCode): parent scrolls to + flashes the matching rack
 const WarehouseProductSearch = ({ racks, onLocateRack }) => {
   const [query, setQuery] = useState("");
 
@@ -13,22 +15,45 @@ const WarehouseProductSearch = ({ racks, onLocateRack }) => {
     if (!q) return [];
 
     const results = [];
-    Object.values(racks).forEach((rack) => {
-      rack.shelves.forEach((shelf) => {
-        shelf.products.forEach((product) => {
-          if (product.name.toLowerCase().includes(q)) {
+
+    (racks || []).forEach((rack) => {
+      // Match by rack code
+      if (rack.rackCode?.toLowerCase().includes(q)) {
+        results.push({
+          key: `rack-${rack._id}`,
+          type: "rack",
+          label: rack.rackCode,
+          sublabel: rack.group?.groupName ? `Group: ${rack.group.groupName}` : `Column ${rack.column}`,
+          rackCode: rack.rackCode,
+        });
+      }
+
+      // Match by product name / sku / displayId within this rack's shelves
+      (rack.shelfData || []).forEach((shelf) => {
+        (shelf.productData || []).forEach((p) => {
+          const name = p.productInfo?.name || "";
+          const sku = p.productInfo?.sku || "";
+          const displayId = p.productInfo?.displayId || "";
+
+          if (
+            name.toLowerCase().includes(q) ||
+            sku.toLowerCase().includes(q) ||
+            displayId.toLowerCase().includes(q)
+          ) {
             results.push({
-              productId: product.id,
-              productName: product.name,
-              qty: product.qty,
-              maxQty: product.maxQty,
-              shelfName: shelf.name,
-              rackCode: rack.code,
+              key: `product-${p._id}`,
+              type: "product",
+              label: name || sku,
+              sublabel: `Rack ${rack.rackCode} · ${shelf.shelfCode} · ${
+                p.stock?.inStock ?? 0
+              }/${p.stock?.maxStock ?? 0}`,
+              rackCode: rack.rackCode,
             });
           }
         });
       });
     });
+
     return results.slice(0, 20);
   }, [query, racks]);
 
@@ -45,7 +70,7 @@ const WarehouseProductSearch = ({ racks, onLocateRack }) => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search product by name..."
+          placeholder="Search by rack code or product..."
           className={`${commonInputField} pl-8 pr-8`}
         />
         {query && (
@@ -69,23 +94,27 @@ const WarehouseProductSearch = ({ racks, onLocateRack }) => {
           >
             {matches.length === 0 ? (
               <p className="text-xs text-emerald-700/40 font-semibold py-4 text-center">
-                No matching products.
+                No matching racks or products.
               </p>
             ) : (
               matches.map((m) => (
                 <button
-                  key={m.productId}
+                  key={m.key}
                   onClick={() => handleSelect(m.rackCode)}
                   className="flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-emerald-50/70 transition-colors border-b border-emerald-100/60 last:border-0"
                 >
                   <span className="flex items-center gap-1.5 min-w-0">
-                    <TbPackage size={13} className="text-emerald-600 shrink-0" />
+                    {m.type === "rack" ? (
+                      <TbBuildingWarehouse size={13} className="text-emerald-600 shrink-0" />
+                    ) : (
+                      <TbPackage size={13} className="text-emerald-600 shrink-0" />
+                    )}
                     <span className="text-xs font-semibold text-emerald-900 truncate">
-                      {m.productName}
+                      {m.label}
                     </span>
                   </span>
                   <span className="text-[10px] font-bold text-emerald-700/60 shrink-0">
-                    Rack {m.rackCode} · {m.shelfName} · {m.qty}/{m.maxQty}
+                    {m.sublabel}
                   </span>
                 </button>
               ))

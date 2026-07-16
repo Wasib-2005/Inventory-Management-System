@@ -14,17 +14,17 @@ import { checkPermission } from "../middlewares/checkPermission.middleware.js";
 
 const router = express.Router();
 
-router.get("/roles", getRoles);
+router.get("/get", getRoles);
 router.get(
-  "/get-role-for-edit",
+  "/role-for-edit",
   verifyAccess,
   checkPermission(["hasReadRolePermission"]),
   getRolesForEditing,
 );
 
-router.post("/create-role", verifyAccess, createRole);
+router.post("/create", verifyAccess, createRole);
 
-router.patch("/update_role", verifyAccess, updateRole);
-router.delete("/delete-role", verifyAccess, deleteRole);
+router.patch("/update", verifyAccess, updateRole);
+router.delete("/delete", verifyAccess, deleteRole);
 
 export default router;

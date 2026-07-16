@@ -8,7 +8,7 @@ const Role = ({ name, value, onChange, disabled, editable }) => {
   useEffect(() => {
     const getRoles = async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/get`,
       );
       setRoles(response.data);
     };

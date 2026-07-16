@@ -20,7 +20,7 @@ const RoleManagement = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/get-role-for-edit`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/role-for-edit`,
         {
           params: query ? { search: query } : {},
           withCredentials: true,
@@ -80,7 +80,7 @@ const RoleManagement = () => {
       };
 
       const response = await axios.patch(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_role`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/update`,
         updatedPayload,
         { withCredentials: true }, // Ensured authentication tokens/cookies transfer over
       );

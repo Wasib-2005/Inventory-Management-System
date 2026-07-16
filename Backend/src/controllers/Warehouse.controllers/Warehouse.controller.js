@@ -18,20 +18,12 @@ export const createWarehouse = async (req, res) => {
   }
 
   try {
-    const UserData = await User.findById(req.userId);
-    if (!UserData) {
-      logger.warn(
-        { userId: req.userId },
-        "Creation aborted: Authenticated user not found",
-      );
-      return res.status(404).json({ message: "Authenticated user not found." });
-    }
 
     const warehouseExists = await Warehouse.findOne({ warehouseId });
     if (warehouseExists) {
       logger.warn(
         { warehouseId },
-        "Creation aborted: Warehouse ID already exists",
+        "Creation aborted: Warehouse custom ID already exists",
       );
       return res.status(400).json({ message: "Warehouse ID already exists." });
     }
@@ -47,7 +39,7 @@ export const createWarehouse = async (req, res) => {
     const newWarehouse = await Warehouse.create(warehouseData);
 
     logger.info(
-      { warehouseId: newWarehouse.warehouseId, createdBy: UserData.username },
+      { _id: newWarehouse._id, createdBy: req.username },
       "Warehouse created successfully",
     );
 
@@ -73,17 +65,6 @@ export const createWarehouse = async (req, res) => {
 export const getAllWarehouses = async (req, res) => {
   try {
     const warehouses = await Warehouse.find();
-    // .populate("createdBy", "username email") // only send warehouse data
-    // .populate({
-    //   path: "rackdata",
-    //   populate: {
-    //     path: "shelfData",
-    //     populate: {
-    //       path: "productData.productInfo",
-    //       select: "name pricing image brand sku displayId",
-    //     },
-    //   },
-    // });
     return res.status(200).json({ success: true, data: warehouses });
   } catch (error) {
     logger.error({ err: error }, "Error occurred while fetching warehouses");
@@ -92,15 +73,12 @@ export const getAllWarehouses = async (req, res) => {
 };
 
 export const getWarehouseById = async (req, res) => {
-  logger.info(
-    { warehouseId: req.params.warehouseId },
-    "Fetching warehouse details",
-  );
+  const { id } = req.params;
+
+  logger.info({ _id: id }, "Fetching warehouse details");
 
   try {
-    const { warehouseId } = req.params;
-
-    const warehouseData = await Warehouse.findById(warehouseId)
+    const warehouseData = await Warehouse.findById(id)
       .populate("createdBy", "username email")
       .populate({
         path: "rackdata",
@@ -114,27 +92,21 @@ export const getWarehouseById = async (req, res) => {
       });
 
     if (!warehouseData) {
-      logger.warn(
-        { warehouseId: warehouseId },
-        "Warehouse lookup failed: Not Found",
-      );
+      logger.warn({ _id: id }, "Warehouse lookup failed: Not Found or Deleted");
       return res.status(404).json({
         success: false,
         message: "Warehouse not found",
       });
     }
 
-    logger.info(
-      { warehouseId: warehouseId },
-      "Warehouse details successfully retrieved",
-    );
+    logger.info({ _id: id }, "Warehouse details successfully retrieved");
     return res.status(200).json({
       success: true,
       data: warehouseData,
     });
   } catch (error) {
     logger.error(
-      { err: error, warehouseId: req.params.warehouseId },
+      { err: error, _id: req.params.id },
       "Error occurred while fetching warehouse",
     );
 
@@ -147,17 +119,17 @@ export const getWarehouseById = async (req, res) => {
 };
 
 export const updateWarehouse = async (req, res) => {
-  const { warehouseId } = req.params;
+  const { id } = req.params;
   const { warehouseName, place, address, disabled } = req.body;
   const userId = req.userId;
   const username = req.username;
 
   logger.info(
-    { warehouseId, userId, username },
+    { _id: id, userId, username },
     "Attempting to update warehouse basic details",
   );
 
-  if (!warehouseId) {
+  if (!id) {
     return res
       .status(400)
       .json({ message: "Warehouse ID is required in URL parameters." });
@@ -172,18 +144,18 @@ export const updateWarehouse = async (req, res) => {
     if (disabled !== undefined) updatePayload.disabled = disabled;
 
     const updatedWarehouse = await Warehouse.findOneAndUpdate(
-      { warehouseId },
+      { _id: id },
       { $set: updatePayload },
       { new: true, runValidators: true },
     );
 
     if (!updatedWarehouse) {
-      logger.warn({ warehouseId }, "Warehouse not found for update");
+      logger.warn({ _id: id }, "Warehouse not found for update");
       return res.status(404).json({ message: "Warehouse not found." });
     }
 
     logger.info(
-      { warehouseId: updatedWarehouse.warehouseId, updatedBy: userId },
+      { _id: updatedWarehouse._id, updatedBy: userId },
       "Warehouse updated successfully",
     );
 
@@ -194,7 +166,7 @@ export const updateWarehouse = async (req, res) => {
     });
   } catch (error) {
     logger.error(
-      { err: error, warehouseId },
+      { err: error, _id: id },
       "Error occurred while updating warehouse",
     );
     return res.status(500).json({ message: "Internal server error" });
@@ -202,27 +174,24 @@ export const updateWarehouse = async (req, res) => {
 };
 
 export const deleteWarehouse = async (req, res) => {
-  const { warehouseId } = req.params;
+  const { id } = req.params;
   const userId = req.userId;
 
   logger.info(
-    { warehouseId, deletedBy: userId },
+    { _id: id, deletedBy: userId },
     "Attempting soft-delete of warehouse",
   );
 
-  if (!warehouseId) {
+  if (!id) {
     return res.status(400).json({ message: "Warehouse ID is required." });
   }
 
   try {
-    const warehouse = await Warehouse.findOne({
-      warehouseId,
-      isDeleted: false,
-    });
+    const warehouse = await Warehouse.findById(id);
 
     if (!warehouse) {
       logger.warn(
-        { warehouseId },
+        { _id: id },
         "Soft-delete aborted: Warehouse not found or already deleted",
       );
       return res.status(404).json({ message: "Warehouse not found." });
@@ -234,7 +203,7 @@ export const deleteWarehouse = async (req, res) => {
     await warehouse.save();
 
     logger.info(
-      { warehouseId: warehouse.warehouseId, deletedBy: userId },
+      { _id: warehouse._id, deletedBy: userId },
       "Warehouse soft-deleted successfully",
     );
 
@@ -245,7 +214,7 @@ export const deleteWarehouse = async (req, res) => {
     });
   } catch (error) {
     logger.error(
-      { err: error, warehouseId },
+      { err: error, _id: id },
       "Error occurred while soft-deleting warehouse",
     );
     return res.status(500).json({ message: "Internal server error" });
@@ -253,38 +222,36 @@ export const deleteWarehouse = async (req, res) => {
 };
 
 export const restoreWarehouse = async (req, res) => {
-  const { warehouseId } = req.params;
+  const { id } = req.params;
   const userId = req.userId;
 
   logger.info(
-    { warehouseId, restoredBy: userId },
+    { _id: id, restoredBy: userId },
     "Attempting to restore soft-deleted warehouse",
   );
 
-  if (!warehouseId) {
+  if (!id) {
     return res.status(400).json({ message: "Warehouse ID is required." });
   }
 
   try {
-    const warehouse = await Warehouse.findOne({ warehouseId, isDeleted: true });
+    const warehouse = await Warehouse.findById(id);
 
     if (!warehouse) {
       logger.warn(
-        { warehouseId },
+        { _id: id },
         "Restore aborted: Warehouse not found or is not deleted",
       );
       return res.status(404).json({ message: "Deleted warehouse not found." });
     }
 
     warehouse.isDeleted = false;
-
-    warehouse.deletedAt = undefined;
-    warehouse.deleteBy = undefined;
+    warehouse.updatedBy = req.userId;
 
     await warehouse.save();
 
     logger.info(
-      { warehouseId: warehouse.warehouseId, restoredBy: userId },
+      { _id: warehouse._id, restoredBy: userId },
       "Warehouse successfully restored",
     );
 
@@ -295,7 +262,7 @@ export const restoreWarehouse = async (req, res) => {
     });
   } catch (error) {
     logger.error(
-      { err: error, warehouseId },
+      { err: error, _id: id },
       "Error occurred while restoring warehouse",
     );
     return res.status(500).json({ message: "Internal server error" });

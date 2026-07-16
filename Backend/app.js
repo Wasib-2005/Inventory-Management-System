@@ -14,7 +14,7 @@ import CategoryRouter from "./src/routes/Products.Routes/Category.route.js";
 import SupplierRouter from "./src/routes/supplier.route.js";
 import ProductRouter from "./src/routes/Products.Routes/Products.route.js";
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
-import {logger} from "./src/config/logger.js";
+import { logger } from "./src/config/logger.js";
 
 const app = express();
 
@@ -85,12 +85,12 @@ app.use((req, res, next) => {
   setTimeout(next, DELAY_MS);
 });
 
-app.use("/", healthRoute);
+app.use("/api/health", healthRoute);
 app.use("/api/auth/", authRoute);
-app.use("/api/", PublicKeyGeneratorRoute);
+app.use("/api/publickey", PublicKeyGeneratorRoute);
 
-app.use("/api/", AccountsAndPermissionsRoute);
-app.use("/api/", RoleRoute);
+app.use("/api/accounts-and-permissions", AccountsAndPermissionsRoute);
+app.use("/api/roles", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
 app.use("/api/warehouses", WarehouseRouter);

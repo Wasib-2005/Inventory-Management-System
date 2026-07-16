@@ -21,6 +21,8 @@ const WarehouseSelectorModal = ({
   onCreateWarehouse,
   onEditWarehouse,
   onDeleteWarehouse,
+  onChangeStatus,
+  onRestoreWarehouse,
 }) => {
   return (
     <AnimatePresence>
@@ -89,13 +91,15 @@ const WarehouseSelectorModal = ({
                 </p>
               ) : (
                 filteredWarehouses.map((w) => (
-                  <div key={w.id}>
+                  <div key={w._id}>
                     <WarehouseSelectorCart
                       w={w}
                       selectedWarehouse={selectedWarehouse}
                       onSelectWarehouse={onSelectWarehouse}
                       onEditWarehouse={onEditWarehouse}
                       onDeleteWarehouse={onDeleteWarehouse}
+                      onChangeStatus={onChangeStatus}
+                      onRestoreWarehouse={onRestoreWarehouse}
                     />
                   </div>
                 ))

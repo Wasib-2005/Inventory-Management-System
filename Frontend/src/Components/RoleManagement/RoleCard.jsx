@@ -31,7 +31,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
       if (roleRank !== role?.roleRank) {
         try {
           await axios.patch(
-            `${import.meta.env.VITE_BACKEND_API_HEADER}/api/update_role`,
+            `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/update`,
             { ...role, roleRank: Number(roleRank) },
             { withCredentials: true },
           );
@@ -84,7 +84,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
 
     try {
       const res = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/delete-role?id=${role._id}`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/delete-role?id=${role._id}`,
         { withCredentials: true },
       );
 
@@ -254,7 +254,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
                   Protected Role
                 </p>
                 <p className="text-red-500/80 text-xs leading-relaxed">
-                 Admin keep in mind get the full system access.
+                  Admin keep in mind get the full system access.
                 </p>
               </div>
             </div>

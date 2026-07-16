@@ -7,15 +7,15 @@ import {
   deleteWarehouse,
   getWarehouseById,
   restoreWarehouse,
-} from "../../controllers/Warehouse.controllers/Warehouse.controllers.js";
+} from "../../controllers/Warehouse.controllers/Warehouse.controller.js";
 
 const router = express.Router();
 
-router.get("/", getAllWarehouses);
-router.get("/:warehouseId", getWarehouseById);
+router.get("/get", getAllWarehouses);
+router.get("/get/:id", getWarehouseById);
 router.post("/create", verifyAccess, createWarehouse);
-router.put("/update/:warehouseId", verifyAccess, updateWarehouse);
-router.delete("/delete/:warehouseId", verifyAccess, deleteWarehouse);
-router.patch("/:warehouseId", restoreWarehouse);
+router.put("/update/:id", verifyAccess, updateWarehouse);
+router.delete("/delete/:id", verifyAccess, deleteWarehouse);
+router.patch("/restore/:id", restoreWarehouse);
 
 export default router;

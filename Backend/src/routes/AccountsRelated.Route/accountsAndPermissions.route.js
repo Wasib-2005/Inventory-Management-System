@@ -4,7 +4,7 @@ import { getAccountsAndPermissions } from "../../controllers/ManageAccounts.cont
 
 const router = express.Router();
 
-router.get("/accounts-and-permissions", getAccountsAndPermissions);
+router.get("/", getAccountsAndPermissions);
 
 export default router;
  

@@ -5,8 +5,6 @@ import {
   TbHash,
   TbPlus,
   TbX,
-  TbLayersLinked,
-  TbGridDots,
   TbEdit,
   TbAlertTriangle,
   TbTrash,
@@ -18,31 +16,14 @@ import { commonFieldColour } from "../../Theme/commonFieldColour";
 import { commonInputField } from "../../Theme/commonInputField";
 import { primaryButton } from "../../Theme/primaryButton";
 
-const getNextRackName = (currentRows) => {
-  if (currentRows.length === 0) return "A";
-  const last = currentRows[currentRows.length - 1];
-  let i = last.length - 1;
-  while (i >= 0 && last[i] === "Z") {
-    i--;
-  }
-
-  if (i < 0) {
-    return "A".repeat(last.length + 1);
-  }
-
-  const nextChar = String.fromCharCode(last.charCodeAt(i) + 1);
-  return last.slice(0, i) + nextChar + "A".repeat(last.length - 1 - i);
-};
-
 const emptyForm = {
   warehouseId: "",
   warehouseName: "",
   place: "",
   address: "",
-  rackRows: ["A", "B", "C", "D"],
-  racksPerRow: 5,
 };
 
+// initialData follows the real warehouse shape: { _id, warehouseId, warehouseName, place, address }
 const WarehouseFormModal = ({
   isOpen,
   mode = "create",
@@ -57,8 +38,6 @@ const WarehouseFormModal = ({
   const [warehouseName, setWarehouseName] = useState(emptyForm.warehouseName);
   const [place, setPlace] = useState(emptyForm.place);
   const [address, setAddress] = useState(emptyForm.address);
-  const [rackRows, setRackRows] = useState(emptyForm.rackRows);
-  const [racksPerRow, setRacksPerRow] = useState(emptyForm.racksPerRow);
   const [error, setError] = useState(null);
 
   // Core state that freezes the entire UI on submit/delete
@@ -72,33 +51,17 @@ const WarehouseFormModal = ({
     setIsSubmitting(false); // Reset state when opening modal
 
     if (isEdit && initialData) {
-      setWarehouseId(initialData.id ?? "");
+      setWarehouseId(initialData.warehouseId ?? "");
       setWarehouseName(initialData.warehouseName ?? "");
       setPlace(initialData.place ?? "");
       setAddress(initialData.address ?? "");
-      setRackRows(initialData.rackRows ?? emptyForm.rackRows);
-      setRacksPerRow(initialData.racksPerRow ?? emptyForm.racksPerRow);
     } else {
       setWarehouseId(emptyForm.warehouseId);
       setWarehouseName(emptyForm.warehouseName);
       setPlace(emptyForm.place);
       setAddress(emptyForm.address);
-      setRackRows(emptyForm.rackRows);
-      setRacksPerRow(emptyForm.racksPerRow);
     }
   }, [isOpen, isEdit, initialData]);
-
-  const handleAddRow = () => {
-    if (isSubmitting) return;
-    setRackRows((prev) => [...prev, getNextRackName(prev)]);
-  };
-
-  const handleRemoveRow = (indexToRemove) => {
-    if (isSubmitting) return;
-    if (indexToRemove === rackRows.length - 1) {
-      setRackRows((prev) => prev.slice(0, -1));
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,8 +76,6 @@ const WarehouseFormModal = ({
         warehouseName,
         place,
         address,
-        rackRows,
-        racksPerRow: Number(racksPerRow),
       });
 
       if (result?.error) {
@@ -125,7 +86,7 @@ const WarehouseFormModal = ({
 
       onClose();
     } catch (err) {
-      setError("An unexpected error occurred while saving.");
+      setError(err?.message || "An unexpected error occurred while saving.");
       console.error("Error during warehouse submission:", err);
       setIsSubmitting(false);
     }
@@ -138,10 +99,10 @@ const WarehouseFormModal = ({
     setError(null);
 
     try {
-      await onDelete(initialData.id, initialData.mongoId);
+      await onDelete(initialData._id);
       onClose();
     } catch (err) {
-      setError("Failed to delete the warehouse.");
+      setError(err?.message || "Failed to delete the warehouse.");
       console.error("Error during warehouse deletion:", err);
       setIsSubmitting(false);
     }
@@ -261,65 +222,6 @@ const WarehouseFormModal = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 bg-emerald-50/40 p-3 rounded-lg border border-emerald-100">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-emerald-800/70 flex items-center gap-1">
-                    <TbGridDots size={11} /> Racks Per Row
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    disabled={isSubmitting}
-                    value={racksPerRow}
-                    onChange={(e) => setRacksPerRow(e.target.value)}
-                    className={`${commonInputField} py-1 text-xs disabled:opacity-60`}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-emerald-800/70 flex items-center gap-1">
-                  <TbLayersLinked size={11} /> Defined Rows Map
-                </label>
-
-                <div className="flex flex-wrap gap-1.5 p-2 bg-white/40 border border-emerald-300/30 rounded-lg max-h-24 overflow-y-auto">
-                  {rackRows.map((row, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-black rounded bg-emerald-100 text-emerald-900 border border-emerald-300/40 group relative"
-                    >
-                      {row}
-                      {index === rackRows.length - 1 && rackRows.length > 1 && (
-                        <button
-                          disabled={isSubmitting}
-                          type="button"
-                          onClick={() => handleRemoveRow(index)}
-                          className="text-red-500 hover:text-red-700 ml-1 font-normal text-[9px] disabled:opacity-30"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  <button
-                    disabled={isSubmitting}
-                    type="button"
-                    onClick={handleAddRow}
-                    className="flex items-center justify-center px-2.5 py-1 text-[11px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50"
-                  >
-                    + Add Row ({getNextRackName(rackRows)})
-                  </button>
-                </div>
-
-                {isEdit && (
-                  <p className="text-[10px] font-semibold text-emerald-700/50">
-                    Shrinking rows or racks-per-row is blocked if a removed rack
-                    still holds stock.
-                  </p>
-                )}
-              </div>
-
               <div className="flex justify-end gap-3 pt-4 border-t border-emerald-200">
                 <button
                   disabled={isSubmitting}
@@ -352,7 +254,7 @@ const WarehouseFormModal = ({
                   style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                 >
                   {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
-                  {isSubmitting ? "Saving..." : isEdit ? "Save" : "Save"}
+                  {isSubmitting ? "Saving..." : "Save"}
                 </button>
               </div>
             </form>

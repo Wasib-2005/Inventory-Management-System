@@ -13,7 +13,7 @@ const StockFolder = () => {
     const controller = new AbortController();
     setIsLoading(true);
     axios
-      .get(`${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses`, {
+      .get(`${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/get`, {
         withCredentials: true,
         signal: controller.signal,
       })

@@ -9,6 +9,8 @@ import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { PALETTE } from "../../Theme/palette";
 import IconActionButton from "../Common/IconActionButton";
 
+// selectedWarehouse follows the real /warehouses/get(/:id) shape:
+// { _id, warehouseId, warehouseName, place, address, ... }
 const WarehouseHeader = ({
   selectedWarehouse,
   onOpenSwitchModal,
@@ -32,9 +34,9 @@ const WarehouseHeader = ({
           </span>
           <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
             {selectedWarehouse?.warehouseName || "Select a Warehouse"}
-            {selectedWarehouse?.id && (
+            {selectedWarehouse?.warehouseId && (
               <span className="text-emerald-700/50 font-semibold">
-                · {selectedWarehouse?.id}
+                · {selectedWarehouse.warehouseId}
               </span>
             )}
             <TbChevronRight

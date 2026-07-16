@@ -5,6 +5,6 @@ import { PublicKeyGenerator } from "../controllers/publicKey.controller.js";
 
 const router = express.Router();
 
-router.get("/publickey", PublicKeyGenerator);
+router.get("/", PublicKeyGenerator);
 
 export default router;

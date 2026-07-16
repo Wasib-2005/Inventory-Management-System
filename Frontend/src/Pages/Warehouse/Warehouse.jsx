@@ -1,47 +1,41 @@
-import { useState, useMemo, useEffect } from "react";
-import {
-  generateMockRacks,
-  generateRack,
-  findRemovedRacksWithProducts,
-  isShelfFull,
-  DEFAULT_MAX_PRODUCTS,
-} from "../../Components/Warehouse/MockData";
+import { useState, useMemo, useEffect, useCallback } from "react";
+
 import WarehouseHeader from "../../Components/Warehouse/WarehouseHeader";
 import WarehouseProductSearch from "../../Components/Warehouse/WarehouseProductSearch";
 import WarehouseRackContainer from "../../Components/Warehouse/WarehouseRack/WarehouseRackContainer";
 import WarehouseRackModal from "../../Components/Warehouse/WarehouseRack/WarehouseRackModal";
+import WarehouseRackFormModal from "../../Components/Warehouse/WarehouseRack/WarehouseRackFormModal";
 import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelectorModal/WarehouseSelectorModal";
 import WarehouseFormModal from "../../Components/Warehouse/WarehouseFormModal";
 
 import axios from "axios";
 import sweetalert2 from "sweetalert2";
 
-const normalizeWarehouse = (w) => ({
-  id: w.warehouseId,
-  mongoId: w._id,
-  warehouseName: w.warehouseName,
-  place: w.place,
-  address: w.address,
-  rackRows: w.rackRows,
-  racksPerRow: w.racksPerRow,
-  disabled: w.disabled ?? false,
-});
+const API_BASE = `${import.meta.env.VITE_BACKEND_API_HEADER}/api`;
 
 const Warehouse = () => {
+  // --- Warehouse list (light, from /warehouses/get) -----------------------
   const [warehouses, setWarehouses] = useState([]);
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
-  const [racksByWarehouse, setRacksByWarehouse] = useState({});
+  // --- Selected warehouse (full, from /warehouses/get/:id) -----------------
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null); // mongo _id
+  const [selectedWarehouse, setSelectedWarehouse] = useState(null); // populated detail
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState(null);
 
+  // --- Selector modal -------------------------------------------------------
   const [placeQuery, setPlaceQuery] = useState("");
+  const [idQuery, setIdQuery] = useState("");
   const [isWarehouseSelectorModalOpen, setIsWarehouseSelectorModalOpen] =
     useState(false);
-  const [idQuery, setIdQuery] = useState("");
-  const [selectedRackCode, setSelectedRackCode] = useState(null);
+
+  // --- Rack grouping + rack detail/add modals -------------------------------
+  const [groupBy, setGroupBy] = useState("column"); // "column" | "group"
+  const [selectedRackId, setSelectedRackId] = useState(null);
   const [highlightedRackCode, setHighlightedRackCode] = useState(null);
-  const [shelfMaxProductsError, setShelfMaxProductsError] = useState(null);
+  const [isRackFormOpen, setIsRackFormOpen] = useState(false);
 
   const [warehouseModal, setWarehouseModal] = useState({
     isOpen: false,
@@ -49,37 +43,54 @@ const Warehouse = () => {
     initialData: null,
   });
 
-  const selectedWarehouse = useMemo(
-    () => warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0],
-    [warehouses, selectedWarehouseId],
-  );
-
-  const racks =
-    (selectedWarehouse && racksByWarehouse[selectedWarehouse.id]) || {};
-  const selectedRack = selectedRackCode ? racks[selectedRackCode] : null;
+  // rack.rackdata (populated) - always an array
+  const racks = selectedWarehouse?.rackdata || [];
+  const selectedRack = racks.find((r) => r._id === selectedRackId) || null;
 
   const filteredWarehouses = useMemo(() => {
     return warehouses.filter((w) => {
       const matchesPlace = (w.place || "")
         .toLowerCase()
         .includes(placeQuery.toLowerCase());
-      const matchesId = (w.id || "")
-        .toLowerCase()
-        .includes(idQuery.toLowerCase());
+      const matchesId =
+        (w.warehouseId || "").toLowerCase().includes(idQuery.toLowerCase()) ||
+        (w.warehouseName || "").toLowerCase().includes(idQuery.toLowerCase());
       return matchesPlace && matchesId;
     });
   }, [warehouses, placeQuery, idQuery]);
 
+  // --- Fetch the full nested warehouse (racks/shelves/products) ------------
+  const loadWarehouseDetail = useCallback(async (mongoId) => {
+    if (!mongoId) return;
+    setIsLoadingDetail(true);
+    setDetailError(null);
+
+    try {
+      const response = await axios.get(
+        `${API_BASE}/warehouses/get/${mongoId}`,
+        { withCredentials: true },
+      );
+      setSelectedWarehouse(response.data.data);
+    } catch (err) {
+      console.error("Failed to fetch warehouse detail:", err);
+      setDetailError("Couldn't load this warehouse. Please try again.");
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  }, []);
+
   const handleSelectWarehouse = (warehouse) => {
-    setSelectedWarehouseId(warehouse.id);
-    localStorage.setItem("selectedWarehouseId", warehouse.id);
-    setSelectedRackCode(null);
+    setSelectedWarehouseId(warehouse._id);
+    localStorage.setItem("selectedWarehouseId", warehouse._id);
+    setSelectedRackId(null);
     setHighlightedRackCode(null);
     setIsWarehouseSelectorModalOpen(false);
     setPlaceQuery("");
     setIdQuery("");
+    loadWarehouseDetail(warehouse._id);
   };
 
+  // --- Warehouse create/edit/delete ----------------------------------------
   const handleOpenCreateWarehouseModal = () => {
     setWarehouseModal({ isOpen: true, mode: "create", initialData: null });
     setIsWarehouseSelectorModalOpen(false);
@@ -97,253 +108,51 @@ const Warehouse = () => {
   const handleWarehouseFormSubmit = async (formData) => {
     try {
       if (warehouseModal.mode === "create") {
-        const existing = warehouses.find((w) => w.id === formData.warehouseId);
-
-        if (existing) {
-          setSelectedWarehouseId(existing.id);
-          setSelectedRackCode(null);
-          return;
-        }
-
-        const newWarehouse = {
-          id: formData.warehouseId,
-          warehouseName: formData.warehouseName,
-          place: formData.place,
-          address: formData.address,
-          rackRows: formData.rackRows,
-          racksPerRow: formData.racksPerRow,
-        };
-
-        console.log("Creating new warehouse:", newWarehouse);
-
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/create`,
-          newWarehouse,
+          `${API_BASE}/warehouses/create`,
+          formData,
           { withCredentials: true },
         );
 
-        if (response.status !== 201) {
-          console.error("Failed to create warehouse:", response.data);
+        if (response.status !== 201 && response.status !== 200) {
           return { error: "Failed to create warehouse. Please try again." };
         }
 
-        setWarehouses((prev) => [...prev, newWarehouse]);
-        setRacksByWarehouse((prev) => ({
-          ...prev,
-          [newWarehouse.id]: generateMockRacks(
-            newWarehouse.rackRows,
-            newWarehouse.racksPerRow,
-          ),
-        }));
-        setSelectedWarehouseId(newWarehouse.id);
-        setSelectedRackCode(null);
+        const created = response.data.data;
+        setWarehouses((prev) => [...prev, created]);
+        handleSelectWarehouse(created);
         handleCloseWarehouseModal();
-        return;
+        return {};
       }
 
-      const oldWarehouse = warehouses.find(
-        (w) => w.id === formData.warehouseId,
-      );
-      const currentRacks = racksByWarehouse[formData.warehouseId] || {};
-
-      console.log("Updating warehouse:", formData);
-
+      const target = warehouseModal.initialData;
       const response = await axios.put(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/update/${formData.warehouseId}`,
+        `${API_BASE}/warehouses/update/${target._id}`,
         formData,
         { withCredentials: true },
       );
 
       if (response.status !== 200) {
-        console.error("Failed to update warehouse:", response.data);
         return { error: "Failed to update warehouse. Please try again." };
       }
 
-      const blockedRacks = findRemovedRacksWithProducts(
-        oldWarehouse.rackRows,
-        oldWarehouse.racksPerRow,
-        formData.rackRows,
-        formData.racksPerRow,
-        currentRacks,
+      const updated = response.data.data;
+      setWarehouses((prev) =>
+        prev.map((w) => (w._id === target._id ? updated : w)),
       );
 
-      if (blockedRacks.length > 0) {
-        return {
-          error: `Can't remove rack(s) that still hold products: ${blockedRacks.join(", ")}`,
-        };
+      if (selectedWarehouseId === target._id) {
+        loadWarehouseDetail(target._id);
       }
 
-      setWarehouses((prev) =>
-        prev.map((w) =>
-          w.id === formData.warehouseId
-            ? {
-                ...w,
-                warehouseName: formData.warehouseName,
-                place: formData.place,
-                address: formData.address,
-                rackRows: formData.rackRows,
-                racksPerRow: formData.racksPerRow,
-              }
-            : w,
-        ),
-      );
-
-      setRacksByWarehouse((prev) => {
-        const resized = {};
-        formData.rackRows.forEach((row) => {
-          for (let i = 1; i <= formData.racksPerRow; i++) {
-            const code = `${row}${i}`;
-            resized[code] = currentRacks[code] || generateRack(code);
-          }
-        });
-        return { ...prev, [formData.warehouseId]: resized };
-      });
+      return {};
     } catch (error) {
       console.error("Error handling warehouse form submission:", error);
       return { error: "An unexpected error occurred. Please try again." };
     }
   };
 
-  const handleSelectRack = (rack) => {
-    setSelectedRackCode(rack.code);
-    setShelfMaxProductsError(null);
-  };
-
-  const handleLocateRack = (rackCode) => {
-    setSelectedRackCode(null);
-    setHighlightedRackCode(rackCode);
-    requestAnimationFrame(() => {
-      document
-        .getElementById(`rack-${rackCode}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-    setTimeout(() => setHighlightedRackCode(null), 2500);
-  };
-
-  const applyShelfMutation = (shelfId, mutateShelf) => {
-    if (!selectedRackCode || !selectedWarehouse) return;
-
-    setRacksByWarehouse((prev) => {
-      const warehouseRacks = prev[selectedWarehouse.id];
-      const rack = warehouseRacks[selectedRackCode];
-
-      const shelves = rack.shelves.map((shelf) => {
-        if (shelf.id !== shelfId) return shelf;
-        const mutated = mutateShelf(shelf);
-        if (!mutated) return shelf;
-        const itemCount = mutated.products.reduce((sum, p) => sum + p.qty, 0);
-        const capacity = mutated.products.reduce((sum, p) => sum + p.maxQty, 0);
-        return { ...mutated, itemCount, capacity };
-      });
-
-      const itemCount = shelves.reduce((sum, s) => sum + s.itemCount, 0);
-      const capacity = shelves.reduce((sum, s) => sum + s.capacity, 0);
-
-      return {
-        ...prev,
-        [selectedWarehouse.id]: {
-          ...warehouseRacks,
-          [selectedRackCode]: { ...rack, shelves, itemCount, capacity },
-        },
-      };
-    });
-  };
-
-  // product: { id, name, qty, maxQty }
-  const handleAddProduct = (shelfId, product) => {
-    applyShelfMutation(shelfId, (shelf) => {
-      if (isShelfFull(shelf)) return null;
-      return { ...shelf, products: [...shelf.products, product] };
-    });
-  };
-
-  const handleUpdateProduct = (shelfId, productId, field, rawValue) => {
-    const value = Math.max(0, Number(rawValue) || 0);
-
-    applyShelfMutation(shelfId, (shelf) => ({
-      ...shelf,
-      products: shelf.products.map((p) => {
-        if (p.id !== productId) return p;
-
-        const updated = { ...p, [field]: value };
-
-        if (field === "qty" && updated.qty > updated.maxQty) {
-          updated.maxQty = updated.qty;
-        }
-        if (field === "maxQty" && updated.maxQty < updated.qty) {
-          updated.maxQty = updated.qty;
-        }
-
-        return updated;
-      }),
-    }));
-  };
-
-  const handleUpdateShelfMaxProducts = (shelfId, rawValue) => {
-    const nextMax = Math.max(1, Number(rawValue) || 1);
-    setShelfMaxProductsError(null);
-
-    if (!selectedRackCode || !selectedWarehouse) return;
-
-    const rack = racks[selectedRackCode];
-    const shelf = rack?.shelves.find((s) => s.id === shelfId);
-    if (!shelf) return;
-
-    if (nextMax < shelf.products.length) {
-      setShelfMaxProductsError(
-        `${shelf.name}: can't set max below its current ${shelf.products.length} products.`,
-      );
-      return;
-    }
-
-    setRacksByWarehouse((prev) => {
-      const warehouseRacks = prev[selectedWarehouse.id];
-      const targetRack = warehouseRacks[selectedRackCode];
-
-      const shelves = targetRack.shelves.map((s) =>
-        s.id === shelfId ? { ...s, maxProducts: nextMax } : s,
-      );
-
-      return {
-        ...prev,
-        [selectedWarehouse.id]: {
-          ...warehouseRacks,
-          [selectedRackCode]: { ...targetRack, shelves },
-        },
-      };
-    });
-  };
-
-  const handleAddShelf = (maxProducts = DEFAULT_MAX_PRODUCTS) => {
-    if (!selectedRackCode || !selectedWarehouse) return;
-
-    setRacksByWarehouse((prev) => {
-      const warehouseRacks = prev[selectedWarehouse.id];
-      const rack = warehouseRacks[selectedRackCode];
-
-      const newShelf = {
-        id: `${rack.code}-S${rack.shelves.length + 1}-${Date.now()}`,
-        name: `Shelf ${rack.shelves.length + 1}`,
-        capacity: 0,
-        itemCount: 0,
-        maxProducts,
-        products: [],
-      };
-
-      const shelves = [...rack.shelves, newShelf];
-      const capacity = shelves.reduce((sum, s) => sum + s.capacity, 0);
-
-      return {
-        ...prev,
-        [selectedWarehouse.id]: {
-          ...warehouseRacks,
-          [selectedRackCode]: { ...rack, shelves, capacity },
-        },
-      };
-    });
-  };
-
-  const handleDeleteWarehouse = async (warehouseId, mongoId) => {
+  const handleDeleteWarehouse = async (mongoId) => {
     try {
       const confirmDelete = await sweetalert2.fire({
         title: "Are you sure?",
@@ -355,30 +164,22 @@ const Warehouse = () => {
         cancelButtonText: "Cancel",
       });
 
-      if (!confirmDelete.isConfirmed) {
-        return;
-      }
-      console.log("Deleting warehouse:", warehouseId, mongoId);
+      if (!confirmDelete.isConfirmed) return;
+
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses/delete/${mongoId}`,
+        `${API_BASE}/warehouses/delete/${mongoId}`,
         { withCredentials: true },
       );
 
       if (response.status !== 200) {
-        console.error("Failed to delete warehouse:", response.data);
         return { error: "Failed to delete warehouse. Please try again." };
       }
 
-      console.log("Warehouse deleted successfully:", Warehouse);
-      setWarehouses((prev) => prev.filter((w) => w.id !== warehouseId));
-      setRacksByWarehouse((prev) => {
-        const updated = { ...prev };
-        delete updated[warehouseId];
-        return updated;
-      });
+      setWarehouses((prev) => prev.filter((w) => w._id !== mongoId));
 
-      if (selectedWarehouseId === warehouseId) {
+      if (selectedWarehouseId === mongoId) {
         setSelectedWarehouseId(null);
+        setSelectedWarehouse(null);
         localStorage.removeItem("selectedWarehouseId");
       }
 
@@ -389,34 +190,114 @@ const Warehouse = () => {
     }
   };
 
+  const handleChangeStatus = () => {
+    console.log("Not done");
+  };
+  const handleRestoreWarehouse = () => {
+    console.log("Not done");
+  };
+
+  // --- Rack CRUD (endpoints assumed - backend not built yet) ---------------
+  const handleAddRack = async (payload) => {
+    if (!selectedWarehouseId) return { error: "Select a warehouse first." };
+
+    try {
+      await axios.post(
+        `${API_BASE}/racks/create`,
+        { ...payload, warehouseId: selectedWarehouseId },
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error creating rack:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to create rack.",
+      };
+    }
+  };
+
+  // --- Shelf CRUD (endpoints assumed - backend not built yet) ---------------
+  const handleAddShelf = async (rack, payload) => {
+    try {
+      await axios.post(
+        `${API_BASE}/shelves/create`,
+        { ...payload, rackId: rack._id },
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error creating shelf:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to create shelf.",
+      };
+    }
+  };
+
+  const handleUpdateProductStock = async (shelfId, productId, rawValue) => {
+    const inStock = Math.max(0, Number(rawValue) || 0);
+
+    setSelectedWarehouse((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        rackdata: prev.rackdata.map((rack) => ({
+          ...rack,
+          shelfData: (rack.shelfData || []).map((shelf) =>
+            shelf._id !== shelfId
+              ? shelf
+              : {
+                  ...shelf,
+                  productData: shelf.productData.map((p) =>
+                    p._id !== productId
+                      ? p
+                      : { ...p, stock: { ...p.stock, inStock } },
+                  ),
+                },
+          ),
+        })),
+      };
+    });
+
+    try {
+      await axios.put(
+        `${API_BASE}/shelves/update/${shelfId}`,
+        { productId, inStock },
+        { withCredentials: true },
+      );
+    } catch (error) {
+      console.error("Error updating stock, re-syncing:", error);
+      loadWarehouseDetail(selectedWarehouseId);
+    }
+  };
+
+  const handleLocateRack = (rackCode) => {
+    setSelectedRackId(null);
+    setHighlightedRackCode(rackCode);
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`rack-${rackCode}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    setTimeout(() => setHighlightedRackCode(null), 2500);
+  };
+
   useEffect(() => {
-    const getWarehouseData = async () => {
+    const getWarehouseList = async () => {
       setIsLoadingWarehouses(true);
       setLoadError(null);
 
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API_HEADER}/api/warehouses`,
-          { withCredentials: true },
-        );
-
-        // Defensive filter - backend soft-deletes via `disabled`, so don't
-        // show those even if an endpoint ever forgets to filter server-side.
-        const normalized = (response.data.data || [])
-          .filter((w) => !w.disabled)
-          .map(normalizeWarehouse);
-
-        setWarehouses(normalized);
-
-        // Racks API isn't wired in yet - keep mock racks, but key them by
-        // the REAL warehouse ids so they line up with what was just fetched.
-        setRacksByWarehouse(() => {
-          const map = {};
-          normalized.forEach((w) => {
-            map[w.id] = generateMockRacks(w.rackRows, w.racksPerRow);
-          });
-          return map;
+        const response = await axios.get(`${API_BASE}/warehouses/get`, {
+          withCredentials: true,
         });
+
+        const list = response.data.data || [];
+        // .filter(
+        //   (w) => !w.disabled && !w.isDeleted,
+        // );
+        setWarehouses(list);
       } catch (err) {
         console.error("Failed to fetch warehouses:", err);
         setLoadError("Couldn't load warehouses. Please try again.");
@@ -425,16 +306,17 @@ const Warehouse = () => {
       }
     };
 
-    getWarehouseData();
+    getWarehouseList();
   }, []);
 
+  // --- Restore last-selected warehouse (and fetch its detail) ---------------
   useEffect(() => {
-    const selectedWarehouseInLS = localStorage.getItem("selectedWarehouseId");
-    if (selectedWarehouseInLS) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedWarehouseId(selectedWarehouseInLS);
+    const storedId = localStorage.getItem("selectedWarehouseId");
+    if (storedId) {
+      setSelectedWarehouseId(storedId);
+      loadWarehouseDetail(storedId);
     }
-  }, []);
+  }, [loadWarehouseDetail]);
 
   if (isLoadingWarehouses) {
     return (
@@ -454,7 +336,7 @@ const Warehouse = () => {
     );
   }
 
-  if (!selectedWarehouse) {
+  if (warehouses.length === 0) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center p-6">
         <p className="text-sm font-semibold text-emerald-700/60">
@@ -471,26 +353,55 @@ const Warehouse = () => {
           selectedWarehouse={selectedWarehouse}
           onOpenSwitchModal={() => setIsWarehouseSelectorModalOpen(true)}
           onOpenCreateModal={handleOpenCreateWarehouseModal}
-          onOpenEditModal={() => handleEditWarehouse(selectedWarehouse)}
+          onOpenEditModal={() =>
+            selectedWarehouse && handleEditWarehouse(selectedWarehouse)
+          }
         />
-        <WarehouseProductSearch racks={racks} onLocateRack={handleLocateRack} />
-        <WarehouseRackContainer
-          racks={racks}
-          onSelectRack={handleSelectRack}
-          rackRows={selectedWarehouse.rackRows}
-          racksPerRow={selectedWarehouse.racksPerRow}
-          highlightedRackCode={highlightedRackCode}
-        />
+
+        {detailError && (
+          <div className="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5">
+            {detailError}
+          </div>
+        )}
+
+        {selectedWarehouse ? (
+          <>
+            <WarehouseProductSearch
+              racks={racks}
+              onLocateRack={handleLocateRack}
+            />
+
+            <WarehouseRackContainer
+              racks={racks}
+              groupBy={groupBy}
+              onGroupByChange={setGroupBy}
+              onSelectRack={(rack) => setSelectedRackId(rack._id)}
+              highlightedRackCode={highlightedRackCode}
+              onAddRack={() => setIsRackFormOpen(true)}
+            />
+          </>
+        ) : (
+          <p className="text-xs text-emerald-700/40 font-semibold py-10 text-center">
+            {isLoadingDetail
+              ? "Loading warehouse..."
+              : "Select a warehouse to view its racks."}
+          </p>
+        )}
+
         <WarehouseRackModal
           rack={selectedRack}
           isOpen={!!selectedRack}
-          onClose={() => setSelectedRackCode(null)}
-          onAddProduct={handleAddProduct}
-          onUpdateProduct={handleUpdateProduct}
-          onUpdateShelfMaxProducts={handleUpdateShelfMaxProducts}
-          shelfMaxProductsError={shelfMaxProductsError}
+          onClose={() => setSelectedRackId(null)}
+          onUpdateProductStock={handleUpdateProductStock}
           onAddShelf={handleAddShelf}
         />
+
+        <WarehouseRackFormModal
+          isOpen={isRackFormOpen}
+          onClose={() => setIsRackFormOpen(false)}
+          onSubmit={handleAddRack}
+        />
+
         <WarehouseSelectorModal
           isOpen={isWarehouseSelectorModalOpen}
           onClose={() => setIsWarehouseSelectorModalOpen(false)}
@@ -504,7 +415,10 @@ const Warehouse = () => {
           onCreateWarehouse={handleOpenCreateWarehouseModal}
           onEditWarehouse={handleEditWarehouse}
           onDeleteWarehouse={handleDeleteWarehouse}
+          onChangeStatus={handleChangeStatus} // TODO :add change
+          onRestoreWarehouse={handleRestoreWarehouse}
         />
+
         <WarehouseFormModal
           isOpen={warehouseModal.isOpen}
           mode={warehouseModal.mode}

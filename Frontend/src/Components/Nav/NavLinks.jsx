@@ -12,7 +12,7 @@ const NavLinks = [
   },
   {
     label: <FaCashRegister size={icon} />,
-    path: "/register",
+    path: "/register/operations",
     name: "Register Register",
   },
   {
