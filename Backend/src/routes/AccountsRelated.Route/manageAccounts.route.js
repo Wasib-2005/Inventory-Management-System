@@ -11,3 +11,4 @@ router.post("/update_account", verifyAccess, updateAccount);
 router.post("/update_own_data", verifyAccess, updateOwnData);
 
 export default router;
+ 

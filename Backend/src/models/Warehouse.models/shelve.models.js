@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
 
-const shelfSchema = new mongoose.Schema({
+const shelveSchema = new mongoose.Schema({
   shelfCode: { type: String, required: true },
   productData: [
     {
-      productInfo: { type: mongoose.Schema.Types.ObjectId },
+      productInfo: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      group: {
+        groupName: { type: String },
+        groupColour: { type: String },
+      },
       stock: {
         inStock: { type: Number },
         maxStock: { type: Number },
@@ -21,3 +25,5 @@ const shelfSchema = new mongoose.Schema({
     },
   ],
 });
+
+export const Shelve = mongoose.model("Shelve", shelveSchema);

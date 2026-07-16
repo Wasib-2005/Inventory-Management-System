@@ -6,10 +6,12 @@ const rackSchema = new mongoose.Schema({
     groupName: { type: String },
     groupColour: { type: String },
   },
-  shelfData: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Shelf",
-  },
+  shelfData: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shelve",
+    },
+  ],
 });
 
 export const Rack = mongoose.model("Rack", rackSchema);

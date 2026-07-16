@@ -20,10 +20,12 @@ const warehouseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    rackdata: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Rack",
-    },
+    rackdata: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Rack",
+      },
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -32,6 +34,15 @@ const warehouseSchema = new mongoose.Schema(
     disabled: {
       type: Boolean,
       default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deleteBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

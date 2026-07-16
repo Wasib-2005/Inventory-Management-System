@@ -7,3 +7,4 @@ const router = express.Router();
 router.get("/accounts-and-permissions", getAccountsAndPermissions);
 
 export default router;
+ 

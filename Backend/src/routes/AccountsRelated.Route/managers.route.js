@@ -8,3 +8,4 @@ const router = express.Router();
 router.get("/get-managers", verifyAccess, getManagers);
 
 export default router;
+ 
