@@ -1,34 +1,71 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, X, Plus, PackageOpen, Layers, AlertTriangle } from "lucide-react";
+import {
+  Package,
+  X,
+  Plus,
+  PackageOpen,
+  Layers,
+  AlertTriangle,
+  Edit2,
+  Trash2,
+  Power,
+  RotateCcw,
+} from "lucide-react";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
-import { occupancyColor, computeRackStats, computeShelfStats, isProductLow } from "../utils";
+import {
+  occupancyColor,
+  computeRackStats,
+  computeShelfStats,
+  isProductLow,
+} from "../utils";
 import WarehouseShelfFormModal from "./WarehouseShelfFormModal";
+import WarehouseShelfProductPicker from "./WarehouseShelfProductPicker";
 
-// rack.shelfData[] -> { shelfCode, productData: [{ productInfo, group, stock }] }
-//
-// NOTE: adding a brand new product to a shelf requires picking an existing
-// Product document (productInfo is a ref, not free text), so that flow
-// isn't wired up here yet — it needs a product picker/search once that API
-// is available. Existing product stock (inStock) can be adjusted inline.
 const WarehouseRackModal = ({
   rack,
   isOpen,
   onClose,
   onUpdateProductStock,
+  onRemoveProductFromShelf,
   onAddShelf,
+  onEditRack,
+  onDeleteRack,
+  onToggleRackStatus,
+  onRestoreRack,
+  onEditShelf,
+  onDeleteShelf,
+  onToggleShelfStatus,
+  onRestoreShelf,
+  onSearchProducts,
+  onAddProductToShelf,
 }) => {
-  const [isShelfFormOpen, setIsShelfFormOpen] = useState(false);
+  const [shelfForm, setShelfForm] = useState({
+    isOpen: false,
+    mode: "create",
+    initialData: null,
+  });
+  const [productPickerShelf, setProductPickerShelf] = useState(null);
 
   if (!rack) return null;
 
   const { itemCount, capacity } = computeRackStats(rack);
   const shelves = rack.shelfData || [];
 
-  const handleAddShelf = async (payload) => {
-    return onAddShelf(rack, payload);
+  const handleAddShelfSubmit = async (payload) => {
+    if (shelfForm.mode === "create") {
+      return onAddShelf(rack, payload);
+    }
+    return onEditShelf(shelfForm.initialData._id, payload);
   };
+
+  const openAddShelf = () =>
+    setShelfForm({ isOpen: true, mode: "create", initialData: null });
+  const openEditShelf = (shelf) =>
+    setShelfForm({ isOpen: true, mode: "edit", initialData: shelf });
+  const closeShelfForm = () =>
+    setShelfForm({ isOpen: false, mode: "create", initialData: null });
 
   return (
     <>
@@ -50,55 +87,158 @@ const WarehouseRackModal = ({
               className={`${commonComponentBG()} w-full max-w-2xl max-h-[85vh] p-5 flex flex-col gap-4 overflow-hidden`}
             >
               {/* Header */}
-              <div className="flex items-center justify-between shrink-0">
-                <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2">
-                  <Package size={16} color={PALETTE.steel} />
-                  Rack {rack.rackCode}
-                  <span className="text-[11px] font-semibold text-emerald-700/50">
+              <div className="flex items-center justify-between shrink-0 gap-2">
+                <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2 min-w-0">
+                  <Package
+                    size={16}
+                    color={PALETTE.steel}
+                    className="shrink-0"
+                  />
+                  <span className="truncate">Rack {rack.rackCode}</span>
+                  <span className="text-[11px] font-semibold text-emerald-700/50 shrink-0">
                     ({itemCount}/{capacity})
                   </span>
                   {rack.group?.groupName && (
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded shrink-0">
                       {rack.group.groupName}
                     </span>
                   )}
+                  {rack.isDeleted && (
+                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded shrink-0">
+                      Deleted
+                    </span>
+                  )}
+                  {rack.disabled && !rack.isDeleted && (
+                    <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded shrink-0">
+                      Disabled
+                    </span>
+                  )}
                 </h3>
-                <button
-                  onClick={onClose}
-                  className="text-emerald-700/50 hover:text-emerald-900 transition-colors"
-                >
-                  <X size={16} />
-                </button>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => onEditRack(rack)}
+                    title="Edit rack"
+                    className="p-1.5 rounded-md bg-amber-50/70 hover:bg-amber-100/80 text-amber-700 border border-amber-200/50 transition-colors"
+                  >
+                    <Edit2 size={13} />
+                  </button>
+                  {rack.isDeleted ? (
+                    <button
+                      onClick={() => onRestoreRack(rack._id)}
+                      title="Restore rack"
+                      className="p-1.5 rounded-md bg-blue-50/70 hover:bg-blue-100/80 text-blue-700 border border-blue-200/50 transition-colors"
+                    >
+                      <RotateCcw size={13} />
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onDeleteRack(rack._id)}
+                        title="Delete rack"
+                        className="p-1.5 rounded-md bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="text-emerald-700/50 hover:text-emerald-900 transition-colors ml-1"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Shelves list */}
               <div className="flex flex-col gap-3 overflow-y-auto pr-1">
-                {shelves.length === 0 ? (
+                {rack.isDeleted || shelves.length === 0 ? (
                   <p className="text-xs text-emerald-700/40 font-semibold py-4 text-center">
-                    This rack has no shelves yet.
+                    {rack.isDeleted
+                      ? "This rack has been deleted"
+                      : "This rack has no shelves yet."}
                   </p>
                 ) : (
                   shelves.map((shelf) => {
                     const shelfStats = computeShelfStats(shelf);
-                    const shelfColor = occupancyColor(shelfStats.itemCount, shelfStats.capacity);
+                    const shelfColor = occupancyColor(
+                      shelfStats.itemCount,
+                      shelfStats.capacity,
+                    );
                     const products = shelf.productData || [];
 
                     return (
                       <div
                         key={shelf._id}
-                        className="rounded-xl border border-emerald-300/40 bg-white/50 p-3 flex flex-col gap-2.5"
+                        className={`rounded-xl border border-emerald-300/40 bg-white/50 p-3 flex flex-col gap-2.5 ${
+                          shelf.isDeleted || shelf.disabled ? "opacity-60" : ""
+                        }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                            <Layers size={12} className="text-emerald-600" />
-                            {shelf.shelfCode}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 min-w-0">
+                            <Layers
+                              size={12}
+                              className="text-emerald-600 shrink-0"
+                            />
+                            <span className="truncate">{shelf.shelfCode}</span>
+                            {shelf.isDeleted && (
+                              <span className="text-[9px] font-bold text-red-700 bg-red-100 px-1 py-0.5 rounded shrink-0">
+                                Deleted
+                              </span>
+                            )}
+                            {shelf.disabled && !shelf.isDeleted && (
+                              <span className="text-[9px] font-bold text-slate-700 bg-slate-200 px-1 py-0.5 rounded shrink-0">
+                                Disabled
+                              </span>
+                            )}
                           </span>
-                          <span
-                            className="text-[10px] font-black px-1.5 py-0.5 rounded text-white"
-                            style={shelfColor.style}
-                          >
-                            {shelfStats.itemCount}/{shelfStats.capacity}
-                          </span>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className="text-[10px] font-black px-1.5 py-0.5 rounded text-white"
+                              style={shelfColor.style}
+                            >
+                              {shelfStats.itemCount}/{shelfStats.capacity}
+                            </span>
+
+                            {!shelf.isDeleted && (
+                              <button
+                                onClick={() => setProductPickerShelf(shelf)}
+                                title="Add product"
+                                className="p-1 rounded bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-700 border border-emerald-200/50 transition-colors"
+                              >
+                                <Plus size={12} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => openEditShelf(shelf)}
+                              title="Edit shelf"
+                              className="p-1 rounded bg-amber-50/70 hover:bg-amber-100/80 text-amber-700 border border-amber-200/50 transition-colors"
+                            >
+                              <Edit2 size={12} />
+                            </button>
+                            {shelf.isDeleted ? (
+                              <button
+                                onClick={() => onRestoreShelf(shelf._id)}
+                                title="Restore shelf"
+                                className="p-1 rounded bg-blue-50/70 hover:bg-blue-100/80 text-blue-700 border border-blue-200/50 transition-colors"
+                              >
+                                <RotateCcw size={12} />
+                              </button>
+                            ) : (
+                              <>
+
+                                <button
+                                  onClick={() => onDeleteShelf(shelf._id)}
+                                  title="Delete shelf"
+                                  className="p-1 rounded bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {products.length === 0 ? (
@@ -111,56 +251,151 @@ const WarehouseRackModal = ({
                             {products.map((p) => {
                               const inStock = p.stock?.inStock ?? 0;
                               const maxStock = p.stock?.maxStock ?? 0;
+                              const warningStock = p.stock?.warningStock ?? 0;
                               const pColor = occupancyColor(inStock, maxStock);
-                              const pPct = maxStock > 0 ? (inStock / maxStock) * 100 : 0;
+                              const pPct =
+                                maxStock > 0 ? (inStock / maxStock) * 100 : 0;
                               const low = isProductLow(p);
 
                               return (
                                 <div
                                   key={p._id}
-                                  className="flex flex-col gap-1 px-2 py-1.5 rounded-lg bg-white/60 border border-emerald-300/30"
+                                  className="flex flex-col gap-1.5 px-2.5 py-2 rounded-lg bg-white/60 border border-emerald-300/30"
                                 >
                                   <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[11px] font-semibold text-emerald-900 truncate flex-1 flex items-center gap-1">
-                                      {p.productInfo?.name}
-                                      {low && (
-                                        <AlertTriangle
-                                          size={11}
-                                          className="text-red-500 shrink-0"
-                                          title="Low stock"
-                                        />
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-[12px] font-semibold text-emerald-900 truncate">
+                                          {p.productInfo?.name}
+                                        </span>
+                                        {low && (
+                                          <AlertTriangle
+                                            size={11}
+                                            className="text-red-500 shrink-0"
+                                            title="Low stock"
+                                          />
+                                        )}
+                                      </div>
+
+                                      {(p.productInfo?.brand ||
+                                        p.productInfo?.sku ||
+                                        p.productInfo?.displayId) && (
+                                        <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                                          {p.productInfo?.brand && (
+                                            <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200/50">
+                                              {p.productInfo.brand}
+                                            </span>
+                                          )}
+                                          {p.productInfo?.sku && (
+                                            <span className="text-[9px] font-semibold text-slate-600">
+                                              SKU:{p.productInfo.sku}
+                                            </span>
+                                          )}
+                                          {p.productInfo?.displayId && (
+                                            <span className="text-[9px] font-semibold text-slate-500">
+                                              #{p.productInfo.displayId}
+                                            </span>
+                                          )}
+                                        </div>
                                       )}
-                                    </span>
-                                    <div
-                                      className="flex items-center gap-1 shrink-0 rounded px-1 py-0.5"
-                                      style={{
-                                        backgroundColor: pColor.style.backgroundColor,
-                                      }}
-                                    >
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={maxStock}
-                                        value={inStock}
-                                        onChange={(e) =>
-                                          onUpdateProductStock(
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      {/* Rearranged Stock Input Blocks */}
+                                      <div
+                                        className="flex items-center gap-1 rounded px-1.5 py-1"
+                                        style={{
+                                          backgroundColor:
+                                            pColor.style.backgroundColor,
+                                        }}
+                                      >
+                                        {/* Warning Stock Column */}
+                                        <div className="flex flex-col items-center gap-0.5">
+                                          <span className="text-[8px] font-bold">
+                                            Warn
+                                          </span>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            value={warningStock}
+                                            onChange={(e) =>
+                                              onUpdateProductStock(
+                                                shelf._id,
+                                                p.productInfo._id,
+                                                "warningStock",
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                          />
+                                        </div>
+                                        {/* Separator / Spacer */}
+                                        <div className="w-[1px] h-6 bg-black/10 mx-0.5" />
+                                        {/* In Stock Column */}
+                                        <div className="flex flex-col items-center gap-0.5">
+                                          <span className="text-[8px] font-bold">
+                                            In
+                                          </span>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max={maxStock}
+                                            value={inStock}
+                                            onChange={(e) =>
+                                              onUpdateProductStock(
+                                                shelf._id,
+                                                p.productInfo._id,
+                                                "inStock",
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                          />
+                                        </div>
+                                        <p className="text-2xl">/</p>
+                                        {/* Max Stock Column */}
+                                        <div className="flex flex-col items-center gap-0.5">
+                                          <span className="text-[8px] font-bold">
+                                            Max
+                                          </span>
+                                          <input
+                                            type="number"
+                                            min="1"
+                                            value={maxStock}
+                                            onChange={(e) =>
+                                              onUpdateProductStock(
+                                                shelf._id,
+                                                p.productInfo._id,
+                                                "maxStock",
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        onClick={() =>
+                                          onRemoveProductFromShelf(
                                             shelf._id,
                                             p._id,
-                                            e.target.value,
                                           )
                                         }
-                                        className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
-                                      />
-                                      <span className="text-[10px] font-bold">/</span>
-                                      <span className="text-[10px] font-bold px-1">
-                                        {maxStock}
-                                      </span>
+                                        title="Remove product from shelf"
+                                        className="p-1 rounded bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors self-center"
+                                      >
+                                        <Trash2 size={11} />
+                                      </button>
                                     </div>
                                   </div>
+
                                   <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-gradient-to-r from-[#ef4444] via-[#eab308] to-[#22c55e]"
-                                      style={{ width: `${Math.min(pPct, 100)}%` }}
+                                      style={{
+                                        width: `${Math.min(pPct, 100)}%`,
+                                      }}
                                     />
                                   </div>
                                 </div>
@@ -177,7 +412,7 @@ const WarehouseRackModal = ({
               {/* Add shelf */}
               <div className="flex items-center gap-2 shrink-0 pt-2 border-t border-emerald-100">
                 <button
-                  onClick={() => setIsShelfFormOpen(true)}
+                  onClick={openAddShelf}
                   className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-sm font-bold text-white shadow-sm transition-colors"
                   style={{ backgroundColor: PALETTE.mint }}
                 >
@@ -191,10 +426,23 @@ const WarehouseRackModal = ({
       </AnimatePresence>
 
       <WarehouseShelfFormModal
-        isOpen={isShelfFormOpen}
+        isOpen={shelfForm.isOpen}
+        mode={shelfForm.mode}
         rack={rack}
-        onClose={() => setIsShelfFormOpen(false)}
-        onSubmit={handleAddShelf}
+        initialData={shelfForm.initialData}
+        onClose={closeShelfForm}
+        onSubmit={handleAddShelfSubmit}
+        onDelete={onDeleteShelf}
+        onToggleStatus={onToggleShelfStatus}
+        onRestore={onRestoreShelf}
+      />
+
+      <WarehouseShelfProductPicker
+        isOpen={!!productPickerShelf}
+        shelf={productPickerShelf}
+        onClose={() => setProductPickerShelf(null)}
+        onSearchProducts={onSearchProducts}
+        onSubmit={(payload) => onAddProductToShelf(productPickerShelf, payload)}
       />
     </>
   );

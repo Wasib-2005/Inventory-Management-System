@@ -13,6 +13,9 @@ import WarehouseRouter from "./src/routes/Warehouse.Routes/Warehouse.route.js";
 import CategoryRouter from "./src/routes/Products.Routes/Category.route.js";
 import SupplierRouter from "./src/routes/supplier.route.js";
 import ProductRouter from "./src/routes/Products.Routes/Products.route.js";
+import RackRouter from "./src/routes/Warehouse.Routes/Rack.route.js";
+import ShelveRouter from "./src/routes/Warehouse.Routes/Shelves.route.js";
+
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
 import { logger } from "./src/config/logger.js";
 
@@ -93,9 +96,11 @@ app.use("/api/accounts-and-permissions", AccountsAndPermissionsRoute);
 app.use("/api/roles", RoleRoute);
 app.use("/api/", ManageAccountsRoute);
 app.use("/api/", ManagerRouter);
-app.use("/api/warehouses", WarehouseRouter);
 app.use("/api/category", CategoryRouter);
 app.use("/api/suppliers", SupplierRouter);
 app.use("/api/product", ProductRouter);
+app.use("/api/warehouses", WarehouseRouter);
+app.use("/api/racks", RackRouter);
+app.use("/api/shelves", ShelveRouter);
 
 export default app;

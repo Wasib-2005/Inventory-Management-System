@@ -5,10 +5,6 @@ const shelveSchema = new mongoose.Schema({
   productData: [
     {
       productInfo: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      group: {
-        groupName: { type: String },
-        groupColour: { type: String },
-      },
       stock: {
         inStock: { type: Number },
         maxStock: { type: Number },
@@ -21,6 +17,22 @@ const shelveSchema = new mongoose.Schema({
             return 0;
           },
         },
+      },
+      createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      isDeleted: {
+        type: Boolean,
+        default: false,
+      },
+      deleteBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     },
   ],

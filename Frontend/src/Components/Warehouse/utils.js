@@ -1,18 +1,6 @@
-// ---------------------------------------------------------------------------
-// Helpers that work directly with the real API shape:
-//   warehouse.rackdata[] -> rack { rackCode, column, group, shelfData[] }
-//   rack.shelfData[]     -> shelf { shelfCode, productData[] }
-//   shelf.productData[]  -> { productInfo, group, stock: { inStock, maxStock, warningStock } }
-// ---------------------------------------------------------------------------
-
 export const DEFAULT_MAX_PRODUCTS = 6;
 
-// The Rack schema declares `group.groupColor` but the sample API response
-// actually returns `group.groupColour` (and Shelve's product group always
-// uses `groupColour`). Check both spellings defensively so we don't break
-// if/when the backend is made consistent.
-export const getGroupColour = (group) =>
-  group?.groupColour || group?.groupColor || "#94A3B8";
+export const getGroupColour = (group) => group?.groupColor || "#94A3B8";
 
 export const hexToRgba = (hex, alpha = 1) => {
   if (!hex) return `rgba(148, 163, 184, ${alpha})`;
@@ -33,8 +21,14 @@ export const hexToRgba = (hex, alpha = 1) => {
 
 export const computeShelfStats = (shelf) => {
   const products = shelf?.productData || [];
-  const itemCount = products.reduce((sum, p) => sum + (p.stock?.inStock || 0), 0);
-  const capacity = products.reduce((sum, p) => sum + (p.stock?.maxStock || 0), 0);
+  const itemCount = products.reduce(
+    (sum, p) => sum + (p.stock?.inStock || 0),
+    0,
+  );
+  const capacity = products.reduce(
+    (sum, p) => sum + (p.stock?.maxStock || 0),
+    0,
+  );
   return { itemCount, capacity };
 };
 
@@ -82,7 +76,6 @@ export const occupancyColor = (itemCount, capacity) => {
   };
 };
 
-// groupBy: "column" | "group"
 export const groupRacks = (racks, groupBy) => {
   const map = new Map();
 
@@ -95,8 +88,7 @@ export const groupRacks = (racks, groupBy) => {
     if (!map.has(key)) {
       map.set(key, {
         key,
-        colour:
-          groupBy === "group" ? getGroupColour(rack.group) : null,
+        colour: groupBy === "group" ? getGroupColour(rack.group) : null,
         racks: [],
       });
     }

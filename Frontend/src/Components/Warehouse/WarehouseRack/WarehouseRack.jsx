@@ -19,7 +19,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
   const pct = capacity > 0 ? (itemCount / capacity) * 100 : 0;
   const availableSpace = Math.max(capacity - itemCount, 0);
 
-  const groupColour = getGroupColour(rack.group);
+  const groupColor = getGroupColour(rack.group);
   const groupName = rack.group?.groupName;
 
   const handleMouseEnter = (e) => {
@@ -32,16 +32,15 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
   return (
     <div
       id={`rack-${rack.rackCode}`}
-      className="relative"
+      className={`relative ${rack?.isDeleted && "opacity-20"}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Rack frame: background tinted with the rack's group colour */}
       <button
         onClick={() => onSelect(rack)}
         style={{
-          backgroundColor: hexToRgba(groupColour, 0.22),
-          borderColor: groupColour,
+          backgroundColor: hexToRgba(groupColor, 0.22),
+          borderColor: groupColor,
         }}
         className={`relative w-full rounded-md border-x-[3px] border-t-[3px] border-b-[6px] flex flex-col gap-[3px] p-1.5 pb-1 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] ${
           isHighlighted
@@ -56,7 +55,10 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
         <div className="flex flex-col gap-[3px]">
           {shelves.map((shelf) => {
             const shelfStats = computeShelfStats(shelf);
-            const shelfColor = occupancyColor(shelfStats.itemCount, shelfStats.capacity);
+            const shelfColor = occupancyColor(
+              shelfStats.itemCount,
+              shelfStats.capacity,
+            );
             return (
               <div
                 key={shelf._id}
@@ -76,7 +78,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
       </button>
 
       <AnimatePresence>
-        {isHovered && (
+        {isHovered && !rack.isDeleted && (
           <motion.div
             initial={{
               opacity: 0,
@@ -103,7 +105,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
               <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-800/80 -mt-1.5">
                 <span
                   className="w-2 h-2 rounded-full border border-black/10 shrink-0"
-                  style={{ backgroundColor: groupColour }}
+                  style={{ backgroundColor: groupColor }}
                 />
                 {groupName}
                 <span className="text-emerald-700/40 font-semibold">
@@ -115,11 +117,15 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
             <div className="grid grid-cols-2 gap-1.5 text-[10px]">
               <div className="flex items-center gap-1 text-emerald-800">
                 <Package size={11} className="text-emerald-600" />
-                <span>Stored: <b>{itemCount}</b></span>
+                <span>
+                  Stored: <b>{itemCount}</b>
+                </span>
               </div>
               <div className="flex items-center gap-1 text-emerald-800">
                 <Inbox size={11} className="text-emerald-600" />
-                <span>Free: <b>{availableSpace}</b></span>
+                <span>
+                  Free: <b>{availableSpace}</b>
+                </span>
               </div>
             </div>
 
@@ -156,7 +162,10 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-700 flex items-center gap-0.5">
-                          <CornerDownRight size={9} className="text-emerald-500 shrink-0" />
+                          <CornerDownRight
+                            size={9}
+                            className="text-emerald-500 shrink-0"
+                          />
                           {shelf.shelfCode}
                         </span>
                         <span className="text-[9px] font-bold text-emerald-900 bg-emerald-50 px-1 rounded shrink-0">

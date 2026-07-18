@@ -12,6 +12,7 @@ const WarehouseRackContainer = ({
   onSelectRack,
   highlightedRackCode,
   onAddRack,
+
 }) => {
   // racks can legitimately be undefined/null for a moment (no warehouse
   // selected yet, or the detail fetch hasn't resolved) - never assume it's

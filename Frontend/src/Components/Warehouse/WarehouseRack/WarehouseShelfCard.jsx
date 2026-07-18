@@ -10,7 +10,9 @@ const WarehouseShelfCard = ({ shelf }) => {
   return (
     <div className="rounded-xl border border-emerald-300/40 bg-white/50 p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-emerald-900">{shelf.shelfCode}</span>
+        <span className="text-xs font-bold text-emerald-900">
+          {shelf.shelfCode}
+        </span>
         <span
           className="text-[10px] font-black px-1.5 py-0.5 rounded"
           style={{ backgroundColor: colorSettings.style.backgroundColor }}

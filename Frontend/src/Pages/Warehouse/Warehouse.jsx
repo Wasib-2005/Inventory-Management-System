@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 import WarehouseHeader from "../../Components/Warehouse/WarehouseHeader";
 import WarehouseProductSearch from "../../Components/Warehouse/WarehouseProductSearch";
@@ -14,28 +14,32 @@ import sweetalert2 from "sweetalert2";
 const API_BASE = `${import.meta.env.VITE_BACKEND_API_HEADER}/api`;
 
 const Warehouse = () => {
-  // --- Warehouse list (light, from /warehouses/get) -----------------------
+  const stockTimers = useRef({});
+  const selectedWarehouseRef = useRef(null);
+
   const [warehouses, setWarehouses] = useState([]);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
-  // --- Selected warehouse (full, from /warehouses/get/:id) -----------------
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null); // mongo _id
-  const [selectedWarehouse, setSelectedWarehouse] = useState(null); // populated detail
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState(null);
 
-  // --- Selector modal -------------------------------------------------------
   const [placeQuery, setPlaceQuery] = useState("");
   const [idQuery, setIdQuery] = useState("");
   const [isWarehouseSelectorModalOpen, setIsWarehouseSelectorModalOpen] =
     useState(false);
 
-  // --- Rack grouping + rack detail/add modals -------------------------------
-  const [groupBy, setGroupBy] = useState("column"); // "column" | "group"
+  const [groupBy, setGroupBy] = useState("column");
   const [selectedRackId, setSelectedRackId] = useState(null);
   const [highlightedRackCode, setHighlightedRackCode] = useState(null);
-  const [isRackFormOpen, setIsRackFormOpen] = useState(false);
+
+  const [rackModal, setRackModal] = useState({
+    isOpen: false,
+    mode: "create",
+    initialData: null,
+  });
 
   const [warehouseModal, setWarehouseModal] = useState({
     isOpen: false,
@@ -43,9 +47,14 @@ const Warehouse = () => {
     initialData: null,
   });
 
-  // rack.rackdata (populated) - always an array
   const racks = selectedWarehouse?.rackdata || [];
   const selectedRack = racks.find((r) => r._id === selectedRackId) || null;
+
+  // Keep a ref in sync so debounced callbacks can read the latest
+  // selectedWarehouse without depending on a stale closure.
+  useEffect(() => {
+    selectedWarehouseRef.current = selectedWarehouse;
+  }, [selectedWarehouse]);
 
   const filteredWarehouses = useMemo(() => {
     return warehouses.filter((w) => {
@@ -59,7 +68,6 @@ const Warehouse = () => {
     });
   }, [warehouses, placeQuery, idQuery]);
 
-  // --- Fetch the full nested warehouse (racks/shelves/products) ------------
   const loadWarehouseDetail = useCallback(async (mongoId) => {
     if (!mongoId) return;
     setIsLoadingDetail(true);
@@ -175,7 +183,9 @@ const Warehouse = () => {
         return { error: "Failed to delete warehouse. Please try again." };
       }
 
-      setWarehouses((prev) => prev.filter((w) => w._id !== mongoId));
+      setWarehouses((prev) =>
+        prev.map((w) => (w._id === mongoId ? response?.data?.data : w)),
+      );
 
       if (selectedWarehouseId === mongoId) {
         setSelectedWarehouseId(null);
@@ -190,34 +200,159 @@ const Warehouse = () => {
     }
   };
 
-  const handleChangeStatus = () => {
-    console.log("Not done");
-  };
-  const handleRestoreWarehouse = () => {
-    console.log("Not done");
+  const handleChangeStatus = async (mongoId, newStatus) => {
+    try {
+      const confirmChange = await sweetalert2.fire({
+        title: "Change status?",
+        text: `Are you sure you want to change the status to ${newStatus}?`,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Yes, change it!",
+        confirmButtonColor: "#3085d6",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!confirmChange.isConfirmed) return;
+
+      const response = await axios.patch(
+        `${API_BASE}/warehouses/status/${mongoId}`,
+        { status: newStatus },
+        { withCredentials: true },
+      );
+
+      if (response.status !== 200) {
+        return { error: "Failed to change status. Please try again." };
+      }
+
+      setWarehouses((prev) =>
+        prev.map((w) => (w._id === mongoId ? response?.data?.data : w)),
+      );
+
+      if (selectedWarehouseId === mongoId) {
+        setSelectedWarehouse(response?.data?.data);
+      }
+
+      handleCloseWarehouseModal();
+    } catch (error) {
+      console.error("Error changing status:", error);
+      return { error: "An unexpected error occurred. Please try again." };
+    }
   };
 
-  // --- Rack CRUD (endpoints assumed - backend not built yet) ---------------
-  const handleAddRack = async (payload) => {
+  const handleRestoreWarehouse = async (id) => {
+    try {
+      const warehouseData = await axios.patch(
+        `${API_BASE}/warehouses/restore/${id}`,
+        {},
+        { withCredentials: true },
+      );
+
+      setWarehouses((prev) =>
+        prev.map((p) => (p._id === id ? warehouseData?.data.data : p)),
+      );
+    } catch (error) {
+      console.error("Error restoring warehouse:", error);
+    }
+  };
+
+  // --- Rack CRUD -------------------------------------------------------------
+  const openCreateRack = () =>
+    setRackModal({ isOpen: true, mode: "create", initialData: null });
+  const openEditRack = (rack) =>
+    setRackModal({ isOpen: true, mode: "edit", initialData: rack });
+  const closeRackModal = () =>
+    setRackModal({ isOpen: false, mode: "create", initialData: null });
+
+  const handleRackFormSubmit = async (payload) => {
     if (!selectedWarehouseId) return { error: "Select a warehouse first." };
 
     try {
-      await axios.post(
-        `${API_BASE}/racks/create`,
-        { ...payload, warehouseId: selectedWarehouseId },
+      if (rackModal.mode === "create") {
+        await axios.post(
+          `${API_BASE}/racks/create`,
+          { ...payload, warehouseId: selectedWarehouseId },
+          { withCredentials: true },
+        );
+      } else {
+        await axios.put(
+          `${API_BASE}/racks/update/${rackModal.initialData._id}`,
+          payload,
+          { withCredentials: true },
+        );
+      }
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error saving rack:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to save rack.",
+      };
+    }
+  };
+
+  const handleDeleteRack = async (rackId) => {
+    const confirmDelete = await sweetalert2.fire({
+      title: "Delete this rack?",
+      text: "This will remove the rack and its shelves.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    });
+    if (!confirmDelete.isConfirmed) return {};
+
+    try {
+      await axios.delete(`${API_BASE}/racks/delete/${rackId}`, {
+        withCredentials: true,
+      });
+      await loadWarehouseDetail(selectedWarehouseId);
+      setSelectedRackId(null);
+      return {};
+    } catch (error) {
+      console.error("Error deleting rack:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to delete rack.",
+      };
+    }
+  };
+
+  const handleToggleRackStatus = async (rack) => {
+    try {
+      await axios.patch(
+        `${API_BASE}/racks/status/${rack._id}`,
+        { disabled: !rack.disabled },
         { withCredentials: true },
       );
       await loadWarehouseDetail(selectedWarehouseId);
       return {};
     } catch (error) {
-      console.error("Error creating rack:", error);
+      console.error("Error updating rack status:", error);
       return {
-        error: error?.response?.data?.message || "Failed to create rack.",
+        error:
+          error?.response?.data?.message || "Failed to update rack status.",
       };
     }
   };
 
-  // --- Shelf CRUD (endpoints assumed - backend not built yet) ---------------
+  const handleRestoreRack = async (rackId) => {
+    try {
+      await axios.patch(
+        `${API_BASE}/racks/restore/${rackId}`,
+        {},
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error restoring rack:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to restore rack.",
+      };
+    }
+  };
+
+  // --- Shelf CRUD --------------------------------------------------------------
   const handleAddShelf = async (rack, payload) => {
     try {
       await axios.post(
@@ -235,8 +370,166 @@ const Warehouse = () => {
     }
   };
 
-  const handleUpdateProductStock = async (shelfId, productId, rawValue) => {
-    const inStock = Math.max(0, Number(rawValue) || 0);
+  const handleEditShelf = async (shelfId, payload) => {
+    try {
+      await axios.put(`${API_BASE}/shelves/update/${shelfId}`, payload, {
+        withCredentials: true,
+      });
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error updating shelf:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to update shelf.",
+      };
+    }
+  };
+
+  const handleDeleteShelf = async (shelfId) => {
+    const confirmDelete = await sweetalert2.fire({
+      title: "Delete this shelf?",
+      text: "This will remove the shelf and its products.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    });
+    if (!confirmDelete.isConfirmed) return {};
+
+    try {
+      await axios.delete(`${API_BASE}/shelves/delete/${shelfId}`, {
+        withCredentials: true,
+      });
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error deleting shelf:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to delete shelf.",
+      };
+    }
+  };
+
+  const handleToggleShelfStatus = async (shelf) => {
+    try {
+      await axios.patch(
+        `${API_BASE}/shelves/status/${shelf._id}`,
+        { disabled: !shelf.disabled },
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error updating shelf status:", error);
+      return {
+        error:
+          error?.response?.data?.message || "Failed to update shelf status.",
+      };
+    }
+  };
+
+  const handleRestoreShelf = async (shelfId) => {
+    try {
+      await axios.patch(
+        `${API_BASE}/shelves/restore/${shelfId}`,
+        {},
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error restoring shelf:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to restore shelf.",
+      };
+    }
+  };
+
+  // --- Product search + add-to-shelf --------------------------------------
+  const handleSearchProducts = useCallback(async (query) => {
+    if (!query?.trim()) return [];
+    try {
+      const response = await axios.get(`${API_BASE}/product/get`, {
+        params: { search: query, limit: 8 },
+        withCredentials: true,
+      });
+      return response.data.data || [];
+    } catch (error) {
+      console.error("Error searching products:", error);
+      return [];
+    }
+  }, []);
+
+  const handleAddProductToShelf = async (shelf, payload) => {
+    try {
+      await axios.post(
+        `${API_BASE}/shelves/add-product`,
+        { shelfId: shelf._id, ...payload },
+        { withCredentials: true },
+      );
+      await loadWarehouseDetail(selectedWarehouseId);
+      return {};
+    } catch (error) {
+      console.error("Error adding product to shelf:", error);
+      return {
+        error: error?.response?.data?.message || "Failed to add product.",
+      };
+    }
+  };
+
+  const handleRemoveProductFromShelf = async (shelfId, productId) => {
+    const confirmDelete = await sweetalert2.fire({
+      title: "Remove this product from the shelf?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, remove it",
+      confirmButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    });
+    if (!confirmDelete.isConfirmed) return;
+
+    setSelectedWarehouse((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        rackdata: prev.rackdata.map((rack) => ({
+          ...rack,
+          shelfData: (rack.shelfData || []).map((shelf) =>
+            shelf._id !== shelfId
+              ? shelf
+              : {
+                  ...shelf,
+                  productData: shelf.productData.filter(
+                    (p) => p.productInfo?._id !== productId,
+                  ),
+                },
+          ),
+        })),
+      };
+    });
+
+    try {
+      await axios.delete(
+        `${API_BASE}/shelves/delete-product?shelvesId=${shelfId}&productId=${productId}`,
+        { withCredentials: true },
+      );
+    } catch (error) {
+      console.error("Error removing product from shelf, re-syncing:", error);
+      loadWarehouseDetail(selectedWarehouseId);
+    }
+  };
+
+  // field: "inStock" | "maxStock" | "warningStock"
+  // productId here is the PRODUCT's own _id (p.productInfo._id from the
+  // caller), not the shelf sub-document's own _id.
+  const handleUpdateProductStock = async (
+    shelfId,
+    productId,
+    field,
+    rawValue,
+  ) => {
+    const value = Math.max(0, Number(rawValue) || 0);
 
     setSelectedWarehouse((prev) => {
       if (!prev) return prev;
@@ -250,9 +543,9 @@ const Warehouse = () => {
               : {
                   ...shelf,
                   productData: shelf.productData.map((p) =>
-                    p._id !== productId
+                    p.productInfo?._id !== productId
                       ? p
-                      : { ...p, stock: { ...p.stock, inStock } },
+                      : { ...p, stock: { ...p.stock, [field]: value } },
                   ),
                 },
           ),
@@ -260,16 +553,53 @@ const Warehouse = () => {
       };
     });
 
-    try {
-      await axios.put(
-        `${API_BASE}/shelves/update/${shelfId}`,
-        { productId, inStock },
-        { withCredentials: true },
+    const key = `${shelfId}-${productId}-${field}`;
+    clearTimeout(stockTimers.current[key]);
+    stockTimers.current[key] = setTimeout(async () => {
+      delete stockTimers.current[key];
+
+      // Read the latest confirmed state via the ref, not a stale closure
+      // and not a "no-op setState" hack.
+      const rack = selectedWarehouseRef.current?.rackdata?.find((r) =>
+        r.shelfData?.some((s) => s._id === shelfId),
       );
-    } catch (error) {
-      console.error("Error updating stock, re-syncing:", error);
-      loadWarehouseDetail(selectedWarehouseId);
-    }
+      const shelf = rack?.shelfData?.find((s) => s._id === shelfId);
+      const product = shelf?.productData?.find(
+        (p) => p.productInfo?._id === productId,
+      );
+
+      if (!product) {
+        console.warn(
+          `Product ${productId} not found on shelf ${shelfId} — cannot sync stock.`,
+        );
+        return;
+      }
+
+      const latestStock = product.stock;
+
+      try {
+        await axios.put(
+          `${API_BASE}/shelves-product/update/${shelfId}`,
+          {
+            productId,
+            inStock: latestStock.inStock ?? 0,
+            maxStock: latestStock.maxStock ?? 0,
+            warningStock: latestStock.warningStock ?? 0,
+          },
+          { withCredentials: true },
+        );
+      } catch (error) {
+        // Deliberately NOT force-reloading the whole warehouse here.
+        // A reload after a transient error can return a shape (e.g.
+        // productInfo not populated) that breaks every future edit's
+        // p.productInfo?._id match, silently freezing all stock updates.
+        // The optimistic value stays in the UI; just surface the error.
+        console.error("Error updating stock:", error);
+        setDetailError(
+          "Failed to save a stock update. Please refresh if values look wrong.",
+        );
+      }
+    }, 500);
   };
 
   const handleLocateRack = (rackCode) => {
@@ -294,9 +624,6 @@ const Warehouse = () => {
         });
 
         const list = response.data.data || [];
-        // .filter(
-        //   (w) => !w.disabled && !w.isDeleted,
-        // );
         setWarehouses(list);
       } catch (err) {
         console.error("Failed to fetch warehouses:", err);
@@ -309,7 +636,6 @@ const Warehouse = () => {
     getWarehouseList();
   }, []);
 
-  // --- Restore last-selected warehouse (and fetch its detail) ---------------
   useEffect(() => {
     const storedId = localStorage.getItem("selectedWarehouseId");
     if (storedId) {
@@ -317,6 +643,17 @@ const Warehouse = () => {
       loadWarehouseDetail(storedId);
     }
   }, [loadWarehouseDetail]);
+
+  // Clear any pending debounced stock-update timers on unmount so they
+  // don't fire against an unmounted component's state.
+  useEffect(() => {
+    return () => {
+      Object.values(stockTimers.current).forEach((timerId) =>
+        clearTimeout(timerId),
+      );
+      stockTimers.current = {};
+    };
+  }, []);
 
   if (isLoadingWarehouses) {
     return (
@@ -377,7 +714,7 @@ const Warehouse = () => {
               onGroupByChange={setGroupBy}
               onSelectRack={(rack) => setSelectedRackId(rack._id)}
               highlightedRackCode={highlightedRackCode}
-              onAddRack={() => setIsRackFormOpen(true)}
+              onAddRack={openCreateRack}
             />
           </>
         ) : (
@@ -394,12 +731,28 @@ const Warehouse = () => {
           onClose={() => setSelectedRackId(null)}
           onUpdateProductStock={handleUpdateProductStock}
           onAddShelf={handleAddShelf}
+          onEditRack={openEditRack}
+          onDeleteRack={handleDeleteRack}
+          onToggleRackStatus={handleToggleRackStatus}
+          onRestoreRack={handleRestoreRack}
+          onEditShelf={handleEditShelf}
+          onDeleteShelf={handleDeleteShelf}
+          onToggleShelfStatus={handleToggleShelfStatus}
+          onRestoreShelf={handleRestoreShelf}
+          onSearchProducts={handleSearchProducts}
+          onAddProductToShelf={handleAddProductToShelf}
+          onRemoveProductFromShelf={handleRemoveProductFromShelf}
         />
 
         <WarehouseRackFormModal
-          isOpen={isRackFormOpen}
-          onClose={() => setIsRackFormOpen(false)}
-          onSubmit={handleAddRack}
+          isOpen={rackModal.isOpen}
+          mode={rackModal.mode}
+          initialData={rackModal.initialData}
+          onClose={closeRackModal}
+          onSubmit={handleRackFormSubmit}
+          onDelete={handleDeleteRack}
+          onToggleStatus={handleToggleRackStatus}
+          onRestore={handleRestoreRack}
         />
 
         <WarehouseSelectorModal
@@ -415,7 +768,7 @@ const Warehouse = () => {
           onCreateWarehouse={handleOpenCreateWarehouseModal}
           onEditWarehouse={handleEditWarehouse}
           onDeleteWarehouse={handleDeleteWarehouse}
-          onChangeStatus={handleChangeStatus} // TODO :add change
+          onChangeStatus={handleChangeStatus}
           onRestoreWarehouse={handleRestoreWarehouse}
         />
 

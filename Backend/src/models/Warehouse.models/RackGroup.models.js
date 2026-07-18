@@ -1,19 +1,11 @@
 import mongoose from "mongoose";
-
-const rackSchema = new mongoose.Schema(
+// TODO
+const rackGroupSchema = new mongoose.Schema(
   {
-    rackCode: { type: String, required: true },
-    column: { type: String, required: true },
     group: {
       groupName: { type: String },
       groupColor: { type: String },
     },
-    shelfData: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Shelve",
-      },
-    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -36,4 +28,4 @@ const rackSchema = new mongoose.Schema(
   },
 );
 
-export const Rack = mongoose.model("Rack", rackSchema);
+export const Rack = mongoose.model("RackGroup", rackGroupSchema);

@@ -6,10 +6,11 @@ import { Shelve } from "../../models/Warehouse.models/shelve.models.js";
 import User from "../../models/user.model.js";
 
 export const createWarehouse = async (req, res) => {
-  const { warehouseName, warehouseId, place, address } = req.body;
+  const { warehouseName, warehouseId, place, address,  } =
+    req.body;
 
   logger.info(
-    { warehouseId, warehouseName, place, address, userId: req.userId },
+    { warehouseId, warehouseName, place, address, userId: req.userId, },
     "Attempting to create warehouse",
   );
 
@@ -18,7 +19,6 @@ export const createWarehouse = async (req, res) => {
   }
 
   try {
-
     const warehouseExists = await Warehouse.findOne({ warehouseId });
     if (warehouseExists) {
       logger.warn(
@@ -264,6 +264,58 @@ export const restoreWarehouse = async (req, res) => {
     logger.error(
       { err: error, _id: id },
       "Error occurred while restoring warehouse",
+    );
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const disabledEnabledWarehouse = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const userId = req.userId;
+
+  logger.info(
+    { _id: id, status, updatedBy: userId },
+    "Attempting to update warehouse disabled/enabled status",
+  );
+
+  if (!id) {
+    return res.status(400).json({ message: "Warehouse ID is required." });
+  }
+
+  if (typeof status !== "boolean") {
+    return res
+      .status(400)
+      .json({ message: "Status must be a boolean value (true/false)." });
+  }
+
+  try {
+    const warehouse = await Warehouse.findById(id);
+
+    if (!warehouse) {
+      logger.warn({ _id: id }, "Status update aborted: Warehouse not found");
+      return res.status(404).json({ message: "Warehouse not found." });
+    }
+
+    warehouse.disabled = status;
+    warehouse.updatedBy = userId;
+
+    await warehouse.save();
+
+    logger.info(
+      { _id: warehouse._id, disabled: warehouse.disabled, updatedBy: userId },
+      `Warehouse successfully ${status ? "disabled" : "enabled"}`,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Warehouse ${status ? "disabled" : "enabled"} successfully.`,
+      data: warehouse,
+    });
+  } catch (error) {
+    logger.error(
+      { err: error, _id: id },
+      "Error occurred while shifting warehouse status",
     );
     return res.status(500).json({ message: "Internal server error" });
   }

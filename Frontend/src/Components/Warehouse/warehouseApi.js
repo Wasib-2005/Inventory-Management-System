@@ -83,7 +83,7 @@ export const createShelf = (body) =>
   request("/shelves/create", { method: "POST", body: JSON.stringify(body) });
 
 export const updateShelf = (id, body) =>
-  request(`/shelves/update/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  request(`/shelves/update-product/${id}`, { method: "PUT", body: JSON.stringify(body) });
 
 export const deleteShelf = (id) =>
   request(`/shelves/delete/${id}`, { method: "DELETE" });

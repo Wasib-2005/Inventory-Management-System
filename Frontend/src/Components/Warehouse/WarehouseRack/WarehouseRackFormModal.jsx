@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TbHash, TbColumns, TbTag, TbX, TbPlus, TbAlertTriangle } from "react-icons/tb";
+import {
+  TbHash,
+  TbColumns,
+  TbTag,
+  TbX,
+  TbPlus,
+  TbEdit,
+  TbTrash,
+  TbPower,
+  TbArrowBackUp,
+  TbAlertTriangle,
+} from "react-icons/tb";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
 import { commonFieldColour } from "../../../Theme/commonFieldColour";
@@ -11,28 +22,46 @@ const emptyForm = {
   rackCode: "",
   column: "",
   groupName: "",
-  groupColour: "#50C878",
+  groupColor: "#50C878",
 };
 
-// onSubmit receives { rackCode, column, group: { groupName, groupColour } }
-const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
+const WarehouseRackFormModal = ({
+  isOpen,
+  mode = "create",
+  initialData,
+  onClose,
+  onSubmit,
+  onDelete,
+  onToggleStatus,
+  onRestore,
+}) => {
+  const isEdit = mode === "edit";
+
   const [rackCode, setRackCode] = useState(emptyForm.rackCode);
   const [column, setColumn] = useState(emptyForm.column);
   const [groupName, setGroupName] = useState(emptyForm.groupName);
-  const [groupColour, setGroupColour] = useState(emptyForm.groupColour);
+  const [groupColor, setGroupColor] = useState(emptyForm.groupColor);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRackCode(emptyForm.rackCode);
-    setColumn(emptyForm.column);
-    setGroupName(emptyForm.groupName);
-    setGroupColour(emptyForm.groupColour);
     setError(null);
     setIsSubmitting(false);
-  }, [isOpen]);
+
+    if (isEdit && initialData) {
+      setRackCode(initialData.rackCode ?? "");
+      setColumn(initialData.column ?? "");
+      setGroupName(initialData.group?.groupName ?? "");
+      setGroupColor(initialData.group?.groupColor ?? emptyForm.groupColor);
+    } else {
+      setRackCode(emptyForm.rackCode);
+      setColumn(emptyForm.column);
+      setGroupName(emptyForm.groupName);
+      setGroupColor(emptyForm.groupColor);
+    }
+  }, [isOpen, isEdit, initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +74,7 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
       const result = await onSubmit({
         rackCode,
         column,
-        group: { groupName, groupColour },
+        group: { groupName, groupColor },
       });
 
       if (result?.error) {
@@ -56,10 +85,32 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
 
       onClose();
     } catch (err) {
-      setError(err?.message || "Failed to create rack.");
+      setError(err?.message || "Failed to save rack.");
       setIsSubmitting(false);
     }
   };
+
+  const runAction = async (fn, ...args) => {
+    if (!fn || isSubmitting) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const result = await fn(...args);
+      if (result?.error) {
+        setError(result.error);
+        setIsSubmitting(false);
+        return;
+      }
+      onClose();
+    } catch (err) {
+      setError(err?.message || "Action failed.");
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = () => runAction(onDelete, initialData._id);
+  const handleToggleStatus = () => runAction(onToggleStatus, initialData);
+  const handleRestore = () => runAction(onRestore, initialData._id);
 
   return (
     <AnimatePresence>
@@ -81,7 +132,7 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
           >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-900/60">
-                Add Rack
+                {isEdit ? `Edit Rack ${initialData?.rackCode}` : "Add Rack"}
               </h3>
               <button
                 type="button"
@@ -93,6 +144,21 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
               </button>
             </div>
 
+            {isEdit && (initialData?.disabled || initialData?.isDeleted) && (
+              <div className="flex gap-1.5 flex-wrap">
+                {initialData.isDeleted && (
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-700 rounded border border-red-200">
+                    Deleted
+                  </span>
+                )}
+                {initialData.disabled && !initialData.isDeleted && (
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-slate-200 text-slate-700 rounded border border-slate-300">
+                    Disabled
+                  </span>
+                )}
+              </div>
+            )}
+
             {error && (
               <div className="flex items-start gap-2 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5">
                 <TbAlertTriangle size={14} className="shrink-0 mt-0.5" />
@@ -102,7 +168,11 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="relative">
-                <TbHash size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                <TbHash
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
                 <input
                   type="text"
                   required
@@ -115,7 +185,11 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
               </div>
 
               <div className="relative">
-                <TbColumns size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                <TbColumns
+                  size={14}
+                  className={commonFieldColour.icon}
+                  style={{ top: "12px" }}
+                />
                 <input
                   type="text"
                   required
@@ -129,7 +203,11 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
 
               <div className="grid grid-cols-[1fr_auto] gap-2 items-center bg-emerald-50/40 p-3 rounded-lg border border-emerald-100">
                 <div className="relative">
-                  <TbTag size={14} className={commonFieldColour.icon} style={{ top: "12px" }} />
+                  <TbTag
+                    size={14}
+                    className={commonFieldColour.icon}
+                    style={{ top: "12px" }}
+                  />
                   <input
                     type="text"
                     disabled={isSubmitting}
@@ -142,14 +220,14 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
                 <input
                   type="color"
                   disabled={isSubmitting}
-                  value={groupColour}
-                  onChange={(e) => setGroupColour(e.target.value)}
+                  value={groupColor}
+                  onChange={(e) => setGroupColor(e.target.value)}
                   className="w-9 h-9 rounded-lg border border-emerald-300/40 cursor-pointer disabled:opacity-60"
                   title="Group colour"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-emerald-200">
+              <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-emerald-200">
                 <button
                   type="button"
                   disabled={isSubmitting}
@@ -160,14 +238,45 @@ const WarehouseRackFormModal = ({ isOpen, onClose, onSubmit }) => {
                   <TbX size={15} />
                   Cancel
                 </button>
+
+                {isEdit && (
+                  <>
+                    {initialData?.isDeleted ? (
+                      <button
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={handleRestore}
+                        className={`${primaryButton} disabled:opacity-50`}
+                        style={{ backgroundColor: "#2563eb", color: "#fff" }}
+                      >
+                        <TbArrowBackUp size={15} />
+                        Restore
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          disabled={isSubmitting}
+                          onClick={handleDelete}
+                          className={`${primaryButton} disabled:opacity-50`}
+                          style={{ backgroundColor: "#FF0000", color: "#fff" }}
+                        >
+                          <TbTrash size={15} />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+
                 <button
-                  type="submit"
                   disabled={isSubmitting}
+                  type="submit"
                   className={`${primaryButton} disabled:opacity-50`}
                   style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                 >
-                  <TbPlus size={15} />
-                  {isSubmitting ? "Adding..." : "Add Rack"}
+                  {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
+                  {isSubmitting ? "Saving..." : "Save"}
                 </button>
               </div>
             </form>

@@ -1,8 +1,10 @@
-import { logger } from "../../config/logger";
-import { Rack } from "../../models/Warehouse.models/Rack.models";
+import mongoose from "mongoose";
+import { logger } from "../../config/logger.js";
+import { Rack } from "../../models/Warehouse.models/Rack.models.js";
+import { Warehouse } from "../../models/Warehouse.models/warehouse.models.js";
 
 export const createRack = async (req, res) => {
-  const { rackCode, column, group } = req.body;
+  const { warehouseId, rackCode, column, group } = req.body;
   const userId = req.userId;
   const username = req.username;
 
@@ -11,28 +13,47 @@ export const createRack = async (req, res) => {
     "Attempting to create rack",
   );
 
-  if (!rackCode || !column) {
+  if (!rackCode || !column || !warehouseId) {
     return res
       .status(400)
       .json({ message: "Rack Code and Column are required." });
   }
 
+  const session = await mongoose.startSession();
+
   try {
-    const existingRack = await Rack.findOne({ rackCode });
+    session.startTransaction();
+
+    const existingRack = await Rack.findOne({ rackCode }).session(session);
     if (existingRack) {
       logger.warn(
         { rackCode },
         "Creation aborted: Rack code already exists in active racks",
       );
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ message: "Rack code already exists." });
     }
 
-    const newRack = await Rack.create({
-      rackCode,
-      column,
-      group,
-      createdBy: userId,
-    });
+    const [newRack] = await Rack.create(
+      [{ rackCode, column, group, createdBy: userId }],
+      { session },
+    );
+
+    const warehouse = await Warehouse.findById(warehouseId).session(session);
+    if (!warehouse) {
+      logger.warn({ warehouseId }, "Warehouse not found");
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Warehouse not found." });
+    }
+
+    warehouse.rackdata.push(newRack._id);
+
+    await warehouse.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     logger.info({ _id: newRack._id, rackCode }, "Rack created successfully");
 
@@ -42,7 +63,13 @@ export const createRack = async (req, res) => {
       data: newRack,
     });
   } catch (error) {
-    logger.error({ err: error }, "Error occurred while creating rack");
+    await session.abortTransaction();
+    session.endSession();
+
+    logger.error(
+      { err: error },
+      "Error occurred while creating rack. Transaction rolled back.",
+    );
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -159,6 +186,8 @@ export const restoreRack = async (req, res) => {
 
   try {
     const rack = await Rack.findById(id);
+
+    console.log(rack);
 
     if (!rack) {
       logger.warn(

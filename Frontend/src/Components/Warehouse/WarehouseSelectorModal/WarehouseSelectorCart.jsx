@@ -7,7 +7,7 @@ const WarehouseSelectorCart = ({
   onSelectWarehouse,
   onEditWarehouse,
   onDeleteWarehouse,
-  onChangeStatus, 
+  onChangeStatus,
   onRestoreWarehouse,
 }) => {
   const isDeleted = w.isDeleted;
@@ -79,12 +79,12 @@ const WarehouseSelectorCart = ({
             iconSize={13}
             onClick={(e) => {
               e.stopPropagation();
-              onChangeStatus(w);
+              onChangeStatus(w._id, !w.disabled);
             }}
             className={`p-1.5 rounded-md border transition-colors ${
               isDisabled
-                ? "bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-700 border-emerald-200/50"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300/50"
+                ? "bg-emerald-200/70 hover:bg-emerald-100/80 text-emerald-700 border-emerald-200/50"
+                : " hover:bg-slate-200 text-red-700 bg-red-200 border-slate-300/50"
             }`}
           />
         )}

@@ -33,6 +33,8 @@ export const getProducts = async (req, res) => {
       sortOrder = "desc",
     } = req.query;
 
+    console.log(req.query);
+
     logger.info(
       { search, status, category, subcategory, brand, page, limit },
       "Fetching products with query filters",

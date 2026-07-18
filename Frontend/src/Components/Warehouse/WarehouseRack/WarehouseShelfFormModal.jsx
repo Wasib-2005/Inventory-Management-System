@@ -1,15 +1,39 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TbHash, TbX, TbPlus, TbAlertTriangle, TbLayersLinked } from "react-icons/tb";
+import {
+  TbHash,
+  TbX,
+  TbPlus,
+  TbEdit,
+  TbTrash,
+  TbPower,
+  TbArrowBackUp,
+  TbAlertTriangle,
+  TbLayersLinked,
+} from "react-icons/tb";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
 import { commonFieldColour } from "../../../Theme/commonFieldColour";
 import { commonInputField } from "../../../Theme/commonInputField";
 import { primaryButton } from "../../../Theme/primaryButton";
 
-// rack: the rack this shelf is being added to (for display only)
+// mode: "create" | "edit"
+// rack: the rack this shelf belongs to (for display only)
+// initialData (edit only): { _id, shelfCode, disabled, isDeleted }
 // onSubmit receives { shelfCode }
-const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
+const WarehouseShelfFormModal = ({
+  isOpen,
+  mode = "create",
+  rack,
+  initialData,
+  onClose,
+  onSubmit,
+  onDelete,
+  onToggleStatus,
+  onRestore,
+}) => {
+  const isEdit = mode === "edit";
+
   const [shelfCode, setShelfCode] = useState("");
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,10 +41,10 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
   useEffect(() => {
     if (!isOpen) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShelfCode("");
     setError(null);
     setIsSubmitting(false);
-  }, [isOpen]);
+    setShelfCode(isEdit && initialData ? initialData.shelfCode ?? "" : "");
+  }, [isOpen, isEdit, initialData]);
 
   if (!rack) return null;
 
@@ -42,10 +66,32 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
 
       onClose();
     } catch (err) {
-      setError(err?.message || "Failed to add shelf.");
+      setError(err?.message || "Failed to save shelf.");
       setIsSubmitting(false);
     }
   };
+
+  const runAction = async (fn, ...args) => {
+    if (!fn || isSubmitting) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const result = await fn(...args);
+      if (result?.error) {
+        setError(result.error);
+        setIsSubmitting(false);
+        return;
+      }
+      onClose();
+    } catch (err) {
+      setError(err?.message || "Action failed.");
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = () => runAction(onDelete, initialData._id);
+  const handleToggleStatus = () => runAction(onToggleStatus, initialData);
+  const handleRestore = () => runAction(onRestore, initialData._id);
 
   return (
     <AnimatePresence>
@@ -68,7 +114,7 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-900/60 flex items-center gap-1.5">
                 <TbLayersLinked size={14} />
-                Add Shelf to {rack.rackCode}
+                {isEdit ? `Edit Shelf in ${rack.rackCode}` : `Add Shelf to ${rack.rackCode}`}
               </h3>
               <button
                 type="button"
@@ -79,6 +125,21 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
                 <TbX size={16} />
               </button>
             </div>
+
+            {isEdit && (initialData?.disabled || initialData?.isDeleted) && (
+              <div className="flex gap-1.5 flex-wrap">
+                {initialData.isDeleted && (
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-700 rounded border border-red-200">
+                    Deleted
+                  </span>
+                )}
+                {initialData.disabled && !initialData.isDeleted && (
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-slate-200 text-slate-700 rounded border border-slate-300">
+                    Disabled
+                  </span>
+                )}
+              </div>
+            )}
 
             {error && (
               <div className="flex items-start gap-2 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5">
@@ -102,7 +163,7 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-emerald-200">
+              <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-emerald-200">
                 <button
                   type="button"
                   disabled={isSubmitting}
@@ -113,14 +174,58 @@ const WarehouseShelfFormModal = ({ isOpen, rack, onClose, onSubmit }) => {
                   <TbX size={15} />
                   Cancel
                 </button>
+
+                {isEdit && (
+                  <>
+                    {initialData?.isDeleted ? (
+                      <button
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={handleRestore}
+                        className={`${primaryButton} disabled:opacity-50`}
+                        style={{ backgroundColor: "#2563eb", color: "#fff" }}
+                      >
+                        <TbArrowBackUp size={15} />
+                        Restore
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          disabled={isSubmitting}
+                          onClick={handleToggleStatus}
+                          className={`${primaryButton} disabled:opacity-50`}
+                          style={{
+                            backgroundColor: initialData?.disabled ? "#059669" : "#64748b",
+                            color: "#fff",
+                          }}
+                        >
+                          <TbPower size={15} />
+                          {initialData?.disabled ? "Enable" : "Disable"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSubmitting}
+                          onClick={handleDelete}
+                          className={`${primaryButton} disabled:opacity-50`}
+                          style={{ backgroundColor: "#FF0000", color: "#fff" }}
+                        >
+                          <TbTrash size={15} />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className={`${primaryButton} disabled:opacity-50`}
                   style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                 >
-                  <TbPlus size={15} />
-                  {isSubmitting ? "Adding..." : "Add Shelf"}
+                  {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
+                  {isSubmitting ? "Saving..." : isEdit ? "Save" : "Add Shelf"}
                 </button>
               </div>
             </form>

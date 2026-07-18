@@ -8,9 +8,10 @@ import { useState, useEffect } from "react";
  */
 const useDebounce = (value, delay = 10000) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
+  console.log("Start debounce counter");
 
   useEffect(() => {
-    console.log("Start debounce counter")
+    console.log("Start debounce counter");
     // Set a timer to update the debounced value after the specified delay
     const handler = setTimeout(() => {
       setDebouncedValue(value);
