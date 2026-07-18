@@ -190,19 +190,7 @@ const WarehouseShelfFormModal = ({
                       </button>
                     ) : (
                       <>
-                        <button
-                          type="button"
-                          disabled={isSubmitting}
-                          onClick={handleToggleStatus}
-                          className={`${primaryButton} disabled:opacity-50`}
-                          style={{
-                            backgroundColor: initialData?.disabled ? "#059669" : "#64748b",
-                            color: "#fff",
-                          }}
-                        >
-                          <TbPower size={15} />
-                          {initialData?.disabled ? "Enable" : "Disable"}
-                        </button>
+
                         <button
                           type="button"
                           disabled={isSubmitting}

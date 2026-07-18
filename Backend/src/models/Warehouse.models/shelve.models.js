@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const shelveSchema = new mongoose.Schema({
   shelfCode: { type: String, required: true },
+  
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  isDeleted: { type: Boolean, default: false },
+  deleteBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  
   productData: [
     {
       productInfo: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },

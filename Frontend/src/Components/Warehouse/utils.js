@@ -20,7 +20,9 @@ export const hexToRgba = (hex, alpha = 1) => {
 };
 
 export const computeShelfStats = (shelf) => {
-  const products = shelf?.productData || [];
+  if (shelf?.isDeleted) return { itemCount: 0, capacity: 0 };
+
+  const products = (shelf?.productData || []).filter((p) => !p.isDeleted);
   const itemCount = products.reduce(
     (sum, p) => sum + (p.stock?.inStock || 0),
     0,
@@ -33,7 +35,9 @@ export const computeShelfStats = (shelf) => {
 };
 
 export const computeRackStats = (rack) => {
-  const shelves = rack?.shelfData || [];
+  if (rack?.isDeleted) return { itemCount: 0, capacity: 0 };
+
+  const shelves = (rack?.shelfData || []).filter((s) => !s.isDeleted);
   return shelves.reduce(
     (acc, shelf) => {
       const stats = computeShelfStats(shelf);

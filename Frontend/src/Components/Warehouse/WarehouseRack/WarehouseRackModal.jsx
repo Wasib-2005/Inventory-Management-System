@@ -48,10 +48,129 @@ const WarehouseRackModal = ({
   });
   const [productPickerShelf, setProductPickerShelf] = useState(null);
 
+  // stockErrors: key `${productId}-${field}` -> error message (or undefined)
+  const [stockErrors, setStockErrors] = useState({});
+  // rawStockInputs: key `${productId}-${field}` -> in-progress text while
+  // typing, only used so the field can be momentarily empty while editing.
+  const [rawStockInputs, setRawStockInputs] = useState({});
+
   if (!rack) return null;
 
   const { itemCount, capacity } = computeRackStats(rack);
   const shelves = rack.shelfData || [];
+
+  // Only whole non-negative numbers allowed. Empty string is allowed
+  // transiently (user clearing the field to retype) but is NOT sent
+  // to the backend until it resolves to a real digit string.
+  const isValidDigits = (raw) => raw === "" || /^\d+$/.test(raw);
+
+  const validateRelation = (nextInStock, nextMaxStock) => {
+    if (nextInStock > nextMaxStock) {
+      return "In-stock cannot exceed max stock.";
+    }
+    return null;
+  };
+
+  const getDisplayValue = (productId, field, actualValue) => {
+    const key = `${productId}-${field}`;
+    return rawStockInputs[key] !== undefined
+      ? rawStockInputs[key]
+      : String(actualValue);
+  };
+
+  const setError = (productId, field, message) => {
+    const key = `${productId}-${field}`;
+    setStockErrors((prev) => ({ ...prev, [key]: message }));
+  };
+
+  const clearRaw = (productId, field) => {
+    const key = `${productId}-${field}`;
+    setRawStockInputs((prev) => {
+      if (!(key in prev)) return prev;
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
+  };
+
+  // Shared handler for the Warn / In / Max inputs.
+  // - Non-numeric text: value never changes, error shown, nothing sent.
+  // - Empty string: value stays as-is on screen (user is mid-edit),
+  //   nothing sent yet.
+  // - Valid digits: value updates + relational check runs + sent upstream
+  //   only if the relation is still valid.
+  const handleStockFieldChange = ({
+    raw,
+    productId,
+    shelfId,
+    field,
+    currentInStock,
+    currentMaxStock,
+  }) => {
+    if (!isValidDigits(raw)) {
+      // Block it entirely: don't touch rawStockInputs (so the input's
+      // displayed value doesn't change) and don't call onUpdateProductStock.
+      setError(productId, field, "Only numbers are allowed.");
+      return;
+    }
+
+    const key = `${productId}-${field}`;
+    setRawStockInputs((prev) => ({ ...prev, [key]: raw }));
+
+    if (raw === "") {
+      // Mid-edit (cleared field) — hold, don't send yet, don't error.
+      setError(productId, field, null);
+      return;
+    }
+
+    const nextValue = Number(raw);
+    const nextInStock = field === "inStock" ? nextValue : currentInStock;
+    const nextMaxStock = field === "maxStock" ? nextValue : currentMaxStock;
+    const relationError = validateRelation(nextInStock, nextMaxStock);
+
+    setError(productId, field, relationError);
+
+    if (relationError) {
+      // Don't send an invalid in/max relationship to the backend.
+      return;
+    }
+
+    onUpdateProductStock(shelfId, productId, field, nextValue);
+  };
+
+  const handleStockFieldBlur = ({
+    raw,
+    productId,
+    shelfId,
+    field,
+    currentInStock,
+    currentMaxStock,
+  }) => {
+    if (!isValidDigits(raw)) {
+      // Shouldn't normally happen (invalid text never reaches raw state),
+      // but guard anyway: just clear back to the last known-good value.
+      clearRaw(productId, field);
+      setError(productId, field, null);
+      return;
+    }
+
+    if (raw === "") {
+      // Field left empty on blur — fall back to 0 and commit.
+      const nextInStock = field === "inStock" ? 0 : currentInStock;
+      const nextMaxStock = field === "maxStock" ? 0 : currentMaxStock;
+      const relationError = validateRelation(nextInStock, nextMaxStock);
+
+      clearRaw(productId, field);
+      setError(productId, field, relationError);
+
+      if (!relationError) {
+        onUpdateProductStock(shelfId, productId, field, 0);
+      }
+      return;
+    }
+
+    clearRaw(productId, field);
+  };
 
   const handleAddShelfSubmit = async (payload) => {
     if (shelfForm.mode === "create") {
@@ -133,6 +252,13 @@ const WarehouseRackModal = ({
                     </button>
                   ) : (
                     <>
+                      <button
+                        onClick={() => onToggleRackStatus(rack)}
+                        title={rack.disabled ? "Enable rack" : "Disable rack"}
+                        className="p-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300/50 transition-colors"
+                      >
+                        <Power size={13} />
+                      </button>
                       <button
                         onClick={() => onDeleteRack(rack._id)}
                         title="Delete rack"
@@ -228,7 +354,17 @@ const WarehouseRackModal = ({
                               </button>
                             ) : (
                               <>
-
+                                <button
+                                  onClick={() => onToggleShelfStatus(shelf)}
+                                  title={
+                                    shelf.disabled
+                                      ? "Enable shelf"
+                                      : "Disable shelf"
+                                  }
+                                  className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300/50 transition-colors"
+                                >
+                                  <Power size={12} />
+                                </button>
                                 <button
                                   onClick={() => onDeleteShelf(shelf._id)}
                                   title="Delete shelf"
@@ -256,6 +392,16 @@ const WarehouseRackModal = ({
                               const pPct =
                                 maxStock > 0 ? (inStock / maxStock) * 100 : 0;
                               const low = isProductLow(p);
+                              const productId = p.productInfo?._id;
+
+                              const warnError =
+                                stockErrors[`${productId}-warningStock`];
+                              const inError =
+                                stockErrors[`${productId}-inStock`];
+                              const maxError =
+                                stockErrors[`${productId}-maxStock`];
+                              // Show whichever error is present (first one found).
+                              const rowError = warnError || inError || maxError;
 
                               return (
                                 <div
@@ -301,7 +447,6 @@ const WarehouseRackModal = ({
                                     </div>
 
                                     <div className="flex items-center gap-1.5 shrink-0">
-                                      {/* Rearranged Stock Input Blocks */}
                                       <div
                                         className="flex items-center gap-1 rounded px-1.5 py-1"
                                         style={{
@@ -315,18 +460,38 @@ const WarehouseRackModal = ({
                                             Warn
                                           </span>
                                           <input
-                                            type="number"
-                                            min="0"
-                                            value={warningStock}
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={getDisplayValue(
+                                              productId,
+                                              "warningStock",
+                                              warningStock,
+                                            )}
                                             onChange={(e) =>
-                                              onUpdateProductStock(
-                                                shelf._id,
-                                                p.productInfo._id,
-                                                "warningStock",
-                                                e.target.value,
-                                              )
+                                              handleStockFieldChange({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "warningStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
                                             }
-                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                            onBlur={(e) =>
+                                              handleStockFieldBlur({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "warningStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
+                                            }
+                                            className={`w-10 bg-white/70 rounded text-[10px] font-bold text-center border py-0.5 ${
+                                              warnError
+                                                ? "border-red-500"
+                                                : "border-black/10"
+                                            }`}
                                           />
                                         </div>
                                         {/* Separator / Spacer */}
@@ -337,19 +502,38 @@ const WarehouseRackModal = ({
                                             In
                                           </span>
                                           <input
-                                            type="number"
-                                            min="0"
-                                            max={maxStock}
-                                            value={inStock}
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={getDisplayValue(
+                                              productId,
+                                              "inStock",
+                                              inStock,
+                                            )}
                                             onChange={(e) =>
-                                              onUpdateProductStock(
-                                                shelf._id,
-                                                p.productInfo._id,
-                                                "inStock",
-                                                e.target.value,
-                                              )
+                                              handleStockFieldChange({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "inStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
                                             }
-                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                            onBlur={(e) =>
+                                              handleStockFieldBlur({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "inStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
+                                            }
+                                            className={`w-10 bg-white/70 rounded text-[10px] font-bold text-center border py-0.5 ${
+                                              inError
+                                                ? "border-red-500"
+                                                : "border-black/10"
+                                            }`}
                                           />
                                         </div>
                                         <p className="text-2xl">/</p>
@@ -359,18 +543,38 @@ const WarehouseRackModal = ({
                                             Max
                                           </span>
                                           <input
-                                            type="number"
-                                            min="1"
-                                            value={maxStock}
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={getDisplayValue(
+                                              productId,
+                                              "maxStock",
+                                              maxStock,
+                                            )}
                                             onChange={(e) =>
-                                              onUpdateProductStock(
-                                                shelf._id,
-                                                p.productInfo._id,
-                                                "maxStock",
-                                                e.target.value,
-                                              )
+                                              handleStockFieldChange({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "maxStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
                                             }
-                                            className="w-10 bg-white/70 rounded text-[10px] font-bold text-center border border-black/10 py-0.5"
+                                            onBlur={(e) =>
+                                              handleStockFieldBlur({
+                                                raw: e.target.value,
+                                                productId,
+                                                shelfId: shelf._id,
+                                                field: "maxStock",
+                                                currentInStock: inStock,
+                                                currentMaxStock: maxStock,
+                                              })
+                                            }
+                                            className={`w-10 bg-white/70 rounded text-[10px] font-bold text-center border py-0.5 ${
+                                              maxError
+                                                ? "border-red-500"
+                                                : "border-black/10"
+                                            }`}
                                           />
                                         </div>
                                       </div>
@@ -379,7 +583,7 @@ const WarehouseRackModal = ({
                                         onClick={() =>
                                           onRemoveProductFromShelf(
                                             shelf._id,
-                                            p._id,
+                                            productId,
                                           )
                                         }
                                         title="Remove product from shelf"
@@ -398,6 +602,12 @@ const WarehouseRackModal = ({
                                       }}
                                     />
                                   </div>
+
+                                  {rowError && (
+                                    <p className="text-[9px] font-semibold text-red-600">
+                                      {rowError}
+                                    </p>
+                                  )}
                                 </div>
                               );
                             })}

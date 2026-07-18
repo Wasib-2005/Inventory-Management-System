@@ -523,14 +523,21 @@ const Warehouse = () => {
   // field: "inStock" | "maxStock" | "warningStock"
   // productId here is the PRODUCT's own _id (p.productInfo._id from the
   // caller), not the shelf sub-document's own _id.
-  const handleUpdateProductStock = async (
+const handleUpdateProductStock = async (
     shelfId,
     productId,
     field,
     rawValue,
   ) => {
-    const value = Math.max(0, Number(rawValue) || 0);
+    // 1. STAGE 1: Input text validation
+    // If the raw text contains anything other than clean digits, freeze state completely
+    const cleanString = String(rawValue).trim();
+    const isValidNumericInput = /^\d*$/.test(cleanString); 
+    if (!isValidNumericInput) return; 
 
+    const value = Math.max(0, Number(cleanString) || 0);
+
+    // 2. STAGE 2: Optimistic Local UI State Change
     setSelectedWarehouse((prev) => {
       if (!prev) return prev;
       return {
@@ -558,8 +565,7 @@ const Warehouse = () => {
     stockTimers.current[key] = setTimeout(async () => {
       delete stockTimers.current[key];
 
-      // Read the latest confirmed state via the ref, not a stale closure
-      // and not a "no-op setState" hack.
+      // Read the latest confirmed state via the ref
       const rack = selectedWarehouseRef.current?.rackdata?.find((r) =>
         r.shelfData?.some((s) => s._id === shelfId),
       );
@@ -575,25 +581,31 @@ const Warehouse = () => {
         return;
       }
 
-      const latestStock = product.stock;
+      const inStockValue = product.stock.inStock ?? 0;
+      const maxStockValue = product.stock.maxStock ?? 0;
+      const warningStockValue = product.stock.warningStock ?? 0;
+
+      // 3. STAGE 3: Structural Logical Check (Max vs Min/In-stock)
+      // If maximum allowance falls below present items, block the API network call.
+      if (maxStockValue < inStockValue) {
+        console.warn(
+          `API Sync aborted: maxStock (${maxStockValue}) cannot be lower than current inStock (${inStockValue}).`
+        );
+        return; 
+      }
 
       try {
         await axios.put(
-          `${API_BASE}/shelves-product/update/${shelfId}`,
+          `${API_BASE}/shelves/update-product/${shelfId}`,
           {
             productId,
-            inStock: latestStock.inStock ?? 0,
-            maxStock: latestStock.maxStock ?? 0,
-            warningStock: latestStock.warningStock ?? 0,
+            inStock: inStockValue,
+            maxStock: maxStockValue,
+            warningStock: warningStockValue,
           },
           { withCredentials: true },
         );
       } catch (error) {
-        // Deliberately NOT force-reloading the whole warehouse here.
-        // A reload after a transient error can return a shape (e.g.
-        // productInfo not populated) that breaks every future edit's
-        // p.productInfo?._id match, silently freezing all stock updates.
-        // The optimistic value stays in the UI; just surface the error.
         console.error("Error updating stock:", error);
         setDetailError(
           "Failed to save a stock update. Please refresh if values look wrong.",
