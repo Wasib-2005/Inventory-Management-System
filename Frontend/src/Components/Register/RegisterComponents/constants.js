@@ -76,10 +76,10 @@ export const SALE_STATUS_STYLES = {
   Partial: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
-// "Sell" tab action tiles - no order/dispatch backend yet, visual only.
+// "Sell" tab action tiles.
 export const OPERATIONS_ACTIONS = [
-  { icon: HiClipboardDocument, label: "Make an Order", color: "blue" },
-  { icon: HiArrowDownLeft, label: "Receive Inbound", color: "emerald" },
-  { icon: HiArrowUpRight, label: "Dispatch Outbound", color: "amber" },
-  { icon: AiOutlineBarcode, label: "Cycle Count", color: "purple" },
+  { id: "make-order", icon: HiClipboardDocument, label: "Make an Order", color: "blue" },
+  { id: "receive-inbound", icon: HiArrowDownLeft, label: "Receive Inbound", color: "emerald" },
+  { id: "dispatch-outbound", icon: HiArrowUpRight, label: "Dispatch Outbound", color: "amber" },
+  { id: "cycle-count", icon: AiOutlineBarcode, label: "Cycle Count", color: "purple" },
 ];

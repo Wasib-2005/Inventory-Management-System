@@ -4,7 +4,7 @@ import { Shelve } from "../../../models/Warehouse.models/shelve.models.js";
 import { Rack } from "../../../models/Warehouse.models/Rack.models.js";
 
 export const createShelves = async (req, res) => {
-  const { shelfCode, rackId } = req.body;
+  const { shelfCode, rackId, warehouse_Id } = req.body;
   const userId = req.userId;
   const username = req.username;
 
@@ -13,10 +13,10 @@ export const createShelves = async (req, res) => {
     "Attempting to create shelf",
   );
 
-  if (!shelfCode || !rackId) {
+  if (!shelfCode || !rackId || !warehouse_Id) {
     return res
       .status(400)
-      .json({ message: "Shelf Code and Rack ID are required." });
+      .json({ message: "Shelf Code, Rack ID and Warehouse Id are required." });
   }
 
   const session = await mongoose.startSession();
@@ -33,7 +33,7 @@ export const createShelves = async (req, res) => {
     }
 
     const [newShelve] = await Shelve.create(
-      [{ shelfCode, productData: [], createdBy: userId }],
+      [{ shelfCode, productData: [], createdBy: userId, warehouse_Id }],
       { session },
     );
 

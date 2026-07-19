@@ -1,10 +1,10 @@
-import { FiShoppingCart, FiCreditCard, FiGrid, FiHome } from "react-icons/fi";
+import { FiShoppingCart, FiCreditCard, FiGrid, FiClock } from "react-icons/fi";
 
 export const FOLDERS = [
-  { id: "operations", label: "Sell", icon: FiShoppingCart, activeColor: "text-blue-600" },
-  { id: "credit", label: "Credit Pay", icon: FiCreditCard, activeColor: "text-rose-600" },
+  { id: "products-sell", label: "Products & Sell", icon: FiShoppingCart, activeColor: "text-blue-600" },
+  { id: "credit-debt", label: "Credit & Debt", icon: FiCreditCard, activeColor: "text-rose-600" },
   { id: "catalog", label: "Catalog", icon: FiGrid, activeColor: "text-emerald-600" },
-  { id: "stock", label: "Stock", icon: FiHome, activeColor: "text-purple-600" },
+  { id: "task", label: "Task", icon: FiClock, activeColor: "text-purple-600" },
 ];
 
 const FolderTabs = ({ activeFolder, onSelect }) => (

@@ -6,6 +6,7 @@ import { generateImageName } from "../../utility/image/imageNameGenetator.js";
 import { replaceImages } from "../../utility/image/replaceImages.js";
 import { uploadImages } from "../../utility/image/uploadImages.js";
 import mongoose from "mongoose";
+import { attachWarehouseStockProduct } from "../../utility/StockHelper/AttachWarehouseStockProduct.js";
 const { ObjectId } = mongoose.Types;
 
 const verifyProductData = (data) => {
@@ -31,31 +32,16 @@ export const getProducts = async (req, res) => {
       limit = 10,
       sortBy = "createdAt",
       sortOrder = "desc",
+      warehouseId, // Extracted query
     } = req.query;
 
-    console.log(req.query);
-
-    logger.info(
-      { search, status, category, subcategory, brand, page, limit },
-      "Fetching products with query filters",
-    );
     const filter = {};
 
-    if (search) {
-      filter.$text = { $search: search };
-    }
-    if (status) {
-      filter.status = status;
-    }
-    if (brand) {
-      filter.brand = { $regex: brand, $options: "i" };
-    }
-    if (category) {
-      filter["categoryData.category"] = category;
-    }
-    if (subcategory) {
-      filter["categoryData.subcategory"] = subcategory;
-    }
+    if (search) filter.$text = { $search: search };
+    if (status) filter.status = status;
+    if (brand) filter.brand = { $regex: brand, $options: "i" };
+    if (category) filter["categoryData.category"] = category;
+    if (subcategory) filter["categoryData.subcategory"] = subcategory;
 
     if (minPrice || maxPrice) {
       filter["pricing.sellPrice"] = {};
@@ -76,9 +62,12 @@ export const getProducts = async (req, res) => {
         .populate("createdBy", "username email")
         .populate("updatedBy", "username email")
         .populate("deleteBy", "username email")
-        .lean(),
+        .lean(), // Must remain lean for the helper to add properties seamlessly
       Product.countDocuments(filter),
     ]);
+
+    // Simply pass the products list to our helper function
+    await attachWarehouseStockProduct(products, warehouseId);
 
     return res.status(200).json({
       success: true,

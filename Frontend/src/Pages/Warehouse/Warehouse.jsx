@@ -1,4 +1,11 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+  useContext,
+} from "react";
 
 import WarehouseHeader from "../../Components/Warehouse/WarehouseHeader";
 import WarehouseProductSearch from "../../Components/Warehouse/WarehouseProductSearch";
@@ -7,6 +14,7 @@ import WarehouseRackModal from "../../Components/Warehouse/WarehouseRack/Warehou
 import WarehouseRackFormModal from "../../Components/Warehouse/WarehouseRack/WarehouseRackFormModal";
 import WarehouseSelectorModal from "../../Components/Warehouse/WarehouseSelectorModal/WarehouseSelectorModal";
 import WarehouseFormModal from "../../Components/Warehouse/WarehouseFormModal";
+import { WareHouseContext } from "../../Contexts/WareHouseContext/WareHouseContext";
 
 import axios from "axios";
 import sweetalert2 from "sweetalert2";
@@ -17,11 +25,13 @@ const Warehouse = () => {
   const stockTimers = useRef({});
   const selectedWarehouseRef = useRef(null);
 
+  const { selectedWarehouseId, setSelectedWarehouseId } =
+    useContext(WareHouseContext);
+
   const [warehouses, setWarehouses] = useState([]);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState(null);
@@ -89,7 +99,6 @@ const Warehouse = () => {
 
   const handleSelectWarehouse = (warehouse) => {
     setSelectedWarehouseId(warehouse._id);
-    localStorage.setItem("selectedWarehouseId", warehouse._id);
     setSelectedRackId(null);
     setHighlightedRackCode(null);
     setIsWarehouseSelectorModalOpen(false);
@@ -190,7 +199,6 @@ const Warehouse = () => {
       if (selectedWarehouseId === mongoId) {
         setSelectedWarehouseId(null);
         setSelectedWarehouse(null);
-        localStorage.removeItem("selectedWarehouseId");
       }
 
       handleCloseWarehouseModal();
@@ -354,6 +362,7 @@ const Warehouse = () => {
 
   // --- Shelf CRUD --------------------------------------------------------------
   const handleAddShelf = async (rack, payload) => {
+    payload.warehouse_Id = selectedWarehouseId;
     try {
       await axios.post(
         `${API_BASE}/shelves/create`,
@@ -523,7 +532,7 @@ const Warehouse = () => {
   // field: "inStock" | "maxStock" | "warningStock"
   // productId here is the PRODUCT's own _id (p.productInfo._id from the
   // caller), not the shelf sub-document's own _id.
-const handleUpdateProductStock = async (
+  const handleUpdateProductStock = async (
     shelfId,
     productId,
     field,
@@ -532,8 +541,8 @@ const handleUpdateProductStock = async (
     // 1. STAGE 1: Input text validation
     // If the raw text contains anything other than clean digits, freeze state completely
     const cleanString = String(rawValue).trim();
-    const isValidNumericInput = /^\d*$/.test(cleanString); 
-    if (!isValidNumericInput) return; 
+    const isValidNumericInput = /^\d*$/.test(cleanString);
+    if (!isValidNumericInput) return;
 
     const value = Math.max(0, Number(cleanString) || 0);
 
@@ -589,9 +598,9 @@ const handleUpdateProductStock = async (
       // If maximum allowance falls below present items, block the API network call.
       if (maxStockValue < inStockValue) {
         console.warn(
-          `API Sync aborted: maxStock (${maxStockValue}) cannot be lower than current inStock (${inStockValue}).`
+          `API Sync aborted: maxStock (${maxStockValue}) cannot be lower than current inStock (${inStockValue}).`,
         );
-        return; 
+        return;
       }
 
       try {
@@ -649,12 +658,10 @@ const handleUpdateProductStock = async (
   }, []);
 
   useEffect(() => {
-    const storedId = localStorage.getItem("selectedWarehouseId");
-    if (storedId) {
-      setSelectedWarehouseId(storedId);
-      loadWarehouseDetail(storedId);
+    if (selectedWarehouseId) {
+      loadWarehouseDetail(selectedWarehouseId);
     }
-  }, [loadWarehouseDetail]);
+  }, [selectedWarehouseId, loadWarehouseDetail]);
 
   // Clear any pending debounced stock-update timers on unmount so they
   // don't fire against an unmounted component's state.

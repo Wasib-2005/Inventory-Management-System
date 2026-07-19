@@ -9,6 +9,7 @@ import UserProfile from "./Pages/UserProfile/UserProfile";
 import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
 import Warehouse from "./Pages/Warehouse/Warehouse";
 import Register from "./Pages/Register/Register";
+import ProtectedRouteWarehouse from "./ProtectedRoute/ProtectedRouteWarehouse";
 
 const MainRouter = createBrowserRouter([
   {
@@ -23,7 +24,14 @@ const MainRouter = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      { path: "/register/:selection", element: <Register /> },
+      {
+        path: "/register/:selection",
+        element: (
+          <ProtectedRouteWarehouse>
+            <Register />
+          </ProtectedRouteWarehouse>
+        ),
+      },
       { path: "/products", element: <Products /> },
       { path: "/role-management", element: <RoleManagement /> },
       {

@@ -4,6 +4,7 @@ import { IoPersonSharp } from "react-icons/io5";
 import { CiLogin, CiUser } from "react-icons/ci";
 import { useState, useEffect, useRef } from "react";
 import { PALETTE } from "../../Theme/palette";
+import { makeImageUrl } from "../../Service/auth/makeImageUrl";
 
 const NavProfileLogout = ({
   user,
@@ -70,7 +71,7 @@ const NavProfileLogout = ({
         >
           {user.photoUrl ? (
             <img
-              src={user.photoUrl}
+              src={makeImageUrl(user.photoUrl)}
               alt="Avatar"
               className="w-full h-full object-cover"
             />

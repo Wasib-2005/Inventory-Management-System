@@ -15,9 +15,13 @@ import SupplierRouter from "./src/routes/supplier.route.js";
 import ProductRouter from "./src/routes/Products.Routes/Products.route.js";
 import RackRouter from "./src/routes/Warehouse.Routes/Rack.route.js";
 import ShelveRouter from "./src/routes/Warehouse.Routes/Shelves.route.js";
+import OrderRouter from "./src/routes/Order.route.js";
+
+import streamRouter from "./src/routes/Stream.route/stream.route.js";
 
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
 import { logger } from "./src/config/logger.js";
+import dashboardSse from "./src/utility/sseManager/dashboardSse.js";
 
 const app = express();
 
@@ -46,7 +50,7 @@ const corsOptions = {
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
-app.options("/{*path}", cors(corsOptions));
+app.options("{*path}", cors(corsOptions));
 
 logger.info(`Image probider is ${process.env.UPLOAD_PROVIDER}`);
 
@@ -102,5 +106,37 @@ app.use("/api/product", ProductRouter);
 app.use("/api/warehouses", WarehouseRouter);
 app.use("/api/racks", RackRouter);
 app.use("/api/shelves", ShelveRouter);
+app.use("/api/order", OrderRouter);
+
+app.use("/api/steam", streamRouter);
+
+let orderCount = 120;
+let totalRevenue = 14250.5;
+
+setInterval(() => {
+  // Only broadcast if there are actual users listening
+  if (dashboardSse.getClientCount() > 0) {
+    // Simulate changing data parameters
+    orderCount += Math.floor(Math.random() * 3);
+    totalRevenue += parseFloat((Math.random() * 45).toFixed(2));
+
+    const mockData = {
+      event: "DASHBOARD_UPDATE",
+      metrics: {
+        activeOrders: orderCount,
+        revenue: totalRevenue,
+        warehouseCapacity: "74%",
+      },
+      updatedAt: new Date(),
+    };
+
+    // Fire the broadcast!
+    dashboardSse.broadcast(mockData);
+    logger.info(
+      { currentClients: dashboardSse.getClientCount() },
+      "[SSE Test] Broadcasted live metrics update",
+    );
+  }
+}, 3000); // Fires every 3 seconds
 
 export default app;

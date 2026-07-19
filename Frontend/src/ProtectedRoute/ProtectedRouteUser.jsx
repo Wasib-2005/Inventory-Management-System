@@ -1,12 +1,13 @@
 import { useContext } from "react";
-import { Navigate } from "react-router"; // Changed from useNavigate
+import { Navigate } from "react-router"; 
 import { UserContext } from "../Contexts/UserContexts/UserContext";
 import { PALETTE } from "../Theme/palette";
 import { commonComponentBG } from "../Theme/commonComponentBG";
 
 const ProtectedRouteUser = ({ children }) => {
   const { user, waitForUser } = useContext(UserContext);
-  return children; // remove it when test done todo
+
+  // return children; // remove it when test done todo
 
   if (waitForUser) {
     return (

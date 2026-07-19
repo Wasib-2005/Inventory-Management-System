@@ -5,7 +5,7 @@ import {
   getAllWarehouses,
   updateWarehouse,
   deleteWarehouse,
-  getWarehouseById,
+  getWarehouseById_Stock,
   restoreWarehouse,
   disabledEnabledWarehouse,
 } from "../../controllers/Warehouse.controllers/Warehouse.controller.js";
@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 router.get("/get", getAllWarehouses);
-router.get("/get/:id", getWarehouseById);
+router.get("/get/:id", getWarehouseById_Stock);
 router.post("/create", verifyAccess, createWarehouse);
 router.put("/update/:id", verifyAccess, updateWarehouse);
 router.delete("/delete/:id", verifyAccess, deleteWarehouse);

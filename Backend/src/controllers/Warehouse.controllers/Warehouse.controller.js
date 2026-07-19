@@ -72,7 +72,7 @@ export const getAllWarehouses = async (req, res) => {
   }
 };
 
-export const getWarehouseById = async (req, res) => {
+export const getWarehouseById_Stock = async (req, res) => {
   const { id } = req.params;
 
   logger.info({ _id: id }, "Fetching warehouse details");

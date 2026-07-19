@@ -5,14 +5,16 @@ import "./index.css";
 import { RouterProvider } from "react-router";
 import MainRouter from "./MainRouter.jsx";
 import UserContextProvider from "./Contexts/UserContexts/UserContextProvider.jsx";
+import { WareHouseContextProvider } from "./Contexts/WareHouseContext/WareHouseContextProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <HelmetProvider>
       <UserContextProvider>
-        <RouterProvider router={MainRouter} />
+        <WareHouseContextProvider>
+          <RouterProvider router={MainRouter} />
+        </WareHouseContextProvider>
       </UserContextProvider>
     </HelmetProvider>
   </StrictMode>,
 );
- 
