@@ -1,7 +1,9 @@
+import ReturnsWarrantyPanel from "./ReturnSwarrantyPanel";
 import SellPanel from "./SellPanel";
-import CargoMovementsPanel from "./CargoMovementsPanel";
 
-const ProductsSellFolder = ({ activeSub, sales }) =>
-  activeSub === "movements" ? <CargoMovementsPanel /> : <SellPanel sales={sales} />;
+const ProductsSellFolder = ({ activeSub, sales }) => {
+  if (activeSub === "returns") return <ReturnsWarrantyPanel />;
+  return <SellPanel sales={sales} />;
+};
 
 export default ProductsSellFolder;

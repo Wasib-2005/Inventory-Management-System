@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FiPlus, FiArrowDownLeft, FiArrowUpRight } from "react-icons/fi";
 import { AiOutlineBarcode } from "react-icons/ai";
 import StockMovementModal from "./OrderComponents/StockMovementModal";
-import { getStockMovements } from "./OrderComponents/api";
+import { getStockMovements } from "./api";
 
 const TYPES = [
   { id: "all", label: "All" },

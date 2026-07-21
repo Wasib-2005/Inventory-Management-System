@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FiSearch, FiUser, FiX } from "react-icons/fi";
-import { searchUsers } from "./api";
+import { searchUsers } from "../api";
 
 const UserSelectField = ({ label, value, onChange, placeholder = "Search team member by name..." }) => {
   const [query, setQuery] = useState("");

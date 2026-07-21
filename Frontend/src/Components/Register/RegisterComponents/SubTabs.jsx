@@ -1,7 +1,7 @@
 export const SUB_FOLDERS = {
   "products-sell": [
     { id: "sell", label: "Sell" },
-    { id: "movements", label: "Cargo & Stock" },
+    { id: "returns", label: "Returns & Warranty" },
   ],
   "credit-debt": [
     { id: "all", label: "All" },
@@ -13,7 +13,10 @@ export const SUB_FOLDERS = {
     { id: "supplier", label: "Supplier" },
     { id: "warehouse", label: "Warehouse" },
   ],
-  task: [{ id: "all", label: "All" }],
+  task: [
+    { id: "emergency", label: "Emergency" },
+    { id: "regular", label: "Regular" },
+  ],
 };
 
 const SubTabs = ({ folder, activeSub, onSelect }) => {

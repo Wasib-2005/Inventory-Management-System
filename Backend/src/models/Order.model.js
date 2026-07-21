@@ -51,6 +51,27 @@ const orderSchema = new mongoose.Schema(
       required: true,
       default: "pending",
     },
+    warehouselocation: {
+      warehouse: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Warehouse",
+        required: false,
+      },
+      rack: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Rack",
+        required: false,
+      },
+      shelve: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Shelve",
+        required: false,
+      },
+    },
+    dueAmount: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

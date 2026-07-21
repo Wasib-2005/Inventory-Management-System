@@ -2,20 +2,18 @@ import mongoose from "mongoose";
 import { Shelve } from "../../models/Warehouse.models/shelve.models.js";
 
 /**
- * Calculates and attaches warehouse stock levels to product data.
+ * Calculates and attaches warehouse stock levels and layout configurations to product data.
  * Handles both a single product object or an array of product objects.
  *
  * @param {Object|Array<Object>} productData - A single lean product object or an array of lean product objects
  * @param {string} warehouseId - The ID of the warehouse to check stock for
- * @returns {Promise<Object|Array<Object>>} The input data with the attached .stock property
+ * @returns {Promise<Object|Array<Object>>} The input data with attached .stock and .shelveData properties
  */
 export const attachWarehouseStockProduct = async (productData, warehouseId) => {
-  // 1. Quick exit if required arguments are missing
   if (!warehouseId || !productData) {
     return productData;
   }
 
-  // 2. Normalize input: determine if it's an array or a single object
   const isArray = Array.isArray(productData);
   const productsList = isArray ? productData : [productData];
 
@@ -23,10 +21,8 @@ export const attachWarehouseStockProduct = async (productData, warehouseId) => {
     return productData;
   }
 
-  // 3. Gather unique Product ObjectIds from the array
   const productIds = productsList.map((p) => p._id);
 
-  // 4. Run the stock aggregation against the Shelve collection
   const stockData = await Shelve.aggregate([
     {
       $match: {
@@ -43,25 +39,53 @@ export const attachWarehouseStockProduct = async (productData, warehouseId) => {
         "productData.productInfo": { $in: productIds },
       },
     },
+
+    {
+      $lookup: {
+        from: "racks",
+        localField: "rackData",
+        foreignField: "_id",
+        as: "rackDetails",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$rackDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
     {
       $group: {
         _id: "$productData.productInfo",
         totalStock: { $sum: "$productData.stock.inStock" },
+        shelveData: {
+          $push: {
+            rackData: "$rackDetails._id",
+            shelfCode: "$shelfCode",
+            shelfId: "$_id",
+            stock: "$productData.stock",
+          },
+        },
       },
     },
   ]);
 
-  // 5. Build a fast O(1) key-value lookup map: { "productId": totalStock }
   const stockMap = stockData.reduce((acc, curr) => {
-    acc[curr._id.toString()] = curr.totalStock;
+    acc[curr._id.toString()] = {
+      totalStock: curr.totalStock,
+      shelveData: curr.shelveData,
+    };
     return acc;
   }, {});
 
-  // 6. Inject the stock value into our list of items
   productsList.forEach((product) => {
-    product.stock = stockMap[product._id.toString()] || 0;
+    const matchedData = stockMap[product._id.toString()];
+
+    product.stock = matchedData ? matchedData.totalStock : 0;
+    product.shelveData = matchedData ? matchedData.shelveData : [];
   });
 
-  // 7. Return back in the exact format it was received
   return isArray ? productsList : productsList[0];
 };

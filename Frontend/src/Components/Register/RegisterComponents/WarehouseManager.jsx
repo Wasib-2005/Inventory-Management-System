@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { FiHome, FiGrid, FiExternalLink } from "react-icons/fi";
-import { getWarehouses } from "./OrderComponents/api";
+import { getWarehouses } from "./api";
 
 
 const WarehouseManager = () => {

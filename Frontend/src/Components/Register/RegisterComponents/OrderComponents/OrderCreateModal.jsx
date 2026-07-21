@@ -1,12 +1,12 @@
-import { useContext, useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { FiX, FiShoppingCart } from "react-icons/fi";
 import CustomerInfoFields from "./CustomerInfoFields";
 import ProductSearchPanel from "./ProductSearchPanel";
 import CartItemsList from "./CartItemsList";
 import CheckoutSummary from "./CheckoutSummary";
-import { createOrder } from "./api";
-import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
+import { createOrder } from "../api";
+import { useWarehouseDetails } from "./useWarehouseDetails";
 
 const emptyCustomer = {
   username: "",
@@ -25,7 +25,20 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const { selectedWarehouseId } = useContext(WareHouseContext);
+  const { selectedWarehouseId, warehouse } = useWarehouseDetails();
+
+  // The product search API returns shelveData with shelfId but no rackId,
+  // so we resolve rackId ourselves from the warehouse's own rack/shelf
+  // hierarchy (same data StockMovementModal/CycleCountShelfEntry use).
+  const rackIdByShelfId = useMemo(() => {
+    const map = {};
+    (warehouse?.rackdata || []).forEach((rack) => {
+      (rack.shelfData || []).forEach((shelf) => {
+        map[shelf._id] = rack._id;
+      });
+    });
+    return map;
+  }, [warehouse]);
 
   if (!isOpen) return null;
 
@@ -40,18 +53,28 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
   );
   const total = Math.max(subtotal - discountAmount, 0);
 
-  const handleSelectProduct = (product) => {
+  // shelf is an entry from product.shelveData ({ rackId, rackCode, shelfId,
+  // shelfCode, stock: { inStock, ... } }), or null when the product has no
+  // shelveData. Same product on two different shelves is two cart lines,
+  // since they represent physically different stock.
+  const handleSelectProduct = (product, shelf) => {
+    const shelfId = shelf?.shelfId || null;
+    const rackId = shelf?.rackId || (shelfId ? rackIdByShelfId[shelfId] : null) || null;
+    const stock = shelf ? Number(shelf.stock?.inStock) || 0 : Number(product.stock) || 0;
+
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === product._id);
+      const existing = prev.find(
+        (i) => i.productId === product._id && i.shelfId === shelfId,
+      );
       if (existing) {
         return prev.map((i) =>
-          i.productId === product._id ? { ...i, qty: Number(i.qty) + 1 } : i,
+          i === existing ? { ...i, qty: Number(i.qty) + 1 } : i,
         );
       }
       return [
         ...prev,
         {
-          cartId: `${product._id}-${Date.now()}`,
+          cartId: `${product._id}-${shelfId || "nolocation"}-${Date.now()}`,
           productId: product._id,
           name: product.name,
           sku: product.sku,
@@ -59,8 +82,11 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
           qty: 1,
           price: product.pricing?.mrp ?? 0,
           image: product.image?.header || "",
-          stock: Number(product.stock) || 0,
-
+          stock,
+          rackCode: shelf?.rackCode || null,
+          shelfCode: shelf?.shelfCode || null,
+          shelfId,
+          rackId,
         },
       ];
     });
@@ -110,21 +136,24 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
     try {
       const paid = Math.max(Number(payAmount) || 0, 0);
 
-      // 1. Format items array to match: items: [{ productInfo: id, qty: howmany }]
       const itemsFormatted = items.map((item) => ({
         productInfo: item.productId,
         qty: item.qty,
-        price: item.price, // Included in case your backend still needs price validation
+        price: item.price,
+        location: {
+          rackId: item.rackId || null,
+          shelveId: item.shelfId || null,
+        },
       }));
 
-      // 2. Build payload structure conditionally for customer info
       const orderPayload = {
         items: itemsFormatted,
-        warehouseData: selectedWarehouseId,
+        warehouseId: selectedWarehouseId,
         payment: {
           paidAmount: paid,
           discountAmount: discountAmount,
-          status: paymentStatus,
+          subtotal: subtotal,
+          total: total,
         },
       };
 

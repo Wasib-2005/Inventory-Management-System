@@ -4,6 +4,6 @@ import { verifyAccess } from "../middlewares/verifyAccess.middleware.js";
 
 const router = express.Router();
 
-router.post("/create-inside", verifyAccess, createOrder);
+router.post("/create-inside",  createOrder);
 
 export default router;

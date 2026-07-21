@@ -45,10 +45,13 @@ export const initialSales = [
   },
 ];
 
-// TODO: also no Credit/Ledger schema yet - static mock until that exists.
+// TODO: also no Credit/Debt Ledger schema yet — static mock until that
+// exists. `type: "credit"` = money owed TO the business by a customer.
+// `type: "debt"` = money the business owes OUT to a supplier/vendor.
 export const initialCreditLedger = [
   {
     id: "c1",
+    type: "credit",
     customer: "Sarah Smith",
     outstanding: 450,
     limit: 5000,
@@ -56,6 +59,7 @@ export const initialCreditLedger = [
   },
   {
     id: "c2",
+    type: "credit",
     customer: "Alex Rivera",
     outstanding: 1200,
     limit: 3000,
@@ -63,9 +67,26 @@ export const initialCreditLedger = [
   },
   {
     id: "c3",
+    type: "credit",
     customer: "Apex Builders",
     outstanding: 8400,
     limit: 10000,
+    dueDate: "Overdue",
+  },
+  {
+    id: "d1",
+    type: "debt",
+    customer: "Vanguard Tech Supplies",
+    outstanding: 2600,
+    limit: 15000,
+    dueDate: "Aug 5, 2026",
+  },
+  {
+    id: "d2",
+    type: "debt",
+    customer: "Northline Logistics",
+    outstanding: 950,
+    limit: 5000,
     dueDate: "Overdue",
   },
 ];

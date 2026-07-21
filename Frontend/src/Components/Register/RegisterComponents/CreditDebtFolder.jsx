@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiX } from "react-icons/fi";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -8,7 +8,16 @@ const TYPE_STYLES = {
   debt: "bg-amber-50 text-amber-600 border-amber-200",
 };
 
+// Money color follows the ledger type: credit (owed TO the business) reads
+// as rose/urgent, debt (owed OUT by the business) reads as amber/caution —
+// same palette as the status badge so the two always agree at a glance.
+const AMOUNT_STYLES = {
+  credit: "text-rose-600",
+  debt: "text-amber-600",
+};
+
 const LedgerRow = ({ account }) => {
+  const [isSettling, setIsSettling] = useState(false);
   const [payAmount, setPayAmount] = useState("");
   const [warehouseCredit, setWarehouseCredit] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -20,12 +29,22 @@ const LedgerRow = ({ account }) => {
     setTimeout(() => {
       setIsConfirming(false);
       setPayAmount("");
+      setIsSettling(false);
     }, 400);
+  };
+
+  const handleCancel = () => {
+    setPayAmount("");
+    setIsSettling(false);
   };
 
   return (
     <div className="p-3 border border-emerald-300/30 rounded-lg bg-emerald-50/40 flex flex-col gap-2 text-xs">
-      <div className="flex justify-between items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setIsSettling((v) => !v)}
+        className="flex justify-between items-center gap-2 text-left"
+      >
         <div className="min-w-0">
           <h4 className="font-bold text-emerald-900 truncate">{account.customer}</h4>
           <span className="text-[10px] text-emerald-700/50">
@@ -38,7 +57,7 @@ const LedgerRow = ({ account }) => {
             {account.type}
           </span>
           <div>
-            <span className="block font-black text-rose-600">
+            <span className={`block font-black ${AMOUNT_STYLES[account.type]}`}>
               {currency}
               {account.outstanding.toLocaleString()}
             </span>
@@ -51,9 +70,9 @@ const LedgerRow = ({ account }) => {
             </span>
           </div>
         </div>
-      </div>
+      </button>
 
-      {isCredit && (
+      {isSettling && (
         <div className="flex flex-col gap-1.5 pt-2 border-t border-emerald-300/30">
           <div className="flex items-center gap-2">
             <input
@@ -61,35 +80,48 @@ const LedgerRow = ({ account }) => {
               min={0}
               value={payAmount}
               onChange={(e) => setPayAmount(e.target.value)}
-              placeholder={`Pay amount (${currency})`}
+              placeholder={`${isCredit ? "Collect" : "Pay"} amount (${currency})`}
+              autoFocus
               className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-emerald-300/50 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
             />
-            {Number(payAmount) > 0 && (
-              <button
-                type="button"
-                onClick={handleConfirm}
-                disabled={isConfirming}
-                className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
-              >
-                <FiCheck size={12} />
-                {isConfirming ? "..." : "Confirm"}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={isConfirming || Number(payAmount) <= 0}
+              className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+            >
+              <FiCheck size={12} />
+              {isConfirming ? "..." : "Confirm"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isConfirming}
+              className="flex items-center gap-1 text-[11px] font-bold text-emerald-700/60 bg-white hover:bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+            >
+              <FiX size={12} />
+              Cancel
+            </button>
           </div>
-          <label className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700/60">
-            <input
-              type="checkbox"
-              checked={warehouseCredit}
-              onChange={(e) => setWarehouseCredit(e.target.checked)}
-              className="accent-emerald-600"
-            />
-            Show warehouse credit
-          </label>
-          {warehouseCredit && (
-            <p className="text-[10px] text-emerald-700/50 italic pl-5">
-              {/* TODO: no warehouse-level credit schema yet — placeholder */}
-              Warehouse credit breakdown isn't tracked yet
-            </p>
+
+          {isCredit && (
+            <>
+              <label className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700/60">
+                <input
+                  type="checkbox"
+                  checked={warehouseCredit}
+                  onChange={(e) => setWarehouseCredit(e.target.checked)}
+                  className="accent-emerald-600"
+                />
+                Show warehouse credit
+              </label>
+              {warehouseCredit && (
+                <p className="text-[10px] text-emerald-700/50 italic pl-5">
+                  {/* TODO: no warehouse-level credit schema yet — placeholder */}
+                  Warehouse credit breakdown isn't tracked yet
+                </p>
+              )}
+            </>
           )}
         </div>
       )}

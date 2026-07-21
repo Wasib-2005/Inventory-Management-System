@@ -4,7 +4,12 @@ const shelveSchema = new mongoose.Schema({
   shelfCode: { type: String, required: true },
   warehouse_Id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Warehouse",
+    required: true,
+  },
+  rackData: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Rack",
     required: true,
   },
   createdBy: {

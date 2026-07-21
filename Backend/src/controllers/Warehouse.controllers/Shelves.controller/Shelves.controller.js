@@ -33,7 +33,15 @@ export const createShelves = async (req, res) => {
     }
 
     const [newShelve] = await Shelve.create(
-      [{ shelfCode, productData: [], createdBy: userId, warehouse_Id }],
+      [
+        {
+          shelfCode,
+          productData: [],
+          createdBy: userId,
+          warehouse_Id,
+          rackData: rackId,
+        },
+      ],
       { session },
     );
 

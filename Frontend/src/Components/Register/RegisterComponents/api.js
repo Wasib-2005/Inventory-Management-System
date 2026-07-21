@@ -133,4 +133,11 @@ export const getStockMovements = (type, signal) =>
 export const getWarehouseById = (id, signal) =>
   api.get(`/api/warehouses/get/${id}`, { signal });
 
+export const createReturnClaim = async (params) => {
+  
+}
+export const getReturnClaims = async (params) => {
+  
+}
+
 export default api;

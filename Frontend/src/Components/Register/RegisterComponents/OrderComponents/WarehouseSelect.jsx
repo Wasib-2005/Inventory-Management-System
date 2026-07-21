@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiHome } from "react-icons/fi";
-import { getWarehouses } from "./api";
+import { getWarehouses } from "../api";
 
 const WarehouseSelect = ({ value, onChange, excludeId, label = "Warehouse" }) => {
   const [warehouses, setWarehouses] = useState([]);

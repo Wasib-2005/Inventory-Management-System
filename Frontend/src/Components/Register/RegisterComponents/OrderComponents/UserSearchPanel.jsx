@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FiSearch, FiUser } from "react-icons/fi";
-import { searchUsers } from "./api";
+import { searchUsers } from "../api";
 
 
 const UserSearchPanel = ({ onSelectUser }) => {

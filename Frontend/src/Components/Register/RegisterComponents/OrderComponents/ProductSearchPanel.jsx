@@ -1,12 +1,18 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { FiSearch, FiPackage, FiAlertTriangle } from "react-icons/fi";
 import { AiOutlineBarcode } from "react-icons/ai";
-import { searchProductsByName, searchProductsByBarcode } from "./api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
+import ProductLocationPicker from "./ProductLocationPicker";
+import { searchProductsByBarcode, searchProductsByName } from "../api";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 const WARN_DURATION = 3000;
 
+// onSelectProduct is always called as (product, shelf):
+// - shelf is the chosen entry from product.shelveData ({ rackId, rackCode, shelfCode,
+//   shelfId, stock: { inStock, ... } }) when a location was picked or only
+//   one shelf exists
+// - shelf is null/undefined when the product has no shelveData at all
 const ProductSearchPanel = ({ onSelectProduct }) => {
   const { selectedWarehouseId } = useContext(WareHouseContext);
 
@@ -17,6 +23,7 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
   const [error, setError] = useState("");
   const [stockWarning, setStockWarning] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState(null);
   const containerRef = useRef(null);
   const warnTimeoutRef = useRef(null);
 
@@ -67,18 +74,40 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
 
   useEffect(() => () => clearTimeout(warnTimeoutRef.current), []);
 
+  const warnNoStock = (name) => {
+    clearTimeout(warnTimeoutRef.current);
+    setStockWarning(`"${name}" has no stock available`);
+    warnTimeoutRef.current = setTimeout(() => setStockWarning(""), WARN_DURATION);
+  };
+
   const handleSelect = (product) => {
-    const stock = Number(product.stock) || 0;
-    if (stock <= 0) {
-      clearTimeout(warnTimeoutRef.current);
-      setStockWarning(`"${product.name}" has no stock available`);
-      warnTimeoutRef.current = setTimeout(() => setStockWarning(""), WARN_DURATION);
+    const shelves = product.shelveData || [];
+
+    // More than one shelf holds this product — make the user pick which
+    // one, rather than silently defaulting to the first.
+    if (shelves.length > 1) {
+      setPendingProduct(product);
+      setQuery("");
+      setResults([]);
+      setIsOpen(false);
+      return;
     }
 
-    onSelectProduct(product);
+    const shelf = shelves[0] || null;
+    const stock = shelf ? Number(shelf.stock?.inStock) || 0 : Number(product.stock) || 0;
+    if (stock <= 0) warnNoStock(product.name);
+
+    onSelectProduct(product, shelf);
     setQuery("");
     setResults([]);
     setIsOpen(false);
+  };
+
+  const handleConfirmLocation = (shelf) => {
+    const stock = Number(shelf.stock?.inStock) || 0;
+    if (stock <= 0) warnNoStock(pendingProduct.name);
+    onSelectProduct(pendingProduct, shelf);
+    setPendingProduct(null);
   };
 
   return (
@@ -149,6 +178,7 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
             </p>
           ) : (
             results.map((product) => {
+              const shelves = product.shelveData || [];
               const stock = Number(product.stock) || 0;
               const outOfStock = stock <= 0;
               return (
@@ -193,7 +223,11 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
                         outOfStock ? "text-rose-600" : "text-emerald-700/50"
                       }`}
                     >
-                      {outOfStock ? "Out of stock" : `Stock: ${stock}`}
+                      {outOfStock
+                        ? "Out of stock"
+                        : shelves.length > 1
+                          ? `${shelves.length} shelves · Stock: ${stock}`
+                          : `Stock: ${stock}`}
                     </span>
                   </div>
                 </button>
@@ -201,6 +235,14 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
             })
           )}
         </div>
+      )}
+
+      {pendingProduct && (
+        <ProductLocationPicker
+          product={pendingProduct}
+          onConfirm={handleConfirmLocation}
+          onCancel={() => setPendingProduct(null)}
+        />
       )}
     </div>
   );

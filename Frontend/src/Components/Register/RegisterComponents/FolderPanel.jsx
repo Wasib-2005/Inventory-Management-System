@@ -12,7 +12,7 @@ const FolderPanel = ({ activeFolder, activeSub, sales, creditLedger }) => {
     case "catalog":
       return <CatalogFolder activeSub={activeSub} />;
     case "task":
-      return <TaskFolder />;
+      return <TaskFolder activeSub={activeSub} />;
     default:
       return null;
   }

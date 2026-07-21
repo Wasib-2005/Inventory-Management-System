@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { FiHome } from "react-icons/fi";
-import { getWarehouseById } from "./api";
+import { getWarehouseById } from "../api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 
 const CurrentWarehouseDisplay = ({

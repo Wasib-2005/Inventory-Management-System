@@ -11,7 +11,7 @@ import UserSelectField from "./UserSelectField";
 import RackSelect from "./RackSelect";
 import CycleCountShelfEntry from "./CycleCountShelfEntry";
 import { useWarehouseDetails } from "./useWarehouseDetails";
-import { createStockMovement } from "./api";
+import { createStockMovement } from "../api";
 
 const CONFIG = {
   inbound: {
@@ -65,6 +65,7 @@ const StockMovementModal = ({ type, isOpen, onClose, onCreated }) => {
   const [transferType, setTransferType] = useState("shipment");
   const [otherWarehouseId, setOtherWarehouseId] = useState("");
   const [trackCode, setTrackCode] = useState("");
+  const [shipment, setShipment] = useState("");
   const [handledBy, setHandledBy] = useState(null);
 
   // Cycle count fields
@@ -465,11 +466,12 @@ const StockMovementModal = ({ type, isOpen, onClose, onCreated }) => {
                         <label className="block text-[10px] font-bold text-emerald-700/60 uppercase mb-1">
                           To
                         </label>
-                        <div className="flex items-center px-3 py-2 rounded-lg border border-amber-300/50 bg-amber-50/50 min-h-[38px]">
-                          <p className="text-xs font-semibold text-amber-800">
-                            Shipment (external)
-                          </p>
-                        </div>
+                        <input
+                          type="text"
+                          value={shipment}
+                          onChange={(e) => setShipment(e.target.value)}
+                          className="w-full text-sm px-3 py-2 rounded-lg border border-emerald-300/50 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+                        />
                       </div>
                     )}
                   </>

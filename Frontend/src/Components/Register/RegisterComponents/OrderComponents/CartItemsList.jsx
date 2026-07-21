@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle } from "react-icons/fi";
+import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle, FiMapPin } from "react-icons/fi";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -49,6 +49,8 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
           const lineTotal = (Number(item.qty) || 0) * mrp;
           const isFlashing = flashId === item.cartId;
           const outOfStock = Number(item.stock) === 0;
+          const overOrdered = !outOfStock && Number(item.qty) > Number(item.stock);
+          const hasLocation = !!(item.rackCode || item.shelfCode);
 
           return (
             <div
@@ -86,6 +88,14 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                     >
                       SKU: {item.sku}
                     </p>
+                    {hasLocation && (
+                      <p className="flex items-center gap-1 text-[10px] text-emerald-700/50">
+                        <FiMapPin size={9} className="shrink-0" />
+                        {item.rackCode}
+                        {item.rackCode && item.shelfCode ? " · " : ""}
+                        {item.shelfCode}
+                      </p>
+                    )}
                     {outOfStock && (
                       <p className="flex items-center gap-1 text-[10px] font-bold text-rose-600 mt-0.5">
                         <FiAlertTriangle size={10} /> No stock available
@@ -170,6 +180,12 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                   </p>
                 </div>
               </div>
+
+              {overOrdered && (
+                <p className="mt-1.5 text-[10px] font-bold text-rose-600">
+                  ⚠ Quantity exceeds available stock at this shelf ({item.stock})
+                </p>
+              )}
             </div>
           );
         })}

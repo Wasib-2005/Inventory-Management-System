@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { getWarehouseById } from "./api";
+import { getWarehouseById } from "../api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 
 export const useWarehouseDetails = () => {
