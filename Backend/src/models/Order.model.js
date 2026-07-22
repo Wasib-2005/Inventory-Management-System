@@ -37,9 +37,9 @@ const orderSchema = new mongoose.Schema(
         required: true,
         lowercase: true,
         enum: {
-          values: ["credit", "paid"],
+          values: ["due", "paid"],
           message:
-            '{VALUE} is not a valid status. Only "credit" or "paid" are allowed.',
+            '{VALUE} is not a valid status. Only "due" or "paid" are allowed.',
         },
       },
       paidAmount: { type: Number, required: true, default: 0 },

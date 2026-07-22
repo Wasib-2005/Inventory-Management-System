@@ -201,9 +201,9 @@ export const createOrder = async (req, res) => {
         };
       }
 
-      console.log(newOrderData);
-
+      
       const [savedOrder] = await Order.create([newOrderData], { session });
+      console.log(savedOrder);
 
       await session.commitTransaction();
       session.endSession();

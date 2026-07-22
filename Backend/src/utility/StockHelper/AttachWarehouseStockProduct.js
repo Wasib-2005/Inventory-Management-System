@@ -62,7 +62,7 @@ export const attachWarehouseStockProduct = async (productData, warehouseId) => {
         totalStock: { $sum: "$productData.stock.inStock" },
         shelveData: {
           $push: {
-            rackData: "$rackDetails._id",
+            rackData: "$rackDetails",
             shelfCode: "$shelfCode",
             shelfId: "$_id",
             stock: "$productData.stock",

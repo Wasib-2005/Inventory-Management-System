@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import { createPortal } from "react-dom";
+import Swal from "sweetalert2";
 import { FiX, FiShoppingCart } from "react-icons/fi";
 import CustomerInfoFields from "./CustomerInfoFields";
 import ProductSearchPanel from "./ProductSearchPanel";
 import CartItemsList from "./CartItemsList";
 import CheckoutSummary from "./CheckoutSummary";
-import { createOrder } from "../api";
-import { useWarehouseDetails } from "./useWarehouseDetails";
+import { createOrder, completeOrder } from "../api";
+import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 
 const emptyCustomer = {
   username: "",
@@ -25,20 +26,7 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const { selectedWarehouseId, warehouse } = useWarehouseDetails();
-
-  // The product search API returns shelveData with shelfId but no rackId,
-  // so we resolve rackId ourselves from the warehouse's own rack/shelf
-  // hierarchy (same data StockMovementModal/CycleCountShelfEntry use).
-  const rackIdByShelfId = useMemo(() => {
-    const map = {};
-    (warehouse?.rackdata || []).forEach((rack) => {
-      (rack.shelfData || []).forEach((shelf) => {
-        map[shelf._id] = rack._id;
-      });
-    });
-    return map;
-  }, [warehouse]);
+  const { selectedWarehouseId } = useContext(WareHouseContext);
 
   if (!isOpen) return null;
 
@@ -53,14 +41,35 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
   );
   const total = Math.max(subtotal - discountAmount, 0);
 
-  // shelf is an entry from product.shelveData ({ rackId, rackCode, shelfId,
-  // shelfCode, stock: { inStock, ... } }), or null when the product has no
-  // shelveData. Same product on two different shelves is two cart lines,
-  // since they represent physically different stock.
-  const handleSelectProduct = (product, shelf) => {
-    const shelfId = shelf?.shelfId || null;
-    const rackId = shelf?.rackId || (shelfId ? rackIdByShelfId[shelfId] : null) || null;
-    const stock = shelf ? Number(shelf.stock?.inStock) || 0 : Number(product.stock) || 0;
+  // Adds a product with a default shelf auto-picked (lowest stock among
+  // product.shelveData), or no shelf at all when the product has none.
+  // The rack/shelf — including dropping it entirely via "No Shelf" — can
+  // be changed afterward right on the cart row, inline in this same modal.
+  // Same product added again merges into whichever existing line already
+  // has that same shelf resolved; a different shelf gets its own line,
+  // since it represents physically different stock.
+  const handleSelectProduct = (product) => {
+    const shelves = product.shelveData || [];
+    const totalStock = Number(product.stock) || 0;
+    const totalWarningStock = shelves.reduce(
+      (sum, s) => sum + (Number(s.stock?.warningStock) || 0),
+      0,
+    );
+
+    const defaultShelf = shelves.length
+      ? [...shelves].sort(
+          (a, b) => (Number(a.stock?.inStock) || 0) - (Number(b.stock?.inStock) || 0),
+        )[0]
+      : null;
+
+    const shelfId = defaultShelf?.shelfId || null;
+    const rackId = defaultShelf?.rackData?._id || null;
+    const rackCode = defaultShelf?.rackData?.rackCode || null;
+    const shelfCode = defaultShelf?.shelfCode || null;
+    const stock = defaultShelf ? Number(defaultShelf.stock?.inStock) || 0 : totalStock;
+    const warningStock = defaultShelf
+      ? Number(defaultShelf.stock?.warningStock) || 0
+      : totalWarningStock;
 
     setItems((prev) => {
       const existing = prev.find(
@@ -82,11 +91,15 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
           qty: 1,
           price: product.pricing?.mrp ?? 0,
           image: product.image?.header || "",
+          shelves, // raw shelveData — CartItemsList builds its rack/shelf selects from this
+          totalStock,
+          totalWarningStock,
           stock,
-          rackCode: shelf?.rackCode || null,
-          shelfCode: shelf?.shelfCode || null,
-          shelfId,
+          warningStock,
           rackId,
+          rackCode,
+          shelfId,
+          shelfCode,
         },
       ];
     });
@@ -131,6 +144,17 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
       setError("Add at least one product");
       return;
     }
+    // The backend pulls stock from a single shelf for the whole order (it
+    // only reads one location, not one per item), so every shelved line
+    // here has to point at the same shelf. Items for products with no
+    // shelf on file at all just don't carry a location — that's fine.
+    const shelfIds = [...new Set(items.map((i) => i.shelfId).filter(Boolean))];
+    if (shelfIds.length > 1) {
+      setError(
+        "All items in one order must come from the same shelf — split items on different shelves into separate orders",
+      );
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -140,22 +164,27 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
         productInfo: item.productId,
         qty: item.qty,
         price: item.price,
-        location: {
-          rackId: item.rackId || null,
-          shelveId: item.shelfId || null,
-        },
       }));
 
       const orderPayload = {
         items: itemsFormatted,
         warehouseId: selectedWarehouseId,
+        // Order-level fulfillment status — separate from payment.status.
+        // Paid in full at creation -> complete. Anything less -> pending,
+        // and stays pending until someone explicitly marks it complete.
+        status: paid >= total ? "complete" : "pending",
         payment: {
           paidAmount: paid,
           discountAmount: discountAmount,
           subtotal: subtotal,
           total: total,
+          status: paymentStatus.toLowerCase(),
         },
       };
+
+      if (shelfIds.length === 1) {
+        orderPayload.location = { shelveId: shelfIds[0] };
+      }
 
       if (customer?.accountId) {
         orderPayload.customerId = customer.accountId;
@@ -167,8 +196,40 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
       }
 
       const res = await createOrder(orderPayload);
-      onCreated?.(res.data?.data);
+      const savedOrder = res.data?.data;
+      onCreated?.(savedOrder);
       handleClose();
+
+      // Already complete (fully paid) — nothing further needed, no alert.
+      if (savedOrder?.status !== "complete") {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: "Order is pending",
+          text: "This order hasn't been marked complete yet.",
+          showCancelButton: true,
+          confirmButtonText: "Mark Complete",
+          cancelButtonText: "Later",
+          confirmButtonColor: "#1D9E75",
+        });
+
+        if (result.isConfirmed) {
+          try {
+            await completeOrder(savedOrder._id);
+            await Swal.fire({
+              icon: "success",
+              title: "Order completed",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          } catch (err) {
+            Swal.fire({
+              icon: "error",
+              title: "Could not complete order",
+              text: err.response?.data?.message || "Please try again.",
+            });
+          }
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Could not create order");
     } finally {
@@ -241,7 +302,7 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
             disabled={isSubmitting}
             className="flex-1 py-2.5 rounded-lg font-semibold text-sm text-white bg-[#1D9E75] hover:bg-[#0F6E56] transition-colors disabled:opacity-50"
           >
-            {isSubmitting ? "Placing Order..." : "Complete Order"}
+            {isSubmitting ? "Placing Order..." : "Place Order"}
           </button>
         </div>
       </div>

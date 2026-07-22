@@ -1,17 +1,17 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { FiSearch, FiPackage, FiAlertTriangle } from "react-icons/fi";
 import { AiOutlineBarcode } from "react-icons/ai";
+import { searchProductsByName, searchProductsByBarcode } from "../api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 import ProductLocationPicker from "./ProductLocationPicker";
-import { searchProductsByBarcode, searchProductsByName } from "../api";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 const WARN_DURATION = 3000;
 
 // onSelectProduct is always called as (product, shelf):
-// - shelf is the chosen entry from product.shelveData ({ rackId, rackCode, shelfCode,
-//   shelfId, stock: { inStock, ... } }) when a location was picked or only
-//   one shelf exists
+// - shelf is the chosen entry from product.shelveData ({ rackData: { _id,
+//   rackCode, ... }, shelfCode, shelfId, stock: { inStock, maxStock,
+//   warningStock } }) when a location was picked or only one shelf exists
 // - shelf is null/undefined when the product has no shelveData at all
 const ProductSearchPanel = ({ onSelectProduct }) => {
   const { selectedWarehouseId } = useContext(WareHouseContext);
@@ -104,7 +104,7 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
   };
 
   const handleConfirmLocation = (shelf) => {
-    const stock = Number(shelf.stock?.inStock) || 0;
+    const stock = shelf ? Number(shelf.stock?.inStock) || 0 : Number(pendingProduct.stock) || 0;
     if (stock <= 0) warnNoStock(pendingProduct.name);
     onSelectProduct(pendingProduct, shelf);
     setPendingProduct(null);

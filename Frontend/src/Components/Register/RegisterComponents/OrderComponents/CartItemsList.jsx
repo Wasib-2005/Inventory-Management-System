@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle, FiMapPin } from "react-icons/fi";
+import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle, FiBox, FiLayers, FiZap } from "react-icons/fi";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -38,6 +38,44 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
     onUpdateItem(item.cartId, { qty: next });
   };
 
+  const handleRackChange = (item, rackId) => {
+    const first = (item.shelves || []).find((s) => s.rackData?._id === rackId);
+    onUpdateItem(item.cartId, {
+      rackId,
+      rackCode: first?.rackData?.rackCode || null,
+      shelfId: first?.shelfId || null,
+      shelfCode: first?.shelfCode || null,
+      stock: Number(first?.stock?.inStock) || 0,
+      warningStock: Number(first?.stock?.warningStock) || 0,
+    });
+  };
+
+  const handleShelfChange = (item, shelfId) => {
+    const shelf = (item.shelves || []).find((s) => s.shelfId === shelfId);
+    onUpdateItem(item.cartId, {
+      shelfId,
+      shelfCode: shelf?.shelfCode || null,
+      stock: Number(shelf?.stock?.inStock) || 0,
+      warningStock: Number(shelf?.stock?.warningStock) || 0,
+    });
+  };
+
+  const handleAutoLowest = (item) => {
+    const shelves = item.shelves || [];
+    if (!shelves.length) return;
+    const lowest = [...shelves].sort(
+      (a, b) => (Number(a.stock?.inStock) || 0) - (Number(b.stock?.inStock) || 0),
+    )[0];
+    onUpdateItem(item.cartId, {
+      rackId: lowest.rackData?._id || null,
+      rackCode: lowest.rackData?.rackCode || null,
+      shelfId: lowest.shelfId,
+      shelfCode: lowest.shelfCode,
+      stock: Number(lowest.stock?.inStock) || 0,
+      warningStock: Number(lowest.stock?.warningStock) || 0,
+    });
+  };
+
   return (
     <div>
       <h4 className="text-xs font-bold text-emerald-800 tracking-wide uppercase mb-1.5">
@@ -48,9 +86,19 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
           const mrp = Number(item.price) || 0;
           const lineTotal = (Number(item.qty) || 0) * mrp;
           const isFlashing = flashId === item.cartId;
+
           const outOfStock = Number(item.stock) === 0;
+          const isLowStock =
+            !outOfStock &&
+            Number(item.warningStock) > 0 &&
+            Number(item.stock) <= Number(item.warningStock);
           const overOrdered = !outOfStock && Number(item.qty) > Number(item.stock);
-          const hasLocation = !!(item.rackCode || item.shelfCode);
+
+          const shelves = item.shelves || [];
+          const racks = [
+            ...new Map(shelves.map((s) => [s.rackData?._id, s.rackData?.rackCode])).entries(),
+          ];
+          const shelvesInRack = shelves.filter((s) => s.rackData?._id === item.rackId);
 
           return (
             <div
@@ -88,12 +136,10 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                     >
                       SKU: {item.sku}
                     </p>
-                    {hasLocation && (
-                      <p className="flex items-center gap-1 text-[10px] text-emerald-700/50">
-                        <FiMapPin size={9} className="shrink-0" />
-                        {item.rackCode}
-                        {item.rackCode && item.shelfCode ? " · " : ""}
-                        {item.shelfCode}
+                    {isLowStock && (
+                      <p className="flex items-center gap-1 text-[10px] font-bold text-amber-600 mt-0.5">
+                        <FiAlertTriangle size={10} />{" "}
+                        {item.rackId ? "Low stock on this shelf" : "Low stock overall"}
                       </p>
                     )}
                     {outOfStock && (
@@ -121,6 +167,66 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                   <FiTrash2 size={13} />
                 </button>
               </div>
+
+              {/* Where — pick which shelf this line is pulled from */}
+              {shelves.length > 0 && (
+                <div className="mb-2">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[9px] font-bold text-emerald-700/50 uppercase">
+                      Where
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleAutoLowest(item)}
+                      className="flex items-center gap-1 text-[9px] font-bold text-purple-600 hover:text-purple-700"
+                    >
+                      <FiZap size={9} /> Lowest stock
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="relative">
+                      <FiBox
+                        size={11}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-emerald-700/40"
+                      />
+                      <select
+                        value={item.rackId || ""}
+                        onChange={(e) => handleRackChange(item, e.target.value)}
+                        className="w-full text-[11px] font-semibold pl-6 pr-2 py-1.5 rounded-lg border border-emerald-300/50 bg-white text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 appearance-none"
+                      >
+                        {racks.map(([id, code]) => (
+                          <option key={id} value={id}>
+                            {code}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="relative">
+                      <FiLayers
+                        size={11}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-emerald-700/40"
+                      />
+                      <select
+                        value={item.shelfId || ""}
+                        onChange={(e) => handleShelfChange(item, e.target.value)}
+                        disabled={!item.rackId}
+                        className="w-full text-[11px] font-semibold pl-6 pr-2 py-1.5 rounded-lg border border-emerald-300/50 bg-white text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 appearance-none disabled:opacity-50"
+                      >
+                        {shelvesInRack.map((s) => {
+                          const inStock = Number(s.stock?.inStock) || 0;
+                          const warningStock = Number(s.stock?.warningStock) || 0;
+                          const low = inStock > 0 && warningStock > 0 && inStock <= warningStock;
+                          return (
+                            <option key={s.shelfId} value={s.shelfId}>
+                              {s.shelfCode} — {inStock} in stock{low ? " (low)" : ""}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-[auto_1fr_1fr] gap-2 items-end">
                 <div>
@@ -163,7 +269,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                   </label>
                   <p
                     className={`text-xs font-bold py-1 ${
-                      outOfStock ? "text-rose-600" : "text-emerald-900"
+                      outOfStock ? "text-rose-600" : isLowStock ? "text-amber-600" : "text-emerald-900"
                     }`}
                   >
                     {item.stock ?? "—"}
@@ -183,7 +289,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
 
               {overOrdered && (
                 <p className="mt-1.5 text-[10px] font-bold text-rose-600">
-                  ⚠ Quantity exceeds available stock at this shelf ({item.stock})
+                  ⚠ Quantity exceeds available stock ({item.stock})
                 </p>
               )}
             </div>

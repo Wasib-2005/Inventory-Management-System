@@ -9,7 +9,7 @@ const roundUp = (value) => Math.ceil(Number(value) || 0);
 
 const STATUS_BADGE_STYLES = {
   Paid: "bg-emerald-600 text-white",
-  Credit: "bg-rose-600 text-white",
+  Due: "bg-rose-600 text-white",
 };
 
 const CheckoutSummary = ({
@@ -47,8 +47,8 @@ const CheckoutSummary = ({
   const dueAmount = Math.max(-diff, 0);
 
   // Payment status is fully derived from the amount paid vs. the total:
-  // pay in full (or more) -> Paid. Pay less (or nothing) -> Credit.
-  const derivedStatus = paid >= total ? "Paid" : "Credit";
+  // pay in full (or more) -> Paid. Pay less (or nothing) -> Due.
+  const derivedStatus = paid >= total ? "Paid" : "Due";
 
   useEffect(() => {
     if (derivedStatus !== paymentStatus) {
