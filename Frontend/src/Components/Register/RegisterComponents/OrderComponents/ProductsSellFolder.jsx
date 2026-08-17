@@ -1,4 +1,4 @@
-import ReturnsWarrantyPanel from "./ReturnSwarrantyPanel";
+import ReturnsWarrantyPanel from "../ReturnSwarrantyPanel";
 import SellPanel from "./SellPanel";
 
 const ProductsSellFolder = ({ activeSub, sales }) => {

@@ -18,6 +18,7 @@ import { WareHouseContext } from "../../Contexts/WareHouseContext/WareHouseConte
 
 import axios from "axios";
 import sweetalert2 from "sweetalert2";
+import { TbPlus } from "react-icons/tb";
 
 const API_BASE = `${import.meta.env.VITE_BACKEND_API_HEADER}/api`;
 
@@ -692,15 +693,31 @@ const Warehouse = () => {
     );
   }
 
-  if (warehouses.length === 0) {
-    return (
-      <div className="w-full min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm font-semibold text-emerald-700/60">
-          No warehouses yet — create one to get started.
-        </p>
-      </div>
-    );
-  }
+if (warehouses.length === 0) {
+  return (
+    <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4 p-6">
+      <p className="text-sm font-semibold text-emerald-700/60">
+        No warehouses yet — create one to get started.
+      </p>
+      <button
+        onClick={handleOpenCreateWarehouseModal}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-colors"
+      >
+        <TbPlus size={16} />
+        Create Warehouse
+      </button>
+
+      <WarehouseFormModal
+        isOpen={warehouseModal.isOpen}
+        mode={warehouseModal.mode}
+        initialData={warehouseModal.initialData}
+        onClose={handleCloseWarehouseModal}
+        onSubmit={handleWarehouseFormSubmit}
+        onDelete={handleDeleteWarehouse}
+      />
+    </div>
+  );
+}
 
   return (
     <div>

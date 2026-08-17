@@ -17,8 +17,6 @@ import RackRouter from "./src/routes/Warehouse.Routes/Rack.route.js";
 import ShelveRouter from "./src/routes/Warehouse.Routes/Shelves.route.js";
 import OrderRouter from "./src/routes/Order.route.js";
 
-import streamRouter from "./src/routes/Stream.route/stream.route.js";
-
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
 import { logger } from "./src/config/logger.js";
 import dashboardSse from "./src/utility/sseManager/dashboardSse.js";
@@ -39,7 +37,7 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.error(`CORS Blocked for origin: ${origin}`);
-      callback(new Error(`CORS blocked: ${origin}`));
+      callback(null, false);
     }
   },
   credentials: true,
@@ -108,35 +106,7 @@ app.use("/api/racks", RackRouter);
 app.use("/api/shelves", ShelveRouter);
 app.use("/api/order", OrderRouter);
 
-app.use("/api/steam", streamRouter);
-
 let orderCount = 120;
 let totalRevenue = 14250.5;
-
-setInterval(() => {
-  // Only broadcast if there are actual users listening
-  if (dashboardSse.getClientCount() > 0) {
-    // Simulate changing data parameters
-    orderCount += Math.floor(Math.random() * 3);
-    totalRevenue += parseFloat((Math.random() * 45).toFixed(2));
-
-    const mockData = {
-      event: "DASHBOARD_UPDATE",
-      metrics: {
-        activeOrders: orderCount,
-        revenue: totalRevenue,
-        warehouseCapacity: "74%",
-      },
-      updatedAt: new Date(),
-    };
-
-    // Fire the broadcast!
-    dashboardSse.broadcast(mockData);
-    logger.info(
-      { currentClients: dashboardSse.getClientCount() },
-      "[SSE Test] Broadcasted live metrics update",
-    );
-  }
-}, 3000); // Fires every 3 seconds
 
 export default app;

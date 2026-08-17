@@ -1,4 +1,4 @@
-import ProductsSellFolder from "./ProductsSellFolder";
+import ProductsSellFolder from "./OrderComponents/ProductsSellFolder";
 import CreditDebtFolder from "./CreditDebtFolder";
 import CatalogFolder from "./CatalogFolder";
 import TaskFolder from "./TaskFolder";

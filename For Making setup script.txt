@@ -1,0 +1,3 @@
+first create admin user "./Backend/tempAdmin" node ./Backend/tempAdmin.js email password
+then make minIO bucket products
+then make backet public

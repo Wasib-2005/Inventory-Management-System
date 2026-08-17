@@ -44,6 +44,25 @@ export const createOrder = (payload) =>
 export const completeOrder = (orderId) =>
   api.patch(`/api/order/complete/${orderId}`, { status: "complete" });
 
+// TODO: UNCONFIRMED — no endpoint for this has been shown yet. Guessing
+// PATCH /api/order/delivered/:id with no body. Replace with the real
+// route once you've got it.
+export const deliverOrder = (orderId) =>
+  api.patch(`/api/order/delivered/${orderId}`, {});
+
+// TODO: UNCONFIRMED — no endpoint for this has been shown yet. Guessing
+// PATCH /api/order/confirm/:id sending { status: "confirmed" }. Replace
+// with the real route once you've got it.
+export const confirmOrder = (orderId) =>
+  api.patch(`/api/order/confirm/${orderId}`, { status: "confirmed" });
+
+// TODO: UNCONFIRMED — no payment-collection endpoint has been shown yet.
+// Guessing PATCH /api/order/pay/:id sending { paidAmount }, expected to
+// return the updated order (new payment.paidAmount, payment.status,
+// dueAmount). Replace with the real route once you have it.
+export const payOrder = (orderId, paidAmount) =>
+  api.patch(`/api/order/pay/${orderId}`, { paidAmount });
+
 // TODO: no GET-all order schema wired up on the frontend yet — swap this
 // fake implementation for a real call once you need to list orders:
 //   export const getOrders = (signal) => api.get(`/api/order/get`, { signal });

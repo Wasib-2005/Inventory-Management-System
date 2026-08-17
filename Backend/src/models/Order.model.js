@@ -8,6 +8,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -29,6 +34,10 @@ const orderSchema = new mongoose.Schema(
         },
         qty: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true, min: 0 },
+        location: {
+          rack: { type: mongoose.Schema.Types.ObjectId, ref: "Rack" },
+          shelve: { type: mongoose.Schema.Types.ObjectId, ref: "Shelve" },
+        },
       },
     ],
     payment: {
@@ -46,31 +55,28 @@ const orderSchema = new mongoose.Schema(
       discountAmount: { type: Number, required: true, default: 0 },
     },
 
+    warehouseData: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Warehouse",
+      required: true,
+    },
+
     status: {
       type: String,
       required: true,
+      enum: {
+        values: ["pending", "complete"],
+        message:
+          '{VALUE} is not a valid status. Only "pending" or "complete" are allowed.',
+      },
       default: "pending",
     },
-    warehouselocation: {
-      warehouse: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Warehouse",
-        required: false,
-      },
-      rack: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Rack",
-        required: false,
-      },
-      shelve: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Shelve",
-        required: false,
-      },
-    },
+
     dueAmount: {
       type: Number,
-      required: true,
+    },
+    returnAmount: {
+      type: Number,
     },
   },
   {

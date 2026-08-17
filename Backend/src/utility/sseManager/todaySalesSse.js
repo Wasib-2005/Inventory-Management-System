@@ -19,12 +19,20 @@ const todaySalesSse = {
   // Broadcast
   broadcast(data) {
     const payload = `data: ${JSON.stringify(data)}\n\n`;
-    
+
     clients.forEach((client) => {
       client.write(payload);
     });
   },
+
+  // Heartbeat Pings
+  ping() {
+    clients.forEach((client) => client.write(": ping\n\n"));
+  },
 };
 
+setInterval(() => {
+  todaySalesSse.ping();
+}, 25000);
 
-export default todaySalesSse
+export default todaySalesSse;
