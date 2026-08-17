@@ -344,15 +344,10 @@ export const completeOrder = async (req, res) => {
   try {
     const { id: orderId } = req.params;
     const { status, paidAmount } = req.body;
+    
     const userId = req.userId;
-
-    const incomingPayment = Number(paidAmount);
-    if (isNaN(incomingPayment) || incomingPayment < 0) {
-      return res.status(400).send({
-        success: false,
-        message: "Must provide a valid payment amount!",
-      });
-    }
+    
+    console.log("paidAmount",paidAmount);
 
     const orderData = await Order.findById(orderId);
     if (!orderData) {
@@ -369,7 +364,7 @@ export const completeOrder = async (req, res) => {
     }
 
     const previousPaid = Number(orderData.payment?.paidAmount) || 0;
-    const totalPaid = previousPaid + incomingPayment;
+
 
     const totalPrice =
       orderData.items?.reduce(
@@ -377,22 +372,10 @@ export const completeOrder = async (req, res) => {
         0,
       ) || 0;
 
-    const rawDue = totalPrice - totalPaid;
-    const dueAmount = Math.max(0, Math.ceil(rawDue));
-
-    if (status) orderData.status = status;
-    orderData.payment.paidAmount = totalPaid;
-    orderData.dueAmount = dueAmount;
-
-    if (totalPaid >= totalPrice) {
-      orderData.payment.status = "paid";
-    } else if (totalPaid > 0) {
-      orderData.payment.status = "partially_paid";
-    } else {
-      orderData.payment.status = "unpaid";
-    }
 
     orderData.updatedBy = userId;
+
+    orderData.status === "complete";
 
     await orderData.save();
 
@@ -404,6 +387,75 @@ export const completeOrder = async (req, res) => {
   } catch (error) {
     console.error("Error updating order:", error);
     return res.status(500).send({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const payOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paidAmount } = req.body;
+    const userId = req.userId;
+
+    if (
+      paidAmount === undefined ||
+      typeof paidAmount !== "number" ||
+      paidAmount <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Bad Request: paidAmount must be a positive number.",
+      });
+    }
+
+    const orderData = await Order.findById(id);
+    if (!orderData) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (orderData.status === "complete") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot modify a completed order.",
+      });
+    }
+
+    const total =
+      orderData.items?.reduce(
+        (sum, item) =>
+          sum + (Number(item.price) || 0) * (Number(item.qty) || 1),
+        0,
+      ) || 0;
+
+    const previousPaid = Number(orderData.payment?.paidAmount) || 0;
+    const updatedPaid = previousPaid + paidAmount;
+
+    // Server decides status/due from the totals — never trust a client-sent status.
+    const dueAmount = Math.max(total - updatedPaid, 0);
+    const returnAmount = Math.max(updatedPaid - total, 0);
+    const paymentStatus = updatedPaid >= total ? "paid" : "due";
+
+    orderData.payment.paidAmount = updatedPaid;
+    orderData.payment.status = paymentStatus;
+    orderData.dueAmount = dueAmount;
+    orderData.returnAmount = returnAmount;
+    orderData.updatedBy = userId;
+
+    await orderData.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment recorded successfully",
+      data: orderData,
+    });
+  } catch (error) {
+    console.error("Error recording payment:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,

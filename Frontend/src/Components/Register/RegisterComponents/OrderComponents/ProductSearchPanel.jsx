@@ -4,6 +4,7 @@ import { AiOutlineBarcode } from "react-icons/ai";
 import { searchProductsByName, searchProductsByBarcode } from "../api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 import ProductLocationPicker from "./ProductLocationPicker";
+import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 const WARN_DURATION = 3000;
@@ -191,7 +192,7 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
                   <div className="w-9 h-9 rounded-md bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 overflow-hidden">
                     {product.image?.header ? (
                       <img
-                        src={product.image.header}
+                        src={makeImageUrl(product.image.header)}
                         alt=""
                         className="w-full h-full object-cover"
                       />

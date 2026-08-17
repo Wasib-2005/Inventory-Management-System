@@ -316,9 +316,9 @@ const handleSubmit = async () => {
         items: itemsFormatted,
         warehouseId: selectedWarehouseId,
         // Order-level fulfillment status — separate from payment.status.
-        // Paid in full (or more) at creation -> confirmed, pending a
+        // Paid in full (or more) at creation -> confirm, pending a
         // delivery confirmation below. Anything less -> pending.
-        status: paid >= total ? "confirmed" : "pending",
+        status: paid >= total ? "confirm" : "pending",
         payment: {
           paidAmount: paid,
           discountAmount: discountAmount,

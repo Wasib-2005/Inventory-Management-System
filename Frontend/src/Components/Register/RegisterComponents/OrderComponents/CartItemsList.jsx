@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle, FiBox, FiLayers, FiZap } from "react-icons/fi";
+import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -114,7 +115,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <img
-                    src={item.image}
+                    src={makeImageUrl(item.image)}
                     alt={item.name}
                     className={`w-9 h-9 rounded-md object-cover border bg-white shrink-0 ${
                       outOfStock ? "border-rose-300/60" : "border-emerald-300/40"

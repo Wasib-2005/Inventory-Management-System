@@ -65,9 +65,9 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ["pending", "complete"],
+        values: ["pending", "complete","confirm", "delivered"],
         message:
-          '{VALUE} is not a valid status. Only "pending" or "complete" are allowed.',
+          '{VALUE} is not a valid status. Only "pending", "complete", "delivered" or "confirm" are allowed.',
       },
       default: "pending",
     },

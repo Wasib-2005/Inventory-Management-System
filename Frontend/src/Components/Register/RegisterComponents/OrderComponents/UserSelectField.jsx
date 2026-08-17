@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiSearch, FiUser, FiX } from "react-icons/fi";
 import { searchUsers } from "../api";
+import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
 
 const UserSelectField = ({ label, value, onChange, placeholder = "Search team member by name..." }) => {
   const [query, setQuery] = useState("");
@@ -66,7 +67,7 @@ const UserSelectField = ({ label, value, onChange, placeholder = "Search team me
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-full bg-white border border-emerald-200 flex items-center justify-center shrink-0 overflow-hidden">
               {value.photoUrl ? (
-                <img src={value.photoUrl} alt="" className="w-full h-full object-cover" />
+                <img src={makeImageUrl(value.photoUrl)} alt="" className="w-full h-full object-cover" />
               ) : (
                 <FiUser size={12} className="text-emerald-500" />
               )}

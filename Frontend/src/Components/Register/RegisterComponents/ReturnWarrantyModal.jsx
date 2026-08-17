@@ -6,6 +6,7 @@ import ProductSearchPanel from "./OrderComponents/ProductSearchPanel";
 import TransferTypeSelector from "./OrderComponents/TransferTypeSelector";
 import { WareHouseContext } from "../../../Contexts/WareHouseContext/WareHouseContext";
 import { createReturnClaim } from "./api";
+import { makeImageUrl } from "../../../Service/auth/makeImageUrl";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -213,7 +214,7 @@ const ReturnWarrantyModal = ({ isOpen, onClose, onCreated }) => {
               <div className="p-2.5 rounded-lg border border-emerald-300/30 bg-emerald-50/40 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <img
-                    src={product.image?.header}
+                    src={makeImageUrl(product.image?.header)}
                     alt={product.name}
                     className="w-9 h-9 rounded-md object-cover border border-emerald-300/40 bg-white shrink-0"
                     onError={(e) => (e.target.style.visibility = "hidden")}
