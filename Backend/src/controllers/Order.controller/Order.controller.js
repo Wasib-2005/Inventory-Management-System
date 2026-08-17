@@ -52,6 +52,136 @@ export const getOrderStream = async (req, res) => {
   });
 };
 
+const getDateRange = (period, dateStr) => {
+  const ref = dateStr ? new Date(dateStr) : new Date();
+  let start, end;
+
+  if (period === "week") {
+    const day = ref.getDay(); // 0 = Sun .. 6 = Sat
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    start = new Date(ref);
+    start.setDate(ref.getDate() + diffToMonday);
+    start.setHours(0, 0, 0, 0);
+
+    end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+  } else if (period === "month") {
+    start = new Date(ref.getFullYear(), ref.getMonth(), 1, 0, 0, 0, 0);
+    end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
+  } else {
+    // "day" (default)
+    start = new Date(ref);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(ref);
+    end.setHours(23, 59, 59, 999);
+  }
+
+  return { start, end };
+};
+
+export const getAllOrder = async (req, res) => {
+  try {
+    const { period = "day", date, page = 1, limit = 10 } = req.query;
+
+    const { start, end } = getDateRange(period, date);
+
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.max(Number(limit) || 10, 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    const filter = { createdAt: { $gte: start, $lte: end } };
+
+    const [orderData, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .populate(
+          "createdBy",
+          "username displayName email phone roleTitle employeeId photoUrl",
+        )
+        .populate(
+          "customerId",
+          "username displayName email phone address photoUrl",
+        )
+        .populate(
+          "items.product",
+          "displayId name brand pricing barcodes image",
+        ),
+      Order.countDocuments(filter),
+    ]);
+
+    return res.status(200).send({
+      success: true,
+      message: "Success",
+      data: orderData,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.max(Math.ceil(total / limitNum), 1),
+      },
+      range: { start, end, period },
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Order ID format.",
+      });
+    }
+
+    const orderData = await Order.findById(id)
+      .populate(
+        "createdBy",
+        "username displayName email phone roleTitle employeeId photoUrl",
+      )
+      .populate(
+        "customerId",
+        "username displayName email phone address photoUrl",
+      )
+      .populate(
+        "items.product",
+        "displayId name brand pricing barcodes image",
+      );
+
+    if (!orderData) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order details retrieved successfully.",
+      data: orderData,
+    });
+  } catch (error) {
+    console.error("Error fetching order by ID:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 export const createOrder = async (req, res) => {
   const MAX_RETRIES = 3;
 

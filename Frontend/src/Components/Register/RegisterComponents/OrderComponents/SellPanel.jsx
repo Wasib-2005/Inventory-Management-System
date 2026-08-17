@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HiClipboardDocument } from "react-icons/hi2";
-import { FiMail, FiPhone, FiMapPin, FiUser, FiPackage, FiClock } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin, FiUser, FiPackage, FiClock, FiX } from "react-icons/fi";
 import LiveStatusBadge from "../LiveStatusBadge";
 import { useOrderStream } from "../useOrderStream";
 import { getPaymentDisplayStatus } from "../constants";
@@ -8,6 +8,8 @@ import OrderCreateModal from "./OrderCreateModal";
 import OrderActionModal from "../OrderActionModal";
 import OrderCard from "./OrderCard";
 import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
+import { createPortal } from "react-dom";
+import axios from "axios";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -324,10 +326,229 @@ const DetailPanel = ({ sale }) => (
   </div>
 );
 
+const PAGE_SIZE = 10;
+
+const PERIODS = [
+  { key: "day", label: "Day" },
+  { key: "week", label: "Week" },
+  { key: "month", label: "Month" },
+];
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const OpenAllOrderPanel = ({ setOpenAllOrder }) => {
+  const [period, setPeriod] = useState("day");
+  const [date, setDate] = useState(todayISO());
+  const [page, setPage] = useState(1);
+  const [orders, setOrders] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+
+  // Changing the filter starts a fresh list from page 1.
+  useEffect(() => {
+    setPage(1);
+    setExpandedId(null);
+  }, [period, date]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_API_HEADER}/api/order/all-order`, {
+        withCredentials: true,
+        params: { period, date, page, limit: PAGE_SIZE },
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setOrders(res.data?.data || []);
+        setPagination(
+          res.data?.pagination || { page: 1, totalPages: 1, total: 0 },
+        );
+      })
+      .catch((err) => {
+        if (axios.isCancel(err)) return;
+        setError(err.response?.data?.message || "Could not load orders");
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [period, date, page]);
+
+  const rows = orders.map(mapOrderToRow);
+
+  return createPortal(
+    <div
+      onClick={() => setOpenAllOrder(false)}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-3xl max-h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-emerald-300/30">
+          <h3 className="font-bold text-emerald-900 text-sm">All Orders</h3>
+          <button
+            type="button"
+            onClick={() => setOpenAllOrder(false)}
+            className="p-1.5 text-emerald-700/40 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+          >
+            <FiX size={18} />
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2 p-4 border-b border-emerald-300/30">
+          <div className="flex rounded-lg border border-emerald-300/40 overflow-hidden">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => setPeriod(p.key)}
+                className={`px-3 py-1.5 text-xs font-bold transition-colors ${
+                  period === p.key
+                    ? "bg-[#1D9E75] text-white"
+                    : "bg-white text-emerald-700/60 hover:bg-emerald-50"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="text-xs px-3 py-1.5 rounded-lg border border-emerald-300/40 text-emerald-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+          />
+          <span className="text-[11px] text-emerald-700/50 ml-auto">
+            {pagination.total} order{pagination.total === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto mx-5 pb-5">
+          {loading ? (
+            <p className="text-sm text-emerald-700/40 italic py-10 text-center">
+              Loading…
+            </p>
+          ) : error ? (
+            <p className="text-sm text-rose-600 font-semibold py-10 text-center">
+              {error}
+            </p>
+          ) : rows.length === 0 ? (
+            <p className="text-sm text-emerald-700/40 italic py-10 text-center">
+              No orders in this range
+            </p>
+          ) : (
+            <table className="w-full text-center text-sm whitespace-nowrap border-collapse mt-3">
+              <thead className="bg-emerald-50 text-emerald-700/60 uppercase text-xs font-bold tracking-wider sticky top-0">
+                <tr>
+                  <th className="p-3 border border-emerald-300/40">Order ID</th>
+                  <th className="p-3 border border-emerald-300/40">Customer</th>
+                  <th className="p-3 border border-emerald-300/40">Status</th>
+                  <th className="p-3 border border-emerald-300/40">Payment</th>
+                  <th className="p-3 border border-emerald-300/40">Total</th>
+                  <th className="p-3 border border-emerald-300/40">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <>
+                    <tr
+                      key={row.id}
+                      onClick={() =>
+                        setExpandedId((prev) => (prev === row.id ? null : row.id))
+                      }
+                      className="border-b border-emerald-300/20 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                    >
+                      <td className="p-3 border border-emerald-300/40 font-bold text-emerald-900">
+                        {row.orderCode}
+                      </td>
+                      <td className="p-3 border border-emerald-300/40 text-emerald-700/70">
+                        {row.username}
+                      </td>
+                      <td className="p-3 border border-emerald-300/40 text-emerald-700/70">
+                        {row.orderStatus || "—"}
+                      </td>
+                      <td className="p-3 border border-emerald-300/40 text-emerald-700/70">
+                        {row.status}
+                      </td>
+                      <td className="p-3 border border-emerald-300/40 font-semibold text-emerald-900">
+                        {currency}
+                        {row.total.toLocaleString()}
+                      </td>
+                      <td className="p-3 border border-emerald-300/40 text-emerald-700/60">
+                        {formatDateTime(row.createdAt)}
+                      </td>
+                    </tr>
+                    {expandedId === row.id && (
+                      <tr key={`${row.id}-detail`}>
+                        <td colSpan={6} className="p-0">
+                          <DetailPanel sale={row} />
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-1.5 p-4 border-t border-emerald-300/30">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              className="px-2.5 py-1.5 text-xs font-bold rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 disabled:opacity-40 transition-colors"
+            >
+              Prev
+            </button>
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
+              (n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setPage(n)}
+                  className={`w-7 h-7 text-xs font-bold rounded-md transition-colors ${
+                    n === page
+                      ? "bg-[#1D9E75] text-white"
+                      : "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200"
+                  }`}
+                >
+                  {n}
+                </button>
+              ),
+            )}
+            <button
+              type="button"
+              disabled={page >= pagination.totalPages}
+              onClick={() => setPage((p) => Math.min(p + 1, pagination.totalPages))}
+              className="px-2.5 py-1.5 text-xs font-bold rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 disabled:opacity-40 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
 const SellPanel = ({ sales = [] }) => {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [actionOrder, setActionOrder] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [openAllOrder, setOpenAllOrder] = useState(false);
+
   const { status, orders, reconnect, updateOrder } = useOrderStream();
 
   const rows = [...orders.map(mapOrderToRow), ...sales.map(mapMockToRow)];
@@ -343,6 +564,11 @@ const SellPanel = ({ sales = [] }) => {
 
   return (
     <div className="flex flex-col gap-3">
+      {openAllOrder ? (
+        <OpenAllOrderPanel setOpenAllOrder={setOpenAllOrder} />
+      ) : (
+        <></>
+      )}
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5">
@@ -355,14 +581,24 @@ const SellPanel = ({ sales = [] }) => {
             Every order placed today, at a glance
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsOrderModalOpen(true)}
-          className="flex items-center gap-2 text-sm font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
-        >
-          <HiClipboardDocument size={16} />
-          Make an Order
-        </button>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setOpenAllOrder(true)}
+            className="flex items-center border-gray-400 gap-2 text-sm font-bold hover:bg-[#1D9E75] px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
+          >
+            All Order
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsOrderModalOpen(true)}
+            className="flex items-center gap-2 text-sm font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
+          >
+            <HiClipboardDocument size={16} />
+            Make an Order
+          </button>
+        </div>
       </div>
 
       {rows.length === 0 ? (
