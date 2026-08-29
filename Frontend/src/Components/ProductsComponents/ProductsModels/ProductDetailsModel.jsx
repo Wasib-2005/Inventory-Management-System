@@ -67,6 +67,8 @@ const ProductDetailsModel = ({
     specifications = [],
     flags = {},
     extraDetails = [],
+    warranty,
+    guarantee,
   } = productData;
 
   const category = normalizeCategoryData(categoryData);
@@ -261,6 +263,22 @@ const ProductDetailsModel = ({
                   </span>
                   <span className="text-slate-800 font-semibold mt-0.5 block">
                     {compliance.countryOfOrigin || "-"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">
+                    Guarantee
+                  </span>
+                  <span className="text-slate-800 font-semibold mt-0.5 block">
+                    {guarantee || "-"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">
+                    Warranty
+                  </span>
+                  <span className="text-slate-800 font-semibold mt-0.5 block">
+                    {warranty || "-"}
                   </span>
                 </div>
               </div>

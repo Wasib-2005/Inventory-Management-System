@@ -157,7 +157,7 @@ export const getOrderById = async (req, res) => {
       )
       .populate(
         "items.product",
-        "displayId name brand pricing barcodes image",
+        "displayId name brand pricing barcodes image warranty guarantee",
       );
 
     if (!orderData) {

@@ -76,6 +76,30 @@ const BasicInfoSection = ({ formData, errors, onChange }) => {
           ))}
         </select>
       </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+          Guarantee
+        </label>
+        <input
+          type="number"
+          value={formData.guarantee}
+          onChange={(e) => onChange(e, "guarantee")}
+          className={commonInputField}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-[11px] text-emerald-700/70 font-semibold uppercase">
+          Warranty
+        </label>
+        <input
+          type="number"
+          value={formData.warranty}
+          onChange={(e) => onChange(e, "warranty")}
+          className={commonInputField}
+        />
+      </div>
     </div>
   );
 };

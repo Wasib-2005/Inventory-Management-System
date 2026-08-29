@@ -81,7 +81,8 @@ const productSchema = new mongoose.Schema(
       header: { type: String, default: "" },
       extra: [{ type: String }],
     },
-
+    warranty: { type: Number },
+    guarantee: { type: Number },
     seo: {
       metaTitle: { type: String, default: "" },
       metaDescription: { type: String, default: "" },
