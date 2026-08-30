@@ -122,7 +122,7 @@ export const getOrderServiceClaim = ({ page = 1, limit = 15, type, status, searc
     signal,
   });
 
-export const updateOrderServiceClaimStatus = (id, status) =>
-  api.patch(`/api/return-warranty-guarantee/update/${id}`, { status });
+export const updateOrderServiceClaimStatus = (type, id, status) =>
+  api.patch(`/api/return-warranty-guarantee/update/${type}/${id}`, { status });
 
 export default api;

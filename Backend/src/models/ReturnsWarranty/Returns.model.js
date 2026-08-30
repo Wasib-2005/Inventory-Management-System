@@ -32,7 +32,24 @@ const returnSchema = new mongoose.Schema(
     claimed:{
       type:Boolean,
       required: true,
+    },
+    status:{
+      type:String,
+      enum: ["pending","approved","rejected","completed"], 
+      default: "pending",
+      required: true,
+    },
+    createdBy:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    updatedBy:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     }
+
 
   },
   {

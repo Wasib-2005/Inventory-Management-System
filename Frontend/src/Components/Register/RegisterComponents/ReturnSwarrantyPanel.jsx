@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FiPlus, FiCornerUpLeft, FiShield, FiTool, FiCheck, FiX, FiRotateCcw, FiCheckCircle } from "react-icons/fi";
 import ReturnWarrantyModal from "./ReturnWarrantyModal";
+import ClaimDetailModal from "./ClaimDetailModal";
 import { getOrderServiceClaim, updateOrderServiceClaimStatus } from "./api";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
@@ -46,6 +47,7 @@ const ReturnsWarrantyPanel = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClaim, setSelectedClaim] = useState(null);
   const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -117,9 +119,12 @@ const ReturnsWarrantyPanel = () => {
   const handleStatusChange = async (record, newStatus) => {
     setActionId(record._id);
     try {
-      await updateOrderServiceClaimStatus(record._id, newStatus);
+      await updateOrderServiceClaimStatus(record.type, record._id, newStatus);
       setRecords((prev) =>
         prev.map((r) => (r._id === record._id ? { ...r, status: newStatus } : r)),
+      );
+      setSelectedClaim((prev) =>
+        prev && prev._id === record._id ? { ...prev, status: newStatus } : prev,
       );
     } catch (err) {
       // swallow — could surface a toast here
@@ -136,7 +141,7 @@ const ReturnsWarrantyPanel = () => {
         type="button"
         disabled={busy}
         onClick={() => handleStatusChange(r, status)}
-        className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md border transition-colors disabled:opacity-40 ${cls}`}
+        className={`flex items-center gap-1.5 text-base font-bold px-3 py-1.5 rounded-md border transition-colors disabled:opacity-40 ${cls}`}
       >
         {icon} {label}
       </button>
@@ -145,40 +150,40 @@ const ReturnsWarrantyPanel = () => {
     if (r.status === "pending") {
       return (
         <>
-          {btn("Approve", <FiCheck size={11} />, "approved", "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100")}
-          {btn("Reject", <FiX size={11} />, "rejected", "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100")}
+          {btn("Approve", <FiCheck size={16} />, "approved", "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100")}
+          {btn("Reject", <FiX size={16} />, "rejected", "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100")}
         </>
       );
     }
     if (r.status === "approved") {
       return (
         <>
-          {btn("Complete", <FiCheckCircle size={11} />, "completed", "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100")}
-          {btn("Unclaim", <FiRotateCcw size={11} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200")}
+          {btn("Complete", <FiCheckCircle size={16} />, "completed", "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100")}
+          {btn("Unclaim", <FiRotateCcw size={16} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200")}
         </>
       );
     }
     if (r.status === "rejected" || r.status === "completed") {
-      return btn("Unclaim", <FiRotateCcw size={11} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200");
+      return btn("Unclaim", <FiRotateCcw size={16} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200");
     }
     return null;
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-bold text-emerald-900">Returns & Warranty Claims</h3>
-          <p className="text-xs text-emerald-700/50 mt-0.5">
+          <h3 className="text-xl font-bold text-emerald-900">Returns & Warranty Claims</h3>
+          <p className="text-base text-emerald-700/60 mt-1">
             Log and process customer returns, warranty & guarantee claims
           </p>
         </div>
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-3 py-2 rounded-lg transition-colors shrink-0"
+          className="flex items-center gap-2 text-base font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-4 py-2.5 rounded-lg transition-colors shrink-0"
         >
-          <FiPlus size={14} />
+          <FiPlus size={18} />
           New Claim
         </button>
       </div>
@@ -189,10 +194,10 @@ const ReturnsWarrantyPanel = () => {
             key={t.id}
             type="button"
             onClick={() => setTypeFilter(t.id)}
-            className={`flex-1 whitespace-nowrap text-[11px] font-bold uppercase tracking-wide py-1.5 px-2.5 rounded-md transition-colors ${
+            className={`flex-1 whitespace-nowrap text-base font-bold uppercase tracking-wide py-2 px-3 rounded-md transition-colors ${
               typeFilter === t.id
                 ? "bg-white text-emerald-700 shadow-sm"
-                : "text-emerald-700/50 hover:text-emerald-700"
+                : "text-emerald-700/60 hover:text-emerald-700"
             }`}
           >
             {t.label}
@@ -200,16 +205,16 @@ const ReturnsWarrantyPanel = () => {
         ))}
       </div>
 
-      <div className="flex gap-1 overflow-x-scroll">
+      <div className="flex gap-1.5 overflow-x-scroll">
         {STATUSES.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => setStatusFilter(s.id)}
-            className={`whitespace-nowrap text-[10px] font-bold uppercase tracking-wide py-1 px-2.5 rounded-full border transition-colors ${
+            className={`whitespace-nowrap text-base font-bold uppercase tracking-wide py-1.5 px-3 rounded-full border transition-colors ${
               statusFilter === s.id
                 ? "bg-emerald-600 text-white border-emerald-600"
-                : "text-emerald-700/50 border-emerald-300/40 hover:text-emerald-700"
+                : "text-emerald-700/60 border-emerald-300/40 hover:text-emerald-700"
             }`}
           >
             {s.label}
@@ -217,11 +222,11 @@ const ReturnsWarrantyPanel = () => {
         ))}
       </div>
 
-      <div className="flex flex-col gap-1.5 max-h-[50vh] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2 max-h-[55vh] overflow-y-auto pr-1">
         {isLoading ? (
-          <p className="text-[12px] text-emerald-700/40 italic">Loading...</p>
+          <p className="text-base text-emerald-700/50 italic">Loading...</p>
         ) : records.length === 0 ? (
-          <p className="text-[12px] text-emerald-700/40 italic">No claims yet</p>
+          <p className="text-base text-emerald-700/50 italic">No claims yet</p>
         ) : (
           <>
             {records.map((r) => {
@@ -230,53 +235,62 @@ const ReturnsWarrantyPanel = () => {
               return (
                 <div
                   key={r._id}
-                  className="flex flex-col gap-2 p-2.5 rounded-lg bg-emerald-50/40 border border-emerald-300/30"
+                  onClick={() => setSelectedClaim(r)}
+                  className="flex flex-col gap-3 p-3.5 rounded-lg bg-emerald-50/40 border border-emerald-300/30 cursor-pointer hover:bg-emerald-50 transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className={`w-8 h-8 rounded-md border flex items-center justify-center shrink-0 ${meta.accent}`}>
-                        <Icon size={14} />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${meta.accent}`}>
+                        <Icon size={20} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-semibold text-emerald-900 truncate">
-                          {r.productName} × {r.qty}
+                        <p className="text-base font-semibold text-emerald-900 truncate">
+                          {r.product?.name} × {r.qty}
                         </p>
-                        <p className="text-[10px] text-emerald-700/50 truncate">
-                          {r.reference} · {r.reason}
-                          {r.username ? ` · ${r.username}` : ""}
+                        <p className="text-base text-emerald-700/60 truncate">
+                          {r.product?.displayId}
+                          {r.reason ? ` · ${r.reason}` : ""}
+                          {r.order?.customerId?.username ? ` · ${r.order.customerId.username}` : ""}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right shrink-0 flex items-center gap-2">
+                    <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                       {r.resolution === "Refund" && r.refundAmount > 0 && (
-                        <span className="text-[11px] font-bold text-rose-600">
+                        <span className="text-base font-bold text-rose-600">
                           -{currency}
                           {Number(r.refundAmount).toLocaleString()}
                         </span>
                       )}
-                      <span
-                        className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border ${
-                          RESOLUTION_STYLES[r.resolution] || RESOLUTION_STYLES.Reject
-                        }`}
-                      >
-                        {r.resolution}
-                      </span>
-                      <span
-                        className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border ${
-                          STATUS_STYLES[r.status] || STATUS_STYLES.pending
-                        }`}
-                      >
-                        {r.status || "pending"}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`text-base font-bold uppercase px-2.5 py-1 rounded-full border ${
+                            RESOLUTION_STYLES[r.resolution] || RESOLUTION_STYLES.Reject
+                          }`}
+                        >
+                          {r.resolution}
+                        </span>
+                        <span
+                          className={`text-base font-bold uppercase px-2.5 py-1 rounded-full border ${
+                            STATUS_STYLES[r.status] || STATUS_STYLES.pending
+                          }`}
+                        >
+                          {r.status || "pending"}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 justify-end">{renderActions(r)}</div>
+                  <div
+                    className="flex items-center gap-2 justify-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {renderActions(r)}
+                  </div>
                 </div>
               );
             })}
             <div ref={sentinelRef} className="h-1" />
             {isLoadingMore && (
-              <p className="text-[11px] text-emerald-700/40 italic text-center py-1">Loading more...</p>
+              <p className="text-base text-emerald-700/50 italic text-center py-2">Loading more...</p>
             )}
           </>
         )}
@@ -289,6 +303,14 @@ const ReturnsWarrantyPanel = () => {
           setIsModalOpen(false);
           setReloadKey((k) => k + 1);
         }}
+      />
+
+      <ClaimDetailModal
+        isOpen={Boolean(selectedClaim)}
+        onClose={() => setSelectedClaim(null)}
+        claim={selectedClaim}
+        onStatusChange={handleStatusChange}
+        actionBusy={actionId === selectedClaim?._id}
       />
     </div>
   );

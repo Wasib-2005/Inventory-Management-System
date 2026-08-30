@@ -11,10 +11,62 @@ const returnWindowDay = process.env.RETURN_WINDOW_DAYS !== undefined
 
 logger.info(`RETURN WINDOW DAYS: ${returnWindowDay} days import successful`);
 
+const TYPE_MODEL = { warranty: Warranty, guarantee: Guarantee, return: Return };
+const CUSTOMER_SELECT = "-password -loginAttempts -lockUntil";
+
+export const getOrderServiceClaim = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    const { type, status } = req.query;
+
+    const filter = status ? { status } : {};
+    const typesToQuery = type ? [type] : ["warranty", "guarantee", "return"];
+
+    const populateOpts = [
+      { path: "product" },
+      { path: "createdBy", select: CUSTOMER_SELECT },
+      { path: "updatedBy", select: CUSTOMER_SELECT },
+      {
+        path: "order",
+        populate: [
+          { path: "customerId", select: CUSTOMER_SELECT },
+          { path: "createdBy", select: CUSTOMER_SELECT },
+        ],
+      },
+    ];
+
+    const results = await Promise.all(
+      typesToQuery.map(async (t) => {
+        const Model = TYPE_MODEL[t];
+        const docs = await Model.find(filter).populate(populateOpts).sort({ createdAt: -1 }).lean();
+        return docs.map((d) => ({ ...d, type: t }));
+      }),
+    );
+
+    const merged = results.flat().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const paged = merged.slice(skip, skip + limit);
+
+    return res.status(200).json({
+      success: true,
+      message: "Order service claims retrieved successfully",
+      data: paged,
+      hasMore: skip + limit < merged.length,
+      total: merged.length,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 export const createOrderServiceClaim = async (req, res) => {
   try {
     const { order, product, type, resolution, reason, notes } = req.body;
-    const qty = Number(req.body.qty); // Prevent string concatenation
+    const qty = Number(req.body.qty);
+
+    const userId = req.userId
+    const username = req.username
 
     if (!order || !product || !type || !qty) {
       return res.status(400).json({
@@ -93,7 +145,7 @@ export const createOrderServiceClaim = async (req, res) => {
       aggregatedResult = { ...latestClaim, qty: serviceQty };
     }
 
-    logger.info({ serviceQty, aggregatedResult }, `Calculated claim quantities for order ${order}`);
+    logger.info({ serviceQty, aggregatedResult }, `Calculated claim quantities for order ${order} by ${username} : ${userId}`);
 
     const orderItem = orderData.items?.find(item => item?.product.toString() === product);
     const orderQty = orderItem?.qty || 0;
@@ -108,7 +160,7 @@ export const createOrderServiceClaim = async (req, res) => {
 
     // --- Create Claim ---
     let createdClaim;
-    const claimPayload = { order, product, qty, resolution, notes, claimed: false };
+    const claimPayload = { order, product, qty, resolution, notes, claimed: false, createdBy: userId };
 
     if (type === "warranty") {
       createdClaim = await Warranty.create(claimPayload);
@@ -120,7 +172,7 @@ export const createOrderServiceClaim = async (req, res) => {
       return res.status(400).json({ message: "Invalid claim type provided." });
     }
 
-    logger.info(`Successfully created ${type} claim for order ${order}`);
+    logger.info(`Successfully created ${type} claim for order ${order} by ${username} : ${userId}`);
 
     return res.status(201).json({ 
       message: `${type} claim submitted successfully.`,
@@ -132,3 +184,4 @@ export const createOrderServiceClaim = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+

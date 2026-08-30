@@ -1,8 +1,10 @@
 import express from "express";
-import { createOrderServiceClaim } from "../../controllers/OrderServiceClaim.controller.js";
+import { createOrderServiceClaim, getOrderServiceClaim } from "../../controllers/OrderServiceClaim.controller.js";
+import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
 
 const router = express.Router();
 
-router.post("/create", createOrderServiceClaim);
+router.get("/get", getOrderServiceClaim)
+router.post("/create", verifyAccess, createOrderServiceClaim);
 
 export default router;

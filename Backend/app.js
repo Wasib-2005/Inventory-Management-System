@@ -16,7 +16,7 @@ import ProductRouter from "./src/routes/Products.Routes/Products.route.js";
 import RackRouter from "./src/routes/Warehouse.Routes/Rack.route.js";
 import ShelveRouter from "./src/routes/Warehouse.Routes/Shelves.route.js";
 import OrderRouter from "./src/routes/Order.route.js";
-import ReturnRouter from "./src/routes/Warehouse.Routes/OrderServiceClaim.Routes.js";
+import OrderServiceClaimRouter from "./src/routes/Warehouse.Routes/OrderServiceClaim.Routes.js";
 
 
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
@@ -107,7 +107,7 @@ app.use("/api/warehouses", WarehouseRouter);
 app.use("/api/racks", RackRouter);
 app.use("/api/shelves", ShelveRouter);
 app.use("/api/order", OrderRouter);
-app.use("/api/return-warranty-guarantee", ReturnRouter);
+app.use("/api/return-warranty-guarantee", OrderServiceClaimRouter);
 
 let orderCount = 120;
 let totalRevenue = 14250.5;
