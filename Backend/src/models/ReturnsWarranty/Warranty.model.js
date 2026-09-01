@@ -32,7 +32,7 @@ const warrantySchema = new mongoose.Schema(
     },
     status: {
       type:String,
-      enum: ["pending","approved","rejected","completed"], 
+      enum: ["pending", "approved", "processing", "rejected", "completed"], 
       default: "pending",
       required: true,
     },

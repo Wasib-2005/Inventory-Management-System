@@ -1,21 +1,43 @@
 import { createPortal } from "react-dom";
 import {
-  FiX, FiCornerUpLeft, FiShield, FiTool, FiUser, FiUserCheck, FiEdit3, FiPackage,
-  FiCheck, FiCheckCircle, FiRotateCcw,
+  FiX,
+  FiCornerUpLeft,
+  FiShield,
+  FiTool,
+  FiUser,
+  FiUserCheck,
+  FiEdit3,
+  FiPackage,
+  FiCheck,
+  FiCheckCircle,
+  FiRotateCcw,
 } from "react-icons/fi";
 import { makeImageUrl } from "../../../Service/auth/makeImageUrl";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
 const TYPE_META = {
-  return: { label: "Return", icon: FiCornerUpLeft, accent: "text-amber-600 bg-amber-50 border-amber-200" },
-  warranty: { label: "Warranty Claim", icon: FiShield, accent: "text-purple-600 bg-purple-50 border-purple-200" },
-  guarantee: { label: "Guarantee Claim", icon: FiTool, accent: "text-blue-600 bg-blue-50 border-blue-200" },
+  return: {
+    label: "Return",
+    icon: FiCornerUpLeft,
+    accent: "text-amber-600 bg-amber-50 border-amber-200",
+  },
+  warranty: {
+    label: "Warranty Claim",
+    icon: FiShield,
+    accent: "text-purple-600 bg-purple-50 border-purple-200",
+  },
+  guarantee: {
+    label: "Guarantee Claim",
+    icon: FiTool,
+    accent: "text-blue-600 bg-blue-50 border-blue-200",
+  },
 };
 
 const STATUS_STYLES = {
   pending: "text-amber-600 bg-amber-50 border-amber-200",
   approved: "text-blue-600 bg-blue-50 border-blue-200",
+  processing: "text-indigo-600 bg-indigo-50 border-indigo-200",
   rejected: "text-rose-600 bg-rose-50 border-rose-200",
   completed: "text-emerald-600 bg-emerald-50 border-emerald-200",
 };
@@ -34,7 +56,9 @@ const PersonRow = ({ icon: Icon, label, person }) => (
       <Icon size={16} className="text-emerald-600" />
     </div>
     <div className="min-w-0">
-      <p className="text-base font-bold text-emerald-700/60 uppercase tracking-wide">{label}</p>
+      <p className="text-base font-bold text-emerald-700/60 uppercase tracking-wide">
+        {label}
+      </p>
       <p className="text-base font-semibold text-emerald-900 truncate">
         {person?.username || "—"}
       </p>
@@ -45,7 +69,14 @@ const PersonRow = ({ icon: Icon, label, person }) => (
   </div>
 );
 
-const ClaimDetailModal = ({ isOpen, onClose, claim, onStatusChange, actionBusy }) => {
+const ClaimDetailModal = ({
+  isOpen,
+  onClose,
+  claim,
+  onStatusChange,
+  onClaimedChange,
+  actionBusy,
+}) => {
   if (!isOpen || !claim) return null;
 
   const meta = TYPE_META[claim.type] || TYPE_META.return;
@@ -66,24 +97,41 @@ const ClaimDetailModal = ({ isOpen, onClose, claim, onStatusChange, actionBusy }
   );
 
   const renderActions = () => {
+    if (claim.claimed) return null;
+
     if (claim.status === "pending") {
       return (
         <>
-          {btn("Approve", <FiCheck size={18} />, "approved", "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100")}
-          {btn("Reject", <FiX size={18} />, "rejected", "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100")}
+          {btn(
+            "Approve",
+            <FiCheck size={18} />,
+            "approved",
+            "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100",
+          )}
+          {btn(
+            "Reject",
+            <FiX size={18} />,
+            "rejected",
+            "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100",
+          )}
         </>
       );
     }
     if (claim.status === "approved") {
-      return (
-        <>
-          {btn("Complete", <FiCheckCircle size={18} />, "completed", "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100")}
-          {btn("Unclaim", <FiRotateCcw size={18} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200")}
-        </>
+      return btn(
+        "Start Processing",
+        <FiRotateCcw size={18} />,
+        "processing",
+        "text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100",
       );
     }
-    if (claim.status === "rejected" || claim.status === "completed") {
-      return btn("Unclaim", <FiRotateCcw size={18} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200");
+    if (claim.status === "processing") {
+      return btn(
+        "Complete",
+        <FiCheckCircle size={18} />,
+        "completed",
+        "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
+      );
     }
     return null;
   };
@@ -124,7 +172,7 @@ const ClaimDetailModal = ({ isOpen, onClose, claim, onStatusChange, actionBusy }
             </span>
             <select
               value={claim.status || "pending"}
-              disabled={actionBusy}
+              disabled={actionBusy || claim.claimed}
               onChange={(e) => onStatusChange?.(claim, e.target.value)}
               className={`text-base font-bold uppercase px-3 py-1.5 rounded-full border focus:outline-none disabled:opacity-50 ${
                 STATUS_STYLES[claim.status] || STATUS_STYLES.pending
@@ -132,6 +180,7 @@ const ClaimDetailModal = ({ isOpen, onClose, claim, onStatusChange, actionBusy }
             >
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
+              <option value="processing">Processing</option>
               <option value="rejected">Rejected</option>
               <option value="completed">Completed</option>
             </select>
@@ -142,6 +191,34 @@ const ClaimDetailModal = ({ isOpen, onClose, claim, onStatusChange, actionBusy }
             {renderActions()}
           </div>
 
+          {/* Claimed toggle — only unlocked once status is completed */}
+          {(claim.status === "completed" || claim.status === "rejected") && (
+            <div className="flex items-center justify-between gap-3 p-3.5 rounded-lg border border-emerald-300/30 bg-white">
+              <div>
+                <span className="text-base font-bold text-emerald-700/60 uppercase block">
+                  Claimed
+                </span>
+                {claim.claimed && (
+                  <span className="text-base text-emerald-700/40">
+                    Item handed over — status locked
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={actionBusy}
+                onClick={() => onClaimedChange?.(claim, !claim.claimed)}
+                className={`text-base font-bold uppercase px-4 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  claim.claimed
+                    ? "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                    : "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200"
+                }`}
+              >
+                {claim.claimed ? "Unclaim" : "Mark as Claimed"}
+              </button>
+            </div>
+          )}
+          
           {/* Product */}
           <div className="flex items-center gap-4 p-3.5 rounded-lg border border-emerald-300/30 bg-white">
             <img

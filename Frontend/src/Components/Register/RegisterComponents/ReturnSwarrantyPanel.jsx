@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { FiPlus, FiCornerUpLeft, FiShield, FiTool, FiCheck, FiX, FiRotateCcw, FiCheckCircle } from "react-icons/fi";
+import {
+  FiPlus,
+  FiCornerUpLeft,
+  FiShield,
+  FiTool,
+  FiCheck,
+  FiX,
+  FiRotateCcw,
+  FiCheckCircle,
+} from "react-icons/fi";
 import ReturnWarrantyModal from "./ReturnWarrantyModal";
 import ClaimDetailModal from "./ClaimDetailModal";
 import { getOrderServiceClaim, updateOrderServiceClaimStatus } from "./api";
@@ -18,14 +27,27 @@ const STATUSES = [
   { id: "all", label: "All" },
   { id: "pending", label: "Pending" },
   { id: "approved", label: "Approved" },
+  { id: "processing", label: "Processing" },
   { id: "rejected", label: "Rejected" },
   { id: "completed", label: "Completed" },
 ];
 
 const TYPE_META = {
-  return: { label: "Return", icon: FiCornerUpLeft, accent: "text-amber-600 bg-amber-50 border-amber-200" },
-  warranty: { label: "Warranty Claim", icon: FiShield, accent: "text-purple-600 bg-purple-50 border-purple-200" },
-  guarantee: { label: "Guarantee Claim", icon: FiTool, accent: "text-blue-600 bg-blue-50 border-blue-200" },
+  return: {
+    label: "Return",
+    icon: FiCornerUpLeft,
+    accent: "text-amber-600 bg-amber-50 border-amber-200",
+  },
+  warranty: {
+    label: "Warranty Claim",
+    icon: FiShield,
+    accent: "text-purple-600 bg-purple-50 border-purple-200",
+  },
+  guarantee: {
+    label: "Guarantee Claim",
+    icon: FiTool,
+    accent: "text-blue-600 bg-blue-50 border-blue-200",
+  },
 };
 
 const RESOLUTION_STYLES = {
@@ -39,6 +61,7 @@ const RESOLUTION_STYLES = {
 const STATUS_STYLES = {
   pending: "text-amber-600 bg-amber-50 border-amber-200",
   approved: "text-blue-600 bg-blue-50 border-blue-200",
+  processing: "text-indigo-600 bg-indigo-50 border-indigo-200",
   rejected: "text-rose-600 bg-rose-50 border-rose-200",
   completed: "text-emerald-600 bg-emerald-50 border-emerald-200",
 };
@@ -119,15 +142,46 @@ const ReturnsWarrantyPanel = () => {
   const handleStatusChange = async (record, newStatus) => {
     setActionId(record._id);
     try {
-      await updateOrderServiceClaimStatus(record.type, record._id, newStatus);
+      await updateOrderServiceClaimStatus({
+        type: record.type,
+        id: record._id,
+        status: newStatus,
+      });
       setRecords((prev) =>
-        prev.map((r) => (r._id === record._id ? { ...r, status: newStatus } : r)),
+        prev.map((r) =>
+          r._id === record._id ? { ...r, status: newStatus } : r,
+        ),
       );
       setSelectedClaim((prev) =>
         prev && prev._id === record._id ? { ...prev, status: newStatus } : prev,
       );
     } catch (err) {
       // swallow — could surface a toast here
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleClaimedChange = async (record, newClaimed) => {
+    setActionId(record._id);
+    try {
+      await updateOrderServiceClaimStatus({
+        type: record.type,
+        id: record._id,
+        claimed: newClaimed,
+      });
+      setRecords((prev) =>
+        prev.map((r) =>
+          r._id === record._id ? { ...r, claimed: newClaimed } : r,
+        ),
+      );
+      setSelectedClaim((prev) =>
+        prev && prev._id === record._id
+          ? { ...prev, claimed: newClaimed }
+          : prev,
+      );
+    } catch (err) {
+      // swallow
     } finally {
       setActionId(null);
     }
@@ -150,21 +204,36 @@ const ReturnsWarrantyPanel = () => {
     if (r.status === "pending") {
       return (
         <>
-          {btn("Approve", <FiCheck size={16} />, "approved", "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100")}
-          {btn("Reject", <FiX size={16} />, "rejected", "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100")}
+          {btn(
+            "Approve",
+            <FiCheck size={16} />,
+            "approved",
+            "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100",
+          )}
+          {btn(
+            "Reject",
+            <FiX size={16} />,
+            "rejected",
+            "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100",
+          )}
         </>
       );
     }
     if (r.status === "approved") {
-      return (
-        <>
-          {btn("Complete", <FiCheckCircle size={16} />, "completed", "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100")}
-          {btn("Unclaim", <FiRotateCcw size={16} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200")}
-        </>
+      return btn(
+        "Start Processing",
+        <FiRotateCcw size={16} />,
+        "processing",
+        "text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100",
       );
     }
-    if (r.status === "rejected" || r.status === "completed") {
-      return btn("Unclaim", <FiRotateCcw size={16} />, "pending", "text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200");
+    if (r.status === "processing") {
+      return btn(
+        "Complete",
+        <FiCheckCircle size={16} />,
+        "completed",
+        "text-emerald-600 bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
+      );
     }
     return null;
   };
@@ -173,7 +242,9 @@ const ReturnsWarrantyPanel = () => {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h3 className="text-xl font-bold text-emerald-900">Returns & Warranty Claims</h3>
+          <h3 className="text-xl font-bold text-emerald-900">
+            Returns & Warranty Claims
+          </h3>
           <p className="text-base text-emerald-700/60 mt-1">
             Log and process customer returns, warranty & guarantee claims
           </p>
@@ -240,17 +311,22 @@ const ReturnsWarrantyPanel = () => {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${meta.accent}`}>
+                      <div
+                        className={`w-11 h-11 rounded-md border flex items-center justify-center shrink-0 ${meta.accent}`}
+                      >
                         <Icon size={20} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-base font-semibold text-emerald-900 truncate">
                           {r.product?.name} × {r.qty}
                         </p>
-                        <p className="text-base text-emerald-700/60 truncate">
+                        <p className=" text-emerald-700/80 truncate">
                           {r.product?.displayId}
                           {r.reason ? ` · ${r.reason}` : ""}
-                          {r.order?.customerId?.username ? ` · ${r.order.customerId.username}` : ""}
+                          {r.order?.customerId?.username
+                            ? ` · ${r.order.customerId.username}`
+                            : ""}
+                          {`  · ${r.order?._id.slice(-8)}`}
                         </p>
                       </div>
                     </div>
@@ -264,7 +340,8 @@ const ReturnsWarrantyPanel = () => {
                       <div className="flex items-center gap-1.5">
                         <span
                           className={`text-base font-bold uppercase px-2.5 py-1 rounded-full border ${
-                            RESOLUTION_STYLES[r.resolution] || RESOLUTION_STYLES.Reject
+                            RESOLUTION_STYLES[r.resolution] ||
+                            RESOLUTION_STYLES.Reject
                           }`}
                         >
                           {r.resolution}
@@ -290,7 +367,9 @@ const ReturnsWarrantyPanel = () => {
             })}
             <div ref={sentinelRef} className="h-1" />
             {isLoadingMore && (
-              <p className="text-base text-emerald-700/50 italic text-center py-2">Loading more...</p>
+              <p className="text-base text-emerald-700/50 italic text-center py-2">
+                Loading more...
+              </p>
             )}
           </>
         )}
@@ -310,6 +389,7 @@ const ReturnsWarrantyPanel = () => {
         onClose={() => setSelectedClaim(null)}
         claim={selectedClaim}
         onStatusChange={handleStatusChange}
+        onClaimedChange={handleClaimedChange}
         actionBusy={actionId === selectedClaim?._id}
       />
     </div>
