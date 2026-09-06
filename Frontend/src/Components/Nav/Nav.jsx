@@ -12,17 +12,39 @@ import { MdLogin } from "react-icons/md";
 
 const BASE = import.meta.env.VITE_BACKEND_API_HEADER;
 
+// Animated Burger Icon Sub-Component
+const AnimatedBurger = ({ isOpen }) => {
+  return (
+    <div className="w-6 h-5 flex flex-col justify-between items-center relative">
+      <motion.span
+        animate={isOpen ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className="w-6 h-[2.5px] bg-gray-700 rounded-full origin-center"
+      />
+      <motion.span
+        animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.15 }}
+        className="w-6 h-[2.5px] bg-gray-700 rounded-full"
+      />
+      <motion.span
+        animate={isOpen ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className="w-6 h-[2.5px] bg-gray-700 rounded-full origin-center"
+      />
+    </div>
+  );
+};
+
 const Nav = () => {
   const [expanded, setExpanded] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user, setUser } = useContext(UserContext);
   
   const hoverTimeoutRef = useRef(null);
   const isMenuOpenRef = useRef(false); 
 
   const handleMouseEnter = () => {
-    // Lock navbar layout width expansion entirely if user is currently interacting with the profile dropdown popover
     if (isMenuOpenRef.current) return;
-
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(() => {
       setExpanded(true);
@@ -35,14 +57,11 @@ const Nav = () => {
   };
 
   const handleNavbarClick = () => {
-    // Avoid toggling dimensions if the sub dropdown menu action sequence is operational
     if (isMenuOpenRef.current) return;
-
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setExpanded((prev) => !prev);
   };
 
-  // Helper passed down to clear any ticking hover expansion timeouts instantly on click
   const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -50,7 +69,7 @@ const Nav = () => {
   };
 
   const handleLogout = async (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     try {
       await axios.post(
         `${BASE}/api/auth/logout`,
@@ -77,24 +96,129 @@ const Nav = () => {
         }
       `}</style>
 
-      {/* Backdrop for mobile interfaces */}
+      {/* ========================================================= */}
+      {/* 1. SMALL DEVICES TOP NAVBAR (< md)                        */}
+      {/* ========================================================= */}
+      <div
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2.5 md:hidden border-b border-gray-200/50"
+        style={{
+          backgroundColor: PALETTE.bg,
+          boxShadow: "0 2px 12px rgba(187,213,218,0.3)",
+        }}
+      >
+        {/* Left: Icon / Logo */}
+        <div className="flex items-center shrink-0">
+          <img src="/logo.png" alt="Logo" className="h-9 w-auto object-contain" />
+        </div>
+
+        {/* Middle: 12-Hour Clock */}
+        <div className="flex items-center justify-center">
+          <TimeZoneClock permanent12hIndicator={true} />
+        </div>
+
+        {/* Right: Animated Burger Menu Button */}
+        <button
+          onClick={() => setMobileOpen((prev) => !prev)}
+          className="p-2 text-gray-700 hover:text-cyan-800 transition-colors rounded-lg focus:outline-none flex items-center justify-center"
+          aria-label="Toggle navigation menu"
+        >
+          <AnimatedBurger isOpen={mobileOpen} />
+        </button>
+      </div>
+
+      {/* MOBILE DROPDOWN DRAWER */}
       <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/10 lg:hidden"
-            onClick={() => setExpanded(false)}
-          />
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/20 md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+
+            {/* Menu Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: "-100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "-100%" }}
+              transition={{ type: "spring", stiffness: 260, damping: 25 }}
+              className="fixed top-[53px] left-0 right-0 z-40 p-4 shadow-xl md:hidden rounded-b-2xl"
+              style={{ backgroundColor: PALETTE.bg }}
+            >
+              <div className="flex flex-col gap-3 bg-gray-300/30 p-3 rounded-xl max-h-[calc(100vh-80px)] overflow-y-auto">
+                <ul className="flex flex-col gap-2">
+                  {NavLinks.map((link) => (
+                    <li key={link.path}>
+                      <NavLink
+                        to={link.path}
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 p-3 rounded-xl transition-colors duration-200 ${
+                            isActive
+                              ? "bg-[#DFF1F1] text-cyan-800 font-semibold shadow-sm"
+                              : "text-gray-700 hover:bg-[#DFF1F1]/40"
+                          }`
+                        }
+                      >
+                        <span className="shrink-0">{link.label}</span>
+                        <span className="text-sm font-medium">{link.name}</span>
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+
+                <div
+                  className="my-1 h-px w-full"
+                  style={{ backgroundColor: PALETTE.steel }}
+                />
+
+                {user ? (
+                  <NavProfileLogout
+                    user={user}
+                    expanded={true}
+                    handleLogout={(e) => {
+                      handleLogout(e);
+                      setMobileOpen(false);
+                    }}
+                    clearHoverTimeout={clearHoverTimeout}
+                    onDropdownToggle={(isOpen) => {
+                      isMenuOpenRef.current = isOpen;
+                    }}
+                  />
+                ) : (
+                  <NavLink
+                    to={"/auth"}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex justify-center w-full"
+                  >
+                    <button
+                      className={`w-full py-2.5 ${primaryButton} text-white flex justify-center items-center gap-2`}
+                      style={{
+                        background: `linear-gradient(135deg, ${PALETTE.mint}, ${PALETTE.steelDark})`,
+                        boxShadow: "0 3px 10px rgba(47,160,132,0.35)",
+                      }}
+                    >
+                      <MdLogin size={20} />
+                      <span>Login</span>
+                    </button>
+                  </NavLink>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
-      {/* Main Nav Container */}
+      {/* ========================================================= */}
+      {/* 2. MEDIUM & LARGE DEVICES SIDEBAR (>= md)                 */}
+      {/* ========================================================= */}
       <motion.nav
         animate={{ width: expanded ? "200px" : "78px" }}
         transition={{ type: "spring", stiffness: 220, damping: 26 }}
-        className={`fixed ${!expanded ? "md:top-5" : "md:top-0"} md:left-5 h-full ${
+        className={`hidden md:block fixed ${!expanded ? "md:top-5" : "md:top-0"} md:left-5 h-full ${
           expanded ? "md:h-screen" : "md:h-[calc(100vh-40px)]"
         } z-50 p-2 md:rounded-l-2xl`}
         style={{
@@ -106,7 +230,6 @@ const Nav = () => {
         onMouseLeave={handleMouseLeave}
         onClick={handleNavbarClick}
       >
-        {/* INNER CONTAINER: Uses overflow-visible when closed so dropdown doesn't clip off-screen */}
         <div
           className={`h-full flex flex-col py-5 bg-gray-300/30 md:rounded-l-xl transition-all ${
             expanded ? "overflow-hidden" : "overflow-visible"

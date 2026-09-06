@@ -4,9 +4,7 @@ export const SUB_FOLDERS = {
     { id: "returns", label: "Returns & Warranty" },
   ],
   "credit-debt": [
-    { id: "all", label: "All" },
-    { id: "credit", label: "Credit" },
-    { id: "debt", label: "Debt" },
+    { id: "debt", label: "Due/Debt" },
   ],
   catalog: [
     { id: "category", label: "Category" },

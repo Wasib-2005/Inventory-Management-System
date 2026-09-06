@@ -5,7 +5,7 @@ import { commonComponentBG } from "../../../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../../../Theme/secondaryButton";
 import { primaryButton } from "../../../../../Theme/primaryButton";
 import { commonInputField } from "../../../../../Theme/commonInputField";
-import { createSupplier } from "./api";
+import { createSupplier, updateSupplier } from "./api";
 
 const emptyForm = {
   suppliersName: "",
@@ -23,8 +23,31 @@ const emptyForm = {
   notes: "",
 };
 
-const SupplierAddModal = ({ onClose, onCreated }) => {
-  const [form, setForm] = useState(emptyForm);
+// Flattens the nested schema shape ({address:{}, contact:{}, financials:{}})
+// back into this modal's flat form fields, for prefilling on edit.
+const buildFormFromSupplier = (supplier) => ({
+  suppliersName: supplier.suppliersName || "",
+  supplierCode: supplier.supplierCode || "",
+  street: supplier.address?.street || "",
+  city: supplier.address?.city || "",
+  state: supplier.address?.state || "",
+  zipCode: supplier.address?.zipCode || "",
+  country: supplier.address?.country || "",
+  contactPerson: supplier.contact?.person || "",
+  email: supplier.contact?.email || "",
+  phone: supplier.contact?.phone || "",
+  taxId: supplier.financials?.taxId || "",
+  status: supplier.status || "Active",
+  notes: supplier.notes || "",
+});
+
+// Same modal handles both create and edit — pass `editSupplier` to edit an
+// existing one (prefills the form and PATCHes instead of POSTing).
+const SupplierAddModal = ({ onClose, onCreated, onUpdated, editSupplier }) => {
+  const isEdit = !!editSupplier;
+  const [form, setForm] = useState(() =>
+    isEdit ? buildFormFromSupplier(editSupplier) : emptyForm,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -67,15 +90,22 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
     };
 
     try {
-      const res = await createSupplier(payload);
-      if (res.data?.success) {
-        onCreated(res.data.data);
+      const res = isEdit
+        ? await updateSupplier(editSupplier._id, payload)
+        : await createSupplier(payload);
+
+      if (res.data?.success !== false) {
+        if (isEdit) onUpdated(res.data?.data || { ...editSupplier, ...payload });
+        else onCreated(res.data.data);
         onClose();
       } else {
-        setError("Could not create supplier");
+        setError(`Could not ${isEdit ? "update" : "create"} supplier`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Could not create supplier");
+      setError(
+        err.response?.data?.message ||
+          `Could not ${isEdit ? "update" : "create"} supplier`,
+      );
     } finally {
       setIsSaving(false);
     }
@@ -97,7 +127,7 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between p-5 border-b border-emerald-300/40 bg-emerald-50 sm:rounded-t-2xl shrink-0">
           <h3 className="text-lg font-bold text-emerald-900">
-            Add New Supplier
+            {isEdit ? "Edit Supplier" : "Add New Supplier"}
           </h3>
           <button
             onClick={onClose}
@@ -306,7 +336,7 @@ const SupplierAddModal = ({ onClose, onCreated }) => {
             disabled={isSaving}
             className={`${primaryButton} bg-[#1D9E75] text-white disabled:opacity-50`}
           >
-            {isSaving ? "Saving..." : "Save Supplier"}
+            {isSaving ? "Saving..." : isEdit ? "Save Changes" : "Save Supplier"}
           </button>
         </div>
       </div>

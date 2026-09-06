@@ -721,7 +721,7 @@ if (warehouses.length === 0) {
 
   return (
     <div>
-      <div className="w-full min-h-screen p-4 sm:p-6 flex flex-col gap-5">
+      <div className="w-full min-h-screen p-1 md:p-6 flex flex-col gap-5">
         <WarehouseHeader
           selectedWarehouse={selectedWarehouse}
           onOpenSwitchModal={() => setIsWarehouseSelectorModalOpen(true)}

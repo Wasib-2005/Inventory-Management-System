@@ -25,7 +25,7 @@ const MainRouter = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/register/:selection",
+        path: "/register/:selection/*",
         element: (
           <ProtectedRouteWarehouse>
             <Register />

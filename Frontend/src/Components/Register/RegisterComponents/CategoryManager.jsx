@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiPlus, FiTrash2, FiTag } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiTag, FiEdit2 } from "react-icons/fi";
 import {
   searchCategories,
   deleteCategory,
@@ -11,6 +11,7 @@ const CategoryManager = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
@@ -47,38 +48,45 @@ const CategoryManager = () => {
     }
   };
 
+  const handleUpdated = (updated) => {
+    setCategories((prev) =>
+      prev.map((c) => (c._id === editingCategory._id ? { ...c, ...updated } : c)),
+    );
+    setEditingCategory(null);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-xs font-bold text-emerald-800 tracking-wide uppercase">
+        <h4 className="text-[16px] font-bold text-emerald-800 tracking-wide uppercase">
           Categories {!isLoading && `(${categories.length})`}
         </h4>
         <button
           type="button"
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded border border-emerald-200 transition-colors"
+          className="flex items-center gap-1 text-[16px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded border border-emerald-200 transition-colors"
         >
-          <FiPlus size={12} /> Add Category
+          <FiPlus size={14} /> Add Category
         </button>
       </div>
 
-      {error && <p className="text-[11px] text-red-500 mb-2">{error}</p>}
+      {error && <p className="text-[16px] text-red-500 mb-2">{error}</p>}
 
-      <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1">
+      <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
         {isLoading ? (
-          <p className="text-[12px] text-emerald-700/40 italic">Loading...</p>
+          <p className="text-[16px] text-emerald-700/40 italic">Loading...</p>
         ) : categories.length === 0 ? (
-          <p className="text-[12px] text-emerald-700/40 italic">
+          <p className="text-[16px] text-emerald-700/40 italic">
             No categories yet
           </p>
         ) : (
           categories.map((cat) => (
             <div
               key={cat._id}
-              className="flex items-center justify-between gap-2 p-2 rounded-lg bg-emerald-50/40 border border-emerald-300/30"
+              className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-emerald-50/40 border border-emerald-300/30"
             >
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-emerald-900 truncate">
+                <p className="text-[16px] font-semibold text-emerald-900 truncate">
                   {cat.category}
                 </p>
                 {cat.subCategories?.length > 0 && (
@@ -86,24 +94,34 @@ const CategoryManager = () => {
                     {cat.subCategories.map((sub, i) => (
                       <span
                         key={i}
-                        className="flex items-center gap-0.5 text-[9px] font-medium text-emerald-700 bg-white px-1.5 py-0.5 rounded-full border border-emerald-200"
+                        className="flex items-center gap-0.5 text-[16px] font-medium text-emerald-700 bg-white px-1.5 py-0.5 rounded-full border border-emerald-200"
                       >
-                        <FiTag size={8} />
+                        <FiTag size={10} />
                         {sub.name}
                       </span>
                     ))}
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => handleDelete(cat)}
-                disabled={deletingId === cat._id}
-                className="p-1.5 text-emerald-700/40 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors shrink-0 disabled:opacity-50"
-                title="Delete category"
-              >
-                <FiTrash2 size={13} />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setEditingCategory(cat)}
+                  className="p-1.5 text-emerald-700/40 hover:text-emerald-700 hover:bg-emerald-100 rounded-md transition-colors"
+                  title="Edit category"
+                >
+                  <FiEdit2 size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(cat)}
+                  disabled={deletingId === cat._id}
+                  className="p-1.5 text-emerald-700/40 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors disabled:opacity-50"
+                  title="Delete category"
+                >
+                  <FiTrash2 size={15} />
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -113,6 +131,14 @@ const CategoryManager = () => {
         <CategoryAddModal
           onClose={() => setIsAddOpen(false)}
           onCreated={(created) => setCategories((prev) => [...prev, created])}
+        />
+      )}
+
+      {editingCategory && (
+        <CategoryAddModal
+          editCategory={editingCategory}
+          onClose={() => setEditingCategory(null)}
+          onUpdated={handleUpdated}
         />
       )}
     </div>

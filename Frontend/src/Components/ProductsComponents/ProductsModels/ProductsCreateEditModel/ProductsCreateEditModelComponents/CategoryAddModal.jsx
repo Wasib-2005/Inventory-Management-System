@@ -5,11 +5,25 @@ import { commonComponentBG } from "../../../../../Theme/commonComponentBG";
 import { secondaryButton } from "../../../../../Theme/secondaryButton";
 import { primaryButton } from "../../../../../Theme/primaryButton";
 import { commonInputField } from "../../../../../Theme/commonInputField";
-import { createCategory } from "./api";
+import { createCategory, updateCategory } from "./api";
 
-const CategoryAddModal = ({ onClose, onCreated }) => {
-  const [categoryName, setCategoryName] = useState("");
-  const [subCategories, setSubCategories] = useState([""]);
+// Prefills the row list from an existing category's subCategories on edit;
+// always keeps at least one (empty) row so there's somewhere to type.
+const buildSubRowsFromCategory = (category) =>
+  category.subCategories?.length
+    ? category.subCategories.map((s) => s.name)
+    : [""];
+
+// Same modal handles both create and edit — pass `editCategory` to edit an
+// existing one (prefills the form and PATCHes instead of POSTing).
+const CategoryAddModal = ({ onClose, onCreated, onUpdated, editCategory }) => {
+  const isEdit = !!editCategory;
+  const [categoryName, setCategoryName] = useState(
+    isEdit ? editCategory.category || "" : "",
+  );
+  const [subCategories, setSubCategories] = useState(() =>
+    isEdit ? buildSubRowsFromCategory(editCategory) : [""],
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,15 +50,22 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
           .filter(Boolean)
           .map((name) => ({ name })),
       };
-      const res = await createCategory(payload);
-      if (res.data?.success) {
-        onCreated(res.data.data);
+      const res = isEdit
+        ? await updateCategory(editCategory._id, payload)
+        : await createCategory(payload);
+
+      if (res.data?.success !== false) {
+        if (isEdit) onUpdated(res.data?.data || { ...editCategory, ...payload });
+        else onCreated(res.data.data);
         onClose();
       } else {
-        setError("Could not create category");
+        setError(`Could not ${isEdit ? "update" : "create"} category`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Could not create category");
+      setError(
+        err.response?.data?.message ||
+          `Could not ${isEdit ? "update" : "create"} category`,
+      );
     } finally {
       setIsSaving(false);
     }
@@ -60,7 +81,9 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
         className={`${commonComponentBG()} w-full h-full sm:h-auto sm:max-w-lg rounded-none sm:rounded-2xl cursor-default flex flex-col`}
       >
         <div className="flex items-center justify-between p-5 border-b border-emerald-300/40 bg-emerald-50 sm:rounded-t-2xl shrink-0">
-          <h3 className="text-lg font-bold text-emerald-900">Add Category</h3>
+          <h3 className="text-lg font-bold text-emerald-900">
+            {isEdit ? "Edit Category" : "Add Category"}
+          </h3>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md bg-white/80 hover:bg-white text-emerald-800"
@@ -130,7 +153,7 @@ const CategoryAddModal = ({ onClose, onCreated }) => {
             disabled={isSaving}
             className={`${primaryButton} bg-[#1D9E75] text-white disabled:opacity-50`}
           >
-            {isSaving ? "Saving..." : "Save Category"}
+            {isSaving ? "Saving..." : isEdit ? "Save Changes" : "Save Category"}
           </button>
         </div>
       </div>

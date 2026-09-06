@@ -7,7 +7,7 @@ import { Bounce, ToastContainer } from "react-toastify";
 
 const App = () => {
   return (
-    <div className="h-screen w-full">
+    <div className=" w-full">
       <Helmet>
         <title>{useGetName}</title>
       </Helmet>
@@ -28,9 +28,9 @@ const App = () => {
         transition={Bounce}
       />
 
-      <div className="md:ml-[98px] ml-[78px] md:pt-5 h-full md:h-[calc(100vh-20px)] flex flex-col">
+      <div className="ml-auto mt-15 md:mt-auto md:ml-[98px] md:pt-5 h-[calc(100vh*86/100)] md:h-[calc(100vh-20px)] flex flex-col">
         <div
-          className="flex-1 min-h-0 ml-2 md:mr-5 p-2 md:rounded-r-2xl flex flex-col"
+          className="flex-1 min-h-0 mx-2 md:mr-5 p-2 rounded-2xl rounded-t-none md:rounded-t-2xl md:rounded-l-none flex flex-col"
           style={{
             backgroundColor: PALETTE.bg,
             borderRight: `1px solid ${PALETTE.steel}`,
@@ -38,7 +38,7 @@ const App = () => {
             cursor: "pointer",
           }}
         >
-          <div className="flex-1 min-h-0 flex flex-col px-1 md:px-3 py-2 md:py-4 transition-all duration-300 ease-in-out  bg-gray-300/30 md:rounded-r-xl overflow-auto">
+          <div className="flex-1 min-h-0 flex flex-col px-1 md:px-3 py-2 md:py-4 transition-all duration-300 ease-in-out  bg-gray-300/30 rounded-xl rounded-t-none md:rounded-t-xl md:rounded-l-none overflow-scroll">
             <Outlet />
           </div>
         </div>

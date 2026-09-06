@@ -116,7 +116,10 @@ export const getWarehouseById = (id, signal) =>
 export const createOrderServiceClaim = (payload) =>
   api.post(`/api/return-warranty-guarantee/create`, payload);
 
-export const getOrderServiceClaim = ({ page = 1, limit = 15, type, status, search } = {}, signal) =>
+export const getOrderServiceClaim = (
+  { page = 1, limit = 15, type, status, search } = {},
+  signal,
+) =>
   api.get(`/api/return-warranty-guarantee/get`, {
     params: { page, limit, type, status, search },
     signal,
@@ -124,5 +127,25 @@ export const getOrderServiceClaim = ({ page = 1, limit = 15, type, status, searc
 
 export const updateOrderServiceClaimStatus = (payload) =>
   api.patch(`/api/return-warranty-guarantee/update`, { payload });
+
+export const getDebtCredit = (type, signal, { page = 1, limit = 15 } = {}) =>
+  api.get(`/api/debt-credit/get`, { params: { type, page, limit }, signal });
+
+export const payDebtCredit = (id, amount) =>
+  api.patch(`/api/debt-credit/pay/${id}`, { amount });
+
+export const searchDebtCredit = (
+  orderId,
+  signal,
+  { page = 1, limit = 15 } = {},
+) =>
+  api.get(`/api/debt-credit/search`, {
+    params: { orderid: orderId, page, limit },
+    signal,
+  });
+
+export const getTotalDebt = (signal) =>
+  api.get(`/api/debt-credit/total-debt`, { signal });
+
 
 export default api;

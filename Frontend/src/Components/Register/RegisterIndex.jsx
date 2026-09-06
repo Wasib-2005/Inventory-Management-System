@@ -4,13 +4,12 @@ import FolderTabs, { FOLDERS } from "./RegisterComponents/FolderTabs";
 import SubTabs, { SUB_FOLDERS } from "./RegisterComponents/SubTabs";
 import FolderPanel from "./RegisterComponents/FolderPanel";
 import HeaderActions from "./RegisterComponents/HeaderActions";
-import { initialCreditLedger } from "./RegisterComponents/constants";
 
 const VALID_FOLDER_IDS = FOLDERS.map((f) => f.id);
 const DEFAULT_FOLDER = "products-sell";
 
 const RegisterIndex = () => {
-  const { selection } = useParams();
+  const { selection, "*": rest } = useParams();
   const navigate = useNavigate();
 
   const activeFolder = VALID_FOLDER_IDS.includes(selection)
@@ -23,13 +22,19 @@ const RegisterIndex = () => {
     }
   }, [selection, activeFolder, navigate]);
 
-  const [activeSub, setActiveSub] = useState(SUB_FOLDERS[activeFolder][0].id);
+  const [subSegment, typeSegment] = (rest || "").split("/").filter(Boolean);
+  const subs = SUB_FOLDERS[activeFolder] || [];
+  const activeSub = subs.some((s) => s.id === subSegment)
+    ? subSegment
+    : subs[0]?.id;
+
   useEffect(() => {
-    setActiveSub(SUB_FOLDERS[activeFolder][0].id);
-  }, [activeFolder]);
+    if (activeSub && subSegment !== activeSub) {
+      navigate(`/register/${activeFolder}/${activeSub}`, { replace: true });
+    }
+  }, [activeFolder, activeSub, subSegment, navigate]);
 
   const [sales] = useState();
-  const [creditLedger] = useState(initialCreditLedger);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto min-h-screen">
@@ -55,14 +60,17 @@ const RegisterIndex = () => {
         <SubTabs
           folder={activeFolder}
           activeSub={activeSub}
-          onSelect={setActiveSub}
+          onSelect={(sub) => navigate(`/register/${activeFolder}/${sub}`)}
         />
         <div className="mt-5 max-h-[78vh] overflow-y-auto pr-1">
           <FolderPanel
             activeFolder={activeFolder}
             activeSub={activeSub}
+            typeSegment={typeSegment}
+            onTypeChange={(type) =>
+              navigate(`/register/${activeFolder}/${activeSub}/${type}`)
+            }
             sales={sales}
-            creditLedger={creditLedger}
           />
         </div>
       </div>

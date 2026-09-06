@@ -6,11 +6,10 @@ import { Shelve } from "../../models/Warehouse.models/shelve.models.js";
 import User from "../../models/user.model.js";
 
 export const createWarehouse = async (req, res) => {
-  const { warehouseName, warehouseId, place, address,  } =
-    req.body;
+  const { warehouseName, warehouseId, place, address } = req.body;
 
   logger.info(
-    { warehouseId, warehouseName, place, address, userId: req.userId, },
+    { warehouseId, warehouseName, place, address, userId: req.userId },
     "Attempting to create warehouse",
   );
 
@@ -64,7 +63,13 @@ export const createWarehouse = async (req, res) => {
 
 export const getAllWarehouses = async (req, res) => {
   try {
-    const warehouses = await Warehouse.find();
+    const warehouses = await Warehouse.find()
+      .populate("createdBy", "username email")
+      .populate({
+        path: "rackdata",
+        select: "rackCode column disabled group",
+      });
+
     return res.status(200).json({ success: true, data: warehouses });
   } catch (error) {
     logger.error({ err: error }, "Error occurred while fetching warehouses");

@@ -19,36 +19,47 @@ const WarehouseHeader = ({
 }) => {
   return (
     <div
-      className={`${commonComponentBG()} p-4 flex flex-row items-center justify-between`}
+      className={`${commonComponentBG()} p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
     >
+      {/* Current Warehouse Info Button */}
       <button
         onClick={onOpenSwitchModal}
-        className="flex items-center gap-3 group"
+        className="flex items-start sm:items-center gap-3 group text-left w-full sm:w-auto min-w-0"
       >
-        <div className="p-2.5 rounded-xl bg-emerald-100/70 border border-emerald-300/50">
+        <div className="p-2.5 rounded-xl bg-emerald-100/70 border border-emerald-300/50 shrink-0 mt-0.5 sm:mt-0">
           <TbBuildingWarehouse size={20} color={PALETTE.steel} />
         </div>
-        <div className="flex flex-col items-start">
+        
+        <div className="flex flex-col items-start min-w-0 flex-1">
           <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">
             Current Warehouse
           </span>
-          <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-            {selectedWarehouse?.warehouseName || "Select a Warehouse"}
+          
+          <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5 flex-wrap w-full">
+            <span className="truncate max-w-[200px] xs:max-w-[280px] sm:max-w-none">
+              {selectedWarehouse?.warehouseName || "Select a Warehouse"}
+            </span>
             {selectedWarehouse?.warehouseId && (
-              <span className="text-emerald-700/50 font-semibold">
+              <span className="text-emerald-700/50 font-semibold shrink-0">
                 · {selectedWarehouse.warehouseId}
               </span>
             )}
             <TbChevronRight
               size={14}
-              className="text-emerald-700/40 group-hover:translate-x-0.5 transition-transform"
+              className="text-emerald-700/40 group-hover:translate-x-0.5 transition-transform shrink-0"
             />
           </span>
-          <p className="text-sm">{selectedWarehouse?.address}</p>
+
+          {selectedWarehouse?.address && (
+            <p className="text-xs sm:text-sm text-gray-600 truncate w-full max-w-xs sm:max-w-md">
+              {selectedWarehouse.address}
+            </p>
+          )}
         </div>
       </button>
 
-      <div className="flex items-center gap-2">
+      {/* Actions Section */}
+      <div className="flex items-center justify-end gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-emerald-900/10">
         <IconActionButton
           icon={TbEdit}
           label="Edit Warehouse"

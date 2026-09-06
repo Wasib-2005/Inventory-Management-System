@@ -12,6 +12,11 @@ export const searchCategories = (search, signal) =>
 export const createCategory = (payload) =>
   axios.post(`${API_BASE}/category`, payload, { withCredentials: true });
 
+export const updateCategory = (id, payload) =>
+  axios.patch(`${API_BASE}/api/category/update/${id}`, payload);
+
+export const updateSupplier = (id, payload) =>
+  axios.patch(`${API_BASE}/api/supplier/update/${id}`, payload);
 
 export const deleteCategory = (categoryId) =>
   axios.delete(`${API_BASE}/category/${categoryId}`, { withCredentials: true });
@@ -27,7 +32,9 @@ export const createSupplier = (payload) =>
   axios.post(`${API_BASE}/suppliers`, payload, { withCredentials: true });
 
 export const deleteSupplier = (supplierId) =>
-  axios.delete(`${API_BASE}/suppliers/${supplierId}`, { withCredentials: true });
+  axios.delete(`${API_BASE}/suppliers/${supplierId}`, {
+    withCredentials: true,
+  });
 
 export const searchTags = (search, signal) =>
   axios.get(`${API_BASE}/tags`, { params: { search }, signal });

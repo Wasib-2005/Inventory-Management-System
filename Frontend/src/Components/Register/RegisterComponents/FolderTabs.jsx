@@ -2,7 +2,7 @@ import { FiShoppingCart, FiCreditCard, FiGrid, FiClock } from "react-icons/fi";
 
 export const FOLDERS = [
   { id: "products-sell", label: "Products & Sell", icon: FiShoppingCart, activeColor: "text-blue-600" },
-  { id: "credit-debt", label: "Credit & Debt", icon: FiCreditCard, activeColor: "text-rose-600" },
+  { id: "credit-debt", label: "Due / Debt", icon: FiCreditCard, activeColor: "text-rose-600" },
   { id: "catalog", label: "Catalog", icon: FiGrid, activeColor: "text-emerald-600" },
   { id: "task", label: "Task", icon: FiClock, activeColor: "text-purple-600" },
 ];
