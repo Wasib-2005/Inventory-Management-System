@@ -5,6 +5,7 @@ import { checkViolation_ProductData } from "../../utility/ViolationsUtility/chec
 import { Shelve } from "../../models/Warehouse.models/shelve.models.js";
 import todaySalesSse from "../../utility/sseManager/todaySalesSse.js";
 import { logger } from "../../config/logger.js";
+import dashboardSse from "../../utility/sseManager/dashboardSse.js";
 
 export const getOrderStream = async (req, res) => {
   res.writeHead(200, {
@@ -183,127 +184,126 @@ export const getOrderById = async (req, res) => {
 };
 
 export const createOrder = async (req, res) => {
+  const userId = req.userId;
+
+  // 1. Validate request parameters BEFORE touching the database session
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User ID is missing." });
+  }
+
+  const {
+    customerId,
+    username,
+    mobile,
+    address,
+    items,
+    payment,
+    email,
+    warehouseId,
+    status,
+  } = req.body;
+  const { paidAmount, discountAmount, subtotal, total } = payment || {};
+
+  if (!customerId && (!username?.trim() || !mobile?.trim())) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "Bad Request: Provide a customerId OR both username and mobile numbers.",
+      });
+  }
+
+  if (!payment || paidAmount === undefined || discountAmount === undefined) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "Bad Request: payment object requires paidAmount and discountAmount fields.",
+      });
+  }
+
+  if (subtotal === undefined || total === undefined) {
+    return res
+      .status(400)
+      .json({
+        message: "Bad Request: 'subtotal' and 'total' fields are required.",
+      });
+  }
+
+  if (!warehouseId) {
+    return res
+      .status(400)
+      .json({ message: "Bad Request: warehouseId is required." });
+  }
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "Bad Request: items must be a non-empty array." });
+  }
+
+  for (const item of items) {
+    if (!item.productInfo) {
+      return res
+        .status(400)
+        .json({
+          message: "Bad Request: Each item must have a productInfo ID.",
+        });
+    }
+    if (!item.qty || typeof item.qty !== "number" || item.qty <= 0) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Bad Request: Each item must have a valid qty greater than 0.",
+        });
+    }
+    if (!item.price || typeof item.price !== "number" || item.price <= 0) {
+      return res
+        .status(400)
+        .json({
+          message: "Bad Request: Each item must include a valid price.",
+        });
+    }
+  }
+
+  // 2. Pre-transaction checks
+  const violationStatus = await checkViolation_ProductData(
+    items,
+    warehouseId,
+    subtotal,
+    total,
+    userId,
+    req.ip,
+  );
+  if (violationStatus.isBlocked) {
+    logger.warn(
+      { userId, warehouseId, violations: violationStatus.violations },
+      "Order blocked due to pricing violations",
+    );
+    return res.status(400).json({
+      success: false,
+      message: "Order blocked due to severe pricing/data violations.",
+      violations: violationStatus.violations.filter(
+        (v) => v.violationLevel <= 2,
+      ),
+    });
+  }
+
+  // 3. Retry loop for transaction
   const MAX_RETRIES = 3;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const userId = req.userId;
     const session = await mongoose.startSession();
 
     try {
       session.startTransaction();
 
-      if (!userId) {
-        await session.abortTransaction();
-        return res
-          .status(401)
-          .json({ message: "Unauthorized: User ID is missing." });
-      }
-
-      const {
-        customerId,
-        username,
-        mobile,
-        address,
-        items,
-        payment,
-        email,
-        warehouseId,
-        status,
-      } = req.body;
-
-      const { paidAmount, discountAmount, subtotal, total } = payment || {};
-
-      if (!customerId && (!username?.trim() || !mobile?.trim())) {
-        await session.abortTransaction();
-        return res.status(400).json({
-          message:
-            "Bad Request: Provide a customerId OR both username and mobile numbers.",
-        });
-      }
-
-      if (
-        !payment ||
-        paidAmount === undefined ||
-        discountAmount === undefined
-      ) {
-        await session.abortTransaction();
-        return res.status(400).json({
-          message:
-            "Bad Request: payment object requires paidAmount and discountAmount fields.",
-        });
-      }
-
-      if (subtotal === undefined || total === undefined) {
-        await session.abortTransaction();
-        return res.status(400).json({
-          message: "Bad Request: 'subtotal' and 'total' fields are required.",
-        });
-      }
-
-      if (!warehouseId) {
-        await session.abortTransaction();
-        return res
-          .status(400)
-          .json({ message: "Bad Request: warehouseId is required." });
-      }
-
-      if (!items || !Array.isArray(items) || items.length === 0) {
-        await session.abortTransaction();
-        return res
-          .status(400)
-          .json({ message: "Bad Request: items must be a non-empty array." });
-      }
-
-      for (const item of items) {
-        if (!item.productInfo) {
-          await session.abortTransaction();
-          return res.status(400).json({
-            message: "Bad Request: Each item must have a productInfo ID.",
-          });
-        }
-        if (!item.qty || typeof item.qty !== "number" || item.qty <= 0) {
-          await session.abortTransaction();
-          return res.status(400).json({
-            message:
-              "Bad Request: Each item must have a valid qty greater than 0.",
-          });
-        }
-        if (!item.price || typeof item.price !== "number" || item.price <= 0) {
-          await session.abortTransaction();
-          return res.status(400).json({
-            message: "Bad Request: Each item must include a valid price.",
-          });
-        }
-      }
-
-      const violationStatus = await checkViolation_ProductData(
-        items,
-        warehouseId,
-        subtotal,
-        total,
-        userId,
-        req.ip,
-      );
-
-      if (violationStatus.isBlocked) {
-        await session.abortTransaction();
-        logger.warn(
-          { userId, warehouseId, violations: violationStatus.violations },
-          "Order blocked due to pricing violations",
-        );
-        return res.status(400).json({
-          success: false,
-          message: "Order blocked due to severe pricing/data violations.",
-          violations: violationStatus.violations.filter(
-            (v) => v.violationLevel <= 2,
-          ),
-        });
-      }
-
       const shelfIds = [
         ...new Set(items.map((i) => i.shelveId).filter(Boolean)),
       ];
-
       const shelves = shelfIds.length
         ? await Shelve.find({ _id: { $in: shelfIds } }).session(session)
         : [];
@@ -319,10 +319,12 @@ export const createOrder = async (req, res) => {
       for (const shelf of shelves) {
         if (shelf.warehouse_Id.toString() !== warehouseId.toString()) {
           await session.abortTransaction();
-          return res.status(400).json({
-            message:
-              "Bad Request: One or more shelves belong to a different warehouse than the order's warehouseId.",
-          });
+          return res
+            .status(400)
+            .json({
+              message:
+                "Bad Request: One or more shelves belong to a different warehouse.",
+            });
         }
       }
 
@@ -332,25 +334,25 @@ export const createOrder = async (req, res) => {
         if (!item.shelveId) continue;
 
         const shelf = shelfById.get(item.shelveId);
-        const shelfProductIndex = shelf.productData.findIndex(
+        const shelfProduct = shelf.productData.find(
           (p) =>
             p.productInfo.toString() === item.productInfo.toString() &&
             !p.isDeleted,
         );
 
-        if (shelfProductIndex === -1) {
+        if (!shelfProduct) {
           await session.abortTransaction();
-          return res.status(400).json({
-            message: `Bad Request: Product ID ${item.productInfo} is not assigned to shelf ${item.shelveId}.`,
-          });
+          return res
+            .status(400)
+            .json({
+              message: `Bad Request: Product ID ${item.productInfo} is not on shelf ${item.shelveId}.`,
+            });
         }
-
-        const shelfProduct = shelf.productData[shelfProductIndex];
 
         if (shelfProduct.stock.inStock < item.qty) {
           await session.abortTransaction();
           return res.status(400).json({
-            message: `Insufficient stock on a shelf for one of the products. Available: ${shelfProduct.stock.inStock}, Requested: ${item.qty}`,
+            message: `Insufficient stock on shelf. Available: ${shelfProduct.stock.inStock}, Requested: ${item.qty}`,
           });
         }
 
@@ -376,20 +378,11 @@ export const createOrder = async (req, res) => {
             qty: item.qty,
             price: item.price,
             ...(shelf
-              ? {
-                  location: {
-                    shelve: shelf._id,
-                    rack: shelf.rackData,
-                  },
-                }
+              ? { location: { shelve: shelf._id, rack: shelf.rackData } }
               : {}),
           };
         }),
-        payment: {
-          status: computedPaymentStatus,
-          paidAmount,
-          discountAmount,
-        },
+        payment: { status: computedPaymentStatus, paidAmount, discountAmount },
         warehouseData: warehouseId,
         status: status || "pending",
         dueAmount: calculatedDue,
@@ -410,6 +403,7 @@ export const createOrder = async (req, res) => {
       const [savedOrder] = await Order.create([newOrderData], { session });
       await session.commitTransaction();
 
+      // Post-transaction notifications
       const populatedOrder = await Order.findById(savedOrder._id)
         .populate(
           "createdBy",
@@ -420,16 +414,17 @@ export const createOrder = async (req, res) => {
           "username displayName email phone address photoUrl",
         );
 
-      let finalMessage = "Order verified and created successfully!";
-      if (violationStatus.warnings.length > 0) {
-        finalMessage =
-          "Order created successfully, but a Level 3 pricing warning was recorded.";
-      }
+      const finalMessage =
+        violationStatus.warnings.length > 0
+          ? "Order created successfully, but a Level 3 pricing warning was recorded."
+          : "Order verified and created successfully!";
 
+      // Broadcast events properly
       todaySalesSse.broadcast({
         event: "NEW_ORDER",
         orderData: populatedOrder,
       });
+      dashboardSse.broadcast({ type: "NEW_ORDER", data: populatedOrder }); // FIXED: changed addClient to broadcast
 
       logger.info(
         { orderId: savedOrder._id, userId, warehouseId },
@@ -474,10 +469,10 @@ export const completeOrder = async (req, res) => {
   try {
     const { id: orderId } = req.params;
     const { status, paidAmount } = req.body;
-    
+
     const userId = req.userId;
-    
-    console.log("paidAmount",paidAmount);
+
+    console.log("paidAmount", paidAmount);
 
     const orderData = await Order.findById(orderId);
     if (!orderData) {
@@ -495,13 +490,11 @@ export const completeOrder = async (req, res) => {
 
     const previousPaid = Number(orderData.payment?.paidAmount) || 0;
 
-
     const totalPrice =
       orderData.items?.reduce(
         (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
         0,
       ) || 0;
-
 
     orderData.updatedBy = userId;
 

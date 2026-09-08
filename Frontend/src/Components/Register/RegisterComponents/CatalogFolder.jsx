@@ -9,7 +9,7 @@ const CatalogFolder = ({ activeSub }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-emerald-900">Catalog</h3>
           <p className="text-xs text-emerald-700/50 mt-0.5">
@@ -19,7 +19,7 @@ const CatalogFolder = ({ activeSub }) => {
         <button
           type="button"
           onClick={() => navigate("/products")}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+          className="flex items-center justify-center gap-1.5 text-base font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-3 py-3 rounded-lg transition-colors w-full sm:w-auto"
         >
           <FiBox size={13} />
           Manage Products

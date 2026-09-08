@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { PALETTE } from "../../../Theme/palette";
+import { formatNumber } from "../../../utility/formatNumber";
 import {
   occupancyColor,
   computeRackStats,
@@ -215,7 +216,7 @@ const WarehouseRackModal = ({
                   />
                   <span className="truncate">Rack {rack.rackCode}</span>
                   <span className="text-[11px] font-semibold text-emerald-700/50 shrink-0">
-                    ({itemCount}/{capacity})
+                    ({formatNumber(itemCount)}/{formatNumber(capacity)})
                   </span>
                   {rack.group?.groupName && (
                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded shrink-0">
@@ -325,7 +326,7 @@ const WarehouseRackModal = ({
                               className="text-[10px] font-black px-1.5 py-0.5 rounded text-white"
                               style={shelfColor.style}
                             >
-                              {shelfStats.itemCount}/{shelfStats.capacity}
+                              {formatNumber(shelfStats.itemCount)}/{formatNumber(shelfStats.capacity)}
                             </span>
 
                             {!shelf.isDeleted && (
@@ -339,7 +340,7 @@ const WarehouseRackModal = ({
                             )}
                             <button
                               onClick={() => openEditShelf(shelf)}
-                              title="Edit shelf"
+                              title="Edit shelve"
                               className="p-1 rounded bg-amber-50/70 hover:bg-amber-100/80 text-amber-700 border border-amber-200/50 transition-colors"
                             >
                               <Edit2 size={12} />
@@ -347,7 +348,7 @@ const WarehouseRackModal = ({
                             {shelf.isDeleted ? (
                               <button
                                 onClick={() => onRestoreShelf(shelf._id)}
-                                title="Restore shelf"
+                                title="Restore shelve"
                                 className="p-1 rounded bg-blue-50/70 hover:bg-blue-100/80 text-blue-700 border border-blue-200/50 transition-colors"
                               >
                                 <RotateCcw size={12} />
@@ -358,8 +359,8 @@ const WarehouseRackModal = ({
                                   onClick={() => onToggleShelfStatus(shelf)}
                                   title={
                                     shelf.disabled
-                                      ? "Enable shelf"
-                                      : "Disable shelf"
+                                      ? "Enable shelve"
+                                      : "Disable shelve"
                                   }
                                   className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300/50 transition-colors"
                                 >
@@ -367,7 +368,7 @@ const WarehouseRackModal = ({
                                 </button>
                                 <button
                                   onClick={() => onDeleteShelf(shelf._id)}
-                                  title="Delete shelf"
+                                  title="Delete shelve"
                                   className="p-1 rounded bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors"
                                 >
                                   <Trash2 size={12} />
@@ -586,7 +587,7 @@ const WarehouseRackModal = ({
                                             productId,
                                           )
                                         }
-                                        title="Remove product from shelf"
+                                        title="Remove product from shelve"
                                         className="p-1 rounded bg-red-50/70 hover:bg-red-100/80 text-red-700 border border-red-200/50 transition-colors self-center"
                                       >
                                         <Trash2 size={11} />
@@ -627,7 +628,7 @@ const WarehouseRackModal = ({
                   style={{ backgroundColor: PALETTE.mint }}
                 >
                   <Plus size={15} />
-                  Add Shelf
+                  Add Shelve
                 </button>
               </div>
             </motion.div>

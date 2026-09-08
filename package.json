@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server": "cd Backend && nodemon index.js",
+    "server": "cd Backend && node server.js",
     "client": "npm run dev --prefix Frontend -- --host",
     "dev": "concurrently --kill-others --prefix \"[{name}]\" --names \"BACKEND,FRONTEND\" --prefix-colors \"red,blue\" \"npm run server\" \"npm run client\""
   },

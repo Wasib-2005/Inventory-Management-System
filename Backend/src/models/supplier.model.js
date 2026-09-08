@@ -10,7 +10,7 @@ const supplierSchema = new mongoose.Schema(
     supplierCode: {
       type: String,
       required: [true, "Supplier code is required"],
-      unique: true, 
+      unique: true,
       uppercase: true,
       trim: true,
     },
@@ -56,6 +56,14 @@ const supplierSchema = new mongoose.Schema(
       required: [true, "Creator user ID is required"],
     },
     updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deleteBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },

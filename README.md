@@ -13,7 +13,9 @@
   </p>
 </div>
 
-A full-stack inventory management web application with role-based access control, built with the MERN stack and secured using hybrid asymmetric/symmetric encryption.
+A full-stack inventory management web application for products, stock locations, orders, warehouse movements, returns, debt tracking, and role-based access control.
+
+The project is actively developed and should be tested carefully before production use.
 
 ---
 
@@ -163,17 +165,34 @@ npm run dev
 | Script           | Description                                                   |
 | ---------------- | ------------------------------------------------------------- |
 | `npm run dev`    | Runs Backend + Frontend concurrently with colour-coded output |
-| `npm run server` | Backend only (`nodemon`)                                      |
+| `npm run server` | Backend only (`node Backend/server.js`)                       |
 | `npm run client` | Frontend only (`vite --host`)                                 |
 
-### 3. Backend only
+### 3. Create the first administrator account
+
+The first account should be created from the CLI so the system has an administrator before the protected account-management screens are used.
+
+1. Start MongoDB.
+2. Create `Backend/.env` with `MONGO_URI` or `MONGOURL`.
+3. Run the command from the repository root:
+
+```bash
+cd Backend
+node tempAdmin.js admin@example.com "change-this-password"
+```
+
+The script creates the `admin` role with full permissions and assigns it to the new user. It safely exits if the email already exists.
+
+For production or shared terminals, avoid putting passwords directly in shell history. Use a temporary local shell session or adapt the script to read a secret from a password manager.
+
+### 4. Backend only
 
 ```bash
 cd Backend
 node server.js
 ```
 
-### 4. Frontend only
+### 5. Frontend only
 
 ```bash
 cd Frontend
@@ -193,9 +212,11 @@ npm run dev
 
 ---
 
-## Note
-- Certs if https not given 
-- Must give aws buckets anonymous access 
+## Configuration notes
+
+- When HTTPS is enabled, the local browser must trust the self-signed certificates in `certs/`.
+- Configure private image storage credentials in `Backend/.env`; do not make buckets public unless your deployment explicitly requires it.
+- Never commit `.env` files, private keys, production certificates, or database credentials.
 
 ## Security Notes
 
@@ -209,3 +230,9 @@ npm run dev
 ## License
 
 ISC
+
+## Contribution disclosure
+
+This repository is primarily human-directed work with limited AI assistance. For transparency, the project contribution mix is approximately **90% human and 10% AI-assisted**. Human contributors remain responsible for design decisions, review, testing, security, and final acceptance of changes.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the development and pull-request workflow.

@@ -156,7 +156,7 @@ const WarehouseShelfProductPicker = ({
                     <TbArrowLeft size={15} />
                   </button>
                 )}
-                Add Product to {shelf.shelfCode}
+                Add Product to Shelve {shelf.shelfCode}
               </h3>
               <button
                 type="button"
@@ -301,7 +301,7 @@ const WarehouseShelfProductPicker = ({
                     style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                   >
                     <TbPlus size={15} />
-                    {isSubmitting ? "Adding..." : "Add to Shelf"}
+                    {isSubmitting ? "Adding..." : "Add to Shelve"}
                   </button>
                 </div>
               </form>

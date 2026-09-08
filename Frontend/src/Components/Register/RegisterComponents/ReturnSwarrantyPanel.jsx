@@ -318,7 +318,7 @@ const ReturnsWarrantyPanel = () => {
                       </div>
                       <div className="min-w-0">
                         <p className="text-base font-semibold text-emerald-900 truncate">
-                          {r.product?.name} × {r.qty}
+                          {r.product?.name} × {Number(r.qty || 0).toLocaleString()}
                         </p>
                         <p className=" text-emerald-700/80 truncate">
                           {r.product?.displayId}

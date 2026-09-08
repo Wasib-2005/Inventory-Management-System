@@ -1,45 +1,53 @@
 import { useEffect, useState } from "react";
-import { FiPlus, FiArrowDownLeft, FiArrowUpRight } from "react-icons/fi";
-import { AiOutlineBarcode } from "react-icons/ai";
+import { FiPlus } from "react-icons/fi";
 import StockMovementModal from "./OrderComponents/StockMovementModal";
-import { getStockMovements } from "./api";
+import { getCycleCounts, getStockMovements } from "./api";
+import MovementDetailModal from "./MovementDetailModal";
+import { MOVEMENT_TYPE_META } from "./OrderComponents/movementConstants";
 
-const TYPES = [
+const FILTERS = [
   { id: "all", label: "All" },
   { id: "inbound", label: "Inbound" },
   { id: "outbound", label: "Outbound" },
   { id: "count", label: "Cycle Count" },
 ];
 
-const TYPE_META = {
-  inbound: { label: "Inbound", icon: FiArrowDownLeft, accent: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-  outbound: { label: "Outbound", icon: FiArrowUpRight, accent: "text-amber-600 bg-amber-50 border-amber-200" },
-  count: { label: "Cycle Count", icon: AiOutlineBarcode, accent: "text-purple-600 bg-purple-50 border-purple-200" },
-};
-
 const CargoMovementsPanel = () => {
   const [filter, setFilter] = useState("all");
-  const [modalType, setModalType] = useState(null);
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // Create modal
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Detail + edit
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [editRecord, setEditRecord] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
     setIsLoading(true);
 
     const load = async () => {
-      const types = filter === "all" ? ["inbound", "outbound", "count"] : [filter];
-      const results = await Promise.all(
-        types.map((t) =>
+      const types = filter === "all" ? ["inbound", "outbound"] : [filter];
+      const results = await Promise.all([
+        ...types.map((t) =>
           getStockMovements(t, controller.signal).then((res) =>
             (res.data?.data || []).map((r) => ({ ...r, _type: t })),
           ),
         ),
-      );
+        ...(filter === "all" || filter === "count"
+          ? [
+              getCycleCounts(controller.signal).then((res) =>
+                (res.data?.data || []).map((r) => ({ ...r, _type: "count" })),
+              ),
+            ]
+          : []),
+      ]);
       const merged = results
         .flat()
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
       setRecords(merged);
       setIsLoading(false);
     };
@@ -53,30 +61,35 @@ const CargoMovementsPanel = () => {
 
   const createType = filter === "all" ? "inbound" : filter;
 
+  const handleEditFromDetail = (record) => {
+    setSelectedRecord(null);
+    setEditRecord(record);
+  };
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-emerald-900">Cargo & Stock Movements</h3>
-          <p className="text-xs text-emerald-700/50 mt-0.5">Receive, dispatch, and count inventory</p>
+          <h3 className="text-xl font-bold text-emerald-900">Cargo & Stock Movements</h3>
+          <p className="text-base text-emerald-700/70 mt-1">Receive, dispatch, count, and verify inventory activity.</p>
         </div>
         <button
           type="button"
-          onClick={() => setModalType(createType)}
-          className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-3 py-2 rounded-lg transition-colors shrink-0"
+          onClick={() => setIsCreateOpen(true)}
+          className="flex items-center justify-center gap-1.5 text-base font-bold text-white bg-[#1D9E75] hover:bg-[#0F6E56] px-4 py-3 rounded-lg transition-colors shrink-0"
         >
           <FiPlus size={14} />
-          {filter === "all" ? "New Movement" : `New ${TYPE_META[filter]?.label}`}
+          New Movement
         </button>
       </div>
 
-      <div className="flex p-1 rounded-lg bg-emerald-900/5 border border-emerald-300/30 gap-1 overflow-x-auto">
-        {TYPES.map((t) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 p-1 rounded-xl bg-emerald-900/5 border border-emerald-300/30 gap-1">
+        {FILTERS.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setFilter(t.id)}
-            className={`flex-1 whitespace-nowrap text-[11px] font-bold uppercase tracking-wide py-1.5 px-2.5 rounded-md transition-colors ${
+            className={`whitespace-nowrap text-base font-bold uppercase tracking-wide py-2.5 px-2 rounded-lg transition-colors ${
               filter === t.id
                 ? "bg-white text-emerald-700 shadow-sm"
                 : "text-emerald-700/50 hover:text-emerald-700"
@@ -87,46 +100,84 @@ const CargoMovementsPanel = () => {
         ))}
       </div>
 
-      <div className="flex flex-col gap-1.5 max-h-[45vh] overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2 max-h-[65vh] overflow-y-auto pr-1">
         {isLoading ? (
-          <p className="text-[12px] text-emerald-700/40 italic">Loading...</p>
+          <p className="text-base text-emerald-700/60 italic">Loading movements...</p>
         ) : records.length === 0 ? (
-          <p className="text-[12px] text-emerald-700/40 italic">No movements yet</p>
+          <p className="text-base text-emerald-700/60 italic">No movements yet</p>
         ) : (
           records.map((r) => {
-            const meta = TYPE_META[r._type];
+            const meta = MOVEMENT_TYPE_META[r._type];
             const Icon = meta.icon;
             return (
-              <div
+              <button
                 key={r._id}
-                className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-emerald-50/40 border border-emerald-300/30"
+                type="button"
+                onClick={() => setSelectedRecord(r)}
+                className="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-emerald-50/40 border border-emerald-300/30 text-left hover:bg-emerald-50 transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className={`w-8 h-8 rounded-md border flex items-center justify-center shrink-0 ${meta.accent}`}>
-                    <Icon size={14} />
+                  <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${meta.accent}`}>
+                    <Icon size={18} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold text-emerald-900 truncate">{r.reference}</p>
-                    <p className="text-[10px] text-emerald-700/50">
-                      {r.items?.length || 0} item(s){r.notes ? ` · ${r.notes}` : ""}
+                    <p className="text-base font-semibold text-emerald-900 truncate">
+                      {r.reference || meta.label}
+                    </p>
+                    <p className="text-base text-emerald-700/65">
+                      {r._type === "count"
+                        ? r.rackScope === "all"
+                          ? "All racks"
+                          : `${r.racks?.length || 0} rack(s)`
+                        : `${r.items?.length || 0} item(s)`}
+                      {r.notes ? ` · ${r.notes}` : ""}
                     </p>
                   </div>
                 </div>
-                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border shrink-0 ${meta.accent}`}>
-                  {meta.label}
-                </span>
-              </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`text-base font-bold uppercase px-2 py-1 rounded-full border ${meta.accent}`}>
+                    {meta.label}
+                  </span>
+                  <span className={`text-base font-semibold capitalize ${
+                    r.verification?.status === "verified"
+                      ? "text-emerald-600"
+                      : r.verification?.status === "rejected"
+                        ? "text-rose-600"
+                        : "text-amber-600"
+                  }`}>
+                    {r.verification?.status || "pending"} verification
+                  </span>
+                </div>
+              </button>
             );
           })
         )}
       </div>
 
       <StockMovementModal
-        type={modalType || "inbound"}
-        isOpen={!!modalType}
-        onClose={() => setModalType(null)}
+        isOpen={isCreateOpen}
+        initialType={createType}
+        onClose={() => setIsCreateOpen(false)}
         onCreated={() => {
-          setModalType(null);
+          setIsCreateOpen(false);
+          setReloadKey((k) => k + 1);
+        }}
+      />
+
+      <MovementDetailModal
+        record={selectedRecord}
+        isOpen={!!selectedRecord}
+        onClose={() => setSelectedRecord(null)}
+        onEdit={handleEditFromDetail}
+        onVerified={() => setReloadKey((k) => k + 1)}
+      />
+
+      <StockMovementModal
+        isOpen={!!editRecord}
+        record={editRecord}
+        onClose={() => setEditRecord(null)}
+        onUpdated={() => {
+          setEditRecord(null);
           setReloadKey((k) => k + 1);
         }}
       />

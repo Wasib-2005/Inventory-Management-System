@@ -21,7 +21,10 @@ export const updateAccount = async (req, res) => {
         .json({ message: "User ID is required for updating account" });
     }
 
-    const existingUser = await User.findById(userId).populate("role");
+    const existingUser = await User.findOne({
+      _id: userId,
+      isDeleted: { $ne: true },
+    }).populate("role");
     if (!existingUser) {
       return res.status(404).json({ message: "Target user not found" });
     }
@@ -41,7 +44,10 @@ export const updateAccount = async (req, res) => {
     }
 
     if (roleTitle) {
-      const roleDoc = await Role.findOne({ roleTitle });
+      const roleDoc = await Role.findOne({
+        roleTitle,
+        isDeleted: { $ne: true },
+      });
       if (!roleDoc) {
         return res.status(404).json({ message: "Specified role not found" });
       }

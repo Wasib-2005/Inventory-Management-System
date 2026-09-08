@@ -437,7 +437,7 @@ const ReturnWarrantyModal = ({ isOpen, onClose, onCreated }) => {
                             {item.product?.name}
                           </p>
                           <p className="text-[10px] text-emerald-700/50">
-                            Qty bought: {item.qty} · {currency}
+                            Qty bought: {Number(item.qty || 0).toLocaleString()} · {currency}
                             {Number(item.price).toLocaleString()}
                           </p>
                         </div>

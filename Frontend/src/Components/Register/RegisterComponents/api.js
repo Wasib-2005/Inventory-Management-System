@@ -96,18 +96,26 @@ export const getOrders = (signal) =>
 export const getWarehouses = (signal) =>
   api.get(`/api/warehouses/get`, { signal });
 
-// ---- Stock movements (Inbound / Outbound / Cycle Count) ----
-const STOCK_MOVEMENT_ENDPOINTS = {
-  inbound: { create: "/api/inbound/create", get: "/api/inbound/get" },
-  outbound: { create: "/api/outbound/create", get: "/api/outbound/get" },
-  count: { create: "/api/cycle-count/create", get: "/api/cycle-count/get" },
+export const createStockMovement = (payload) => {
+  return api.post("/api/movement/create", payload);
 };
 
-export const createStockMovement = (type, payload) =>
-  api.post(STOCK_MOVEMENT_ENDPOINTS[type].create, payload);
-
 export const getStockMovements = (type, signal) =>
-  api.get(STOCK_MOVEMENT_ENDPOINTS[type].get, { signal });
+  api.get(`/api/movement/get`, { params: type ? { type } : {}, signal });
+
+export const createCycleCount = (payload) =>
+  api.post("/api/cycle-count/create", payload);
+
+export const getCycleCounts = (signal) =>
+  api.get("/api/cycle-count/get", { signal });
+
+export const verifyStockTask = (type, id, status, note = "", options = {}) =>
+  api.patch(
+    type === "count"
+      ? `/api/cycle-count/${id}/verify`
+      : `/api/movement/${id}/verify`,
+    { status, note, ...options },
+  );
 
 export const getWarehouseById = (id, signal) =>
   api.get(`/api/warehouses/get/${id}`, { signal });
@@ -147,5 +155,32 @@ export const searchDebtCredit = (
 export const getTotalDebt = (signal) =>
   api.get(`/api/debt-credit/total-debt`, { signal });
 
+// ---- Suppliers (real endpoint) ----
+export const searchSuppliers = (search, signal, limit = 8) =>
+  api.get(`/api/suppliers`, {
+    params: { search, limit },
+    signal,
+  });
+
+// TODO: UNCONFIRMED — no update endpoint shown yet for stock movements.
+// Guessing PATCH /api/{type}/update/:id. Replace with the real route
+// once you've got it.
+export const updateStockMovement = (type, id, payload) =>
+  api.patch(`/api/movement/${id}`, payload);
+
+export const recordMovementDiscrepancy = (id, payload) =>
+  api.patch(`/api/movement/${id}/discrepancy`, payload);
+
+export const recordCycleCountDiscrepancy = (id, payload) =>
+  api.patch(`/api/cycle-count/${id}/discrepancy`, payload);
+
+export const getEmergencyTasks = (signal) =>
+  api.get("/api/emergency-tasks/get", { signal });
+
+export const createEmergencyTask = (payload) =>
+  api.post("/api/emergency-tasks/create", payload);
+
+export const updateEmergencyTask = (id, payload) =>
+  api.patch(`/api/emergency-tasks/${id}`, payload);
 
 export default api;

@@ -6,12 +6,13 @@ import {
   updateRack,
 } from "../../controllers/Warehouse.controllers/Rack.controller.js";
 import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
+import { checkPermission } from "../../middlewares/checkPermission.middleware.js";
 
 const router = express.Router();
 
-router.post("/create", verifyAccess, createRack);
-router.put("/update/:id", verifyAccess, updateRack);
-router.delete("/delete/:id", verifyAccess, deleteRack);
-router.patch("/restore/:id", verifyAccess, restoreRack);
+router.post("/create", verifyAccess, checkPermission("hasRackDataAddPermission"), createRack);
+router.put("/update/:id", verifyAccess, checkPermission("hasRackDataChangePermission"), updateRack);
+router.delete("/delete/:id", verifyAccess, checkPermission("hasRackDataDeletePermission"), deleteRack);
+router.patch("/restore/:id", verifyAccess, checkPermission("hasRackDataChangePermission"), restoreRack);
 
 export default router;

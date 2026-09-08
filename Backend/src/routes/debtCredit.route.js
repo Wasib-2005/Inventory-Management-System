@@ -1,4 +1,6 @@
 import express from "express";
+import { verifyAccess } from "../middlewares/verifyAccess.middleware.js";
+import { checkPermission } from "../middlewares/checkPermission.middleware.js";
 import {
   getDebtCredit,
   payDebtCredit,
@@ -8,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get("/get", getDebtCredit);
-router.get("/search", searchDebtCredit);
-router.get("/total-debt", totalDebt);
+router.get("/get", verifyAccess, checkPermission("hasDebtCreditReadPermission"), getDebtCredit);
+router.get("/search", verifyAccess, checkPermission("hasDebtCreditReadPermission"), searchDebtCredit);
+router.get("/total-debt", verifyAccess, checkPermission("hasDebtCreditReadPermission"), totalDebt);
 
-router.patch("/pay/:id", payDebtCredit);
+router.patch("/pay/:id", verifyAccess, checkPermission("hasDebtCreditChangePermission"), payDebtCredit);
 
 export default router;

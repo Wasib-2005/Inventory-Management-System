@@ -132,8 +132,6 @@ userSchema.pre("save", async function () {
     } catch (error) {
       logger(error);
     }
-  } else {
-    logger("Problem Creating");
   }
 });
 

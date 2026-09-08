@@ -8,7 +8,7 @@ const Products = () => {
   const pageName = `Products | ${appName}`;
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <Helmet>
         <title>{pageName}</title>
       </Helmet>

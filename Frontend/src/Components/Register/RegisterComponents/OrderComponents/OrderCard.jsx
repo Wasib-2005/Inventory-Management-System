@@ -1,5 +1,6 @@
 import { FiEdit2, FiChevronDown, FiChevronUp,  } from "react-icons/fi";
 import { SALE_STATUS_STYLES } from "../constants";
+import { formatNumber } from "../../../../utility/formatNumber";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -29,7 +30,7 @@ const PriceLine = ({
     >
       {showMinus ? "-" : ""}
       {currency}
-      {value.toLocaleString()}
+      {formatNumber(value)}
     </span>
   </div>
 );

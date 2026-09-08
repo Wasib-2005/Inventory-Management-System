@@ -8,6 +8,7 @@ import {
   getGroupColour,
   hexToRgba,
 } from "../utils";
+import { formatNumber } from "../../../utility/formatNumber";
 
 const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -73,7 +74,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
           className="text-[8px] font-bold text-center leading-none mt-0.5 px-1 py-0.5 rounded"
           style={rackColor.style}
         >
-          {itemCount}/{capacity}
+          {formatNumber(itemCount)}/{formatNumber(capacity)}
         </span>
       </button>
 
@@ -118,13 +119,13 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
               <div className="flex items-center gap-1 text-emerald-800">
                 <Package size={11} className="text-emerald-600" />
                 <span>
-                  Stored: <b>{itemCount}</b>
+                  Stored: <b>{formatNumber(itemCount)}</b>
                 </span>
               </div>
               <div className="flex items-center gap-1 text-emerald-800">
                 <Inbox size={11} className="text-emerald-600" />
                 <span>
-                  Free: <b>{availableSpace}</b>
+                  Free: <b>{formatNumber(availableSpace)}</b>
                 </span>
               </div>
             </div>
@@ -169,7 +170,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
                           {shelf.shelfCode}
                         </span>
                         <span className="text-[9px] font-bold text-emerald-900 bg-emerald-50 px-1 rounded shrink-0">
-                          {shelfStats.itemCount}/{shelfStats.capacity}
+                          {formatNumber(shelfStats.itemCount)}/{formatNumber(shelfStats.capacity)}
                         </span>
                       </div>
                       <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden ml-3.5">
@@ -190,7 +191,7 @@ const WarehouseRack = ({ rack, onSelect, isHighlighted }) => {
                                 {p.productInfo?.name}
                               </span>
                               <span className="font-semibold shrink-0">
-                                {p.stock?.inStock ?? 0}/{p.stock?.maxStock ?? 0}
+                                {formatNumber(p.stock?.inStock ?? 0)}/{formatNumber(p.stock?.maxStock ?? 0)}
                               </span>
                             </div>
                           ))}

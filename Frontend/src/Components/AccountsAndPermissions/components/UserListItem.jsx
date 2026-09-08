@@ -1,7 +1,14 @@
 import UserAvatar from "./UserAvatar";
+import { motion } from "framer-motion";
 
 const UserListItem = ({ user, active, onClick }) => (
-  <div
+  <motion.div
+    layout
+    initial={{ opacity: 0, x: -14 }}
+    animate={{ opacity: 1, x: 0 }}
+    whileHover={{ x: 4, scale: 1.01 }}
+    whileTap={{ scale: 0.985 }}
+    transition={{ type: "spring", stiffness: 360, damping: 28 }}
     onClick={onClick}
     role="button"
     tabIndex={0}
@@ -26,7 +33,7 @@ const UserListItem = ({ user, active, onClick }) => (
     <span
       className={`w-1.75 h-1.75 rounded-full shrink-0 ${user.isActive ? "bg-[#1D9E75]" : "bg-[#B4B2A9]"}`}
     />
-  </div>
+  </motion.div>
 );
 
 export default UserListItem;

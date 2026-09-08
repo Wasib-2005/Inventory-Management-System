@@ -5,11 +5,11 @@ const HeaderActions = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="grid grid-cols-2 sm:flex items-stretch gap-2 w-full lg:w-auto">
       <button
         type="button"
         onClick={() => navigate("/warehouse")}
-        className="flex items-center gap-2 text-[16px] font-bold text-emerald-800 bg-white/70 hover:bg-white border border-emerald-300/50 px-4 py-2.5 rounded-xl transition-colors shadow-sm shrink-0"
+        className="flex items-center justify-center gap-2 text-[16px] font-bold text-emerald-800 bg-white/70 hover:bg-white border border-emerald-300/50 px-3 sm:px-4 py-3 rounded-xl transition-colors shadow-sm"
       >
         <FiHome size={16} />
         Warehouse
@@ -18,7 +18,7 @@ const HeaderActions = () => {
       <button
         type="button"
         onClick={() => navigate("/accounts-and-permissions")}
-        className="flex items-center gap-2 text-[16px] font-bold text-emerald-800 bg-white/70 hover:bg-white border border-emerald-300/50 px-4 py-2.5 rounded-xl transition-colors shadow-sm shrink-0"
+        className="flex items-center justify-center gap-2 text-[16px] font-bold text-emerald-800 bg-white/70 hover:bg-white border border-emerald-300/50 px-3 sm:px-4 py-3 rounded-xl transition-colors shadow-sm"
       >
         <FiUsers size={16} />
         Manage Users

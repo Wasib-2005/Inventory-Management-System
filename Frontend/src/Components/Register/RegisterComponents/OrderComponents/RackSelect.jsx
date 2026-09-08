@@ -1,6 +1,6 @@
 import { FiBox } from "react-icons/fi";
 
-const RackSelect = ({ racks = [], value, onChange, disabled }) => (
+const RackSelect = ({ racks = [], value, onChange, disabled, excludeIds = [] }) => (
   <div>
     <label className="block text-[10px] font-bold text-emerald-700/60 uppercase mb-1">
       Rack
@@ -14,7 +14,7 @@ const RackSelect = ({ racks = [], value, onChange, disabled }) => (
         className="w-full text-sm pl-8 pr-3 py-2 rounded-lg border border-emerald-300/50 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/40 disabled:opacity-50 appearance-none"
       >
         <option value="">{racks.length === 0 ? "No racks available" : "Select a rack"}</option>
-        {racks.map((r) => (
+        {racks.filter((r) => !excludeIds.includes(r._id) || r._id === value).map((r) => (
           <option key={r._id} value={r._id}>
             {r.rackCode}
             {r.group?.groupName ? ` · ${r.group.groupName}` : ""}

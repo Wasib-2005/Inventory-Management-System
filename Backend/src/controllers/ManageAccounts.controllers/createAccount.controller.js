@@ -21,7 +21,10 @@ export const createAccountController = async (req, res) => {
 
     const { role } = plain;
 
-    const getRole = await Role.findOne({ roleTitle: role });
+    const getRole = await Role.findOne({
+      roleTitle: role,
+      isDeleted: { $ne: true },
+    });
 
     if (!getRole) {
       logger.error("Role not found");
@@ -51,7 +54,10 @@ export const createAccountController = async (req, res) => {
     plain.role = getRole._id;
 
     if (plain.manager && plain.manager._id) {
-      const managerUser = await User.findById(plain.manager._id).select("_id");
+      const managerUser = await User.findOne({
+        _id: plain.manager._id,
+        isDeleted: { $ne: true },
+      }).select("_id");
 
       if (!managerUser) {
         return res.status(404).json({ message: "Manager not found!!!" });

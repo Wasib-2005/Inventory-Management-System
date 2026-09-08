@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 import EditField from "../AccountsAndPermissions/components/Fields/EditField";
 import { useState, useRef, useEffect } from "react";
 import Tooltip from "../Common/Tooltip";
+import { motion } from "framer-motion";
 
 const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
   const [roleRankEditing, setRoleRankEditing] = useState(false);
@@ -84,7 +85,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
 
     try {
       const res = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/delete-role?id=${role._id}`,
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/roles/delete?id=${role._id}`,
         { withCredentials: true },
       );
 
@@ -122,7 +123,10 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
   });
 
   return (
-    <div
+    <motion.div
+      layout
+      whileHover={{ y: -5, boxShadow: "0 18px 35px rgba(15, 118, 110, 0.14)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
       className={`${commonComponentBG()} p-0 relative hover:z-50 overflow-visible`}
     >
       {/* Header */}
@@ -306,7 +310,7 @@ const RoleCard = ({ role, setRoles, onPermissionChange, onDeleteSuccess }) => {
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

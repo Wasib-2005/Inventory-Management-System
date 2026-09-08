@@ -171,6 +171,7 @@ const ProductsComponentsIndex = () => {
     const getData = async () => {
       const res = await axios.get(
         `${import.meta.env.VITE_BACKEND_API_HEADER}/api/product/get`,
+        { withCredentials: true },
       );
       setProductsData(res.data.data);
     };
@@ -178,7 +179,7 @@ const ProductsComponentsIndex = () => {
   }, []);
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <ProductsToolbarIndex
         openCreateProductModel={openCreateModal}
         categories={categories}

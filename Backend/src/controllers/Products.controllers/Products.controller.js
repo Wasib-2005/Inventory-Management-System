@@ -8,6 +8,8 @@ import { uploadImages } from "../../utility/image/uploadImages.js";
 import mongoose from "mongoose";
 import { attachWarehouseStockProduct } from "../../utility/StockHelper/AttachWarehouseStockProduct.js";
 const { ObjectId } = mongoose.Types;
+const escapeRegex = (value = "") =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const verifyProductData = (data) => {
   const { displayId, sku, name, extraDetails, categoryData } = data;
@@ -35,7 +37,7 @@ export const getProducts = async (req, res) => {
       warehouseId, // Extracted query
     } = req.query;
 
-    const filter = {};
+    const filter = { isDeleted: { $ne: true } };
 
     if (search) filter.$text = { $search: search };
     if (status) filter.status = status;
@@ -89,6 +91,28 @@ export const getProducts = async (req, res) => {
   }
 };
 
+export const getProductTags = async (req, res) => {
+  try {
+    const search = String(req.query.search || "").trim();
+    const tags = await Product.distinct("tags", {
+      isDeleted: { $ne: true },
+      ...(search
+        ? { tags: { $regex: escapeRegex(search), $options: "i" } }
+        : {}),
+    });
+
+    return res.status(200).json(
+      tags
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b))
+        .slice(0, 50),
+    );
+  } catch (error) {
+    logger.error("Failed to fetch product tags:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export const getProductsId = async (req, res) => {
   try {
     const { id } = req.params;
@@ -104,7 +128,7 @@ export const getProductsId = async (req, res) => {
       });
     }
 
-    const product = await Product.findById(id)
+    const product = await Product.findOne({ _id: id, isDeleted: { $ne: true } })
       .populate("categoryData.category", "category")
       .populate("supplierData")
       .populate("createdBy", "username email")
@@ -445,8 +469,8 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
-    const productData = await Product.findByIdAndUpdate(
-      productId,
+    const productData = await Product.findOneAndUpdate(
+      { _id: productId, isDeleted: { $ne: true } },
       { deleteBy: req.userId, isDeleted: true },
       { new: true },
     );
@@ -490,8 +514,8 @@ export const restoreProduct = async (req, res) => {
       });
     }
 
-    const productData = await Product.findByIdAndUpdate(
-      productId,
+    const productData = await Product.findOneAndUpdate(
+      { _id: productId, isDeleted: true },
       {
         isDeleted: false,
         $unset: { deleteBy: "" },
@@ -527,4 +551,12 @@ export const restoreProduct = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const getDeletedProducts = async (req, res) => {
+  const products = await Product.find({ isDeleted: true })
+    .sort({ updatedAt: -1 })
+    .populate("deleteBy", "username displayName email")
+    .lean();
+  return res.status(200).json({ success: true, data: products });
 };

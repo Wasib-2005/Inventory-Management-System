@@ -8,7 +8,7 @@ export const FOLDERS = [
 ];
 
 const FolderTabs = ({ activeFolder, onSelect }) => (
-  <div className="flex items-end pl-1.5 -space-x-1 z-10 overflow-x-auto whitespace-nowrap">
+  <div className="grid grid-cols-2 sm:flex items-end gap-1 z-10 overflow-x-auto pb-1 scrollbar-thin">
     {FOLDERS.map((folder) => {
       const isActive = activeFolder === folder.id;
       const Icon = folder.icon;
@@ -17,14 +17,14 @@ const FolderTabs = ({ activeFolder, onSelect }) => (
           key={folder.id}
           type="button"
           onClick={() => onSelect(folder.id)}
-          className={`relative flex items-center gap-1 px-3 py-2 text-[11px] font-bold uppercase tracking-wider rounded-t-lg border-t border-x transition-all duration-150 shrink-0 ${
+          className={`relative flex min-w-0 w-full sm:w-[160px] h-14 sm:h-10 items-center justify-center gap-1.5 px-2 sm:px-3 text-base font-bold uppercase tracking-wide text-center leading-tight rounded-lg border transition-all duration-150 ${
             isActive
-              ? `bg-white ${folder.activeColor} border-emerald-300/40 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.05)] h-9`
-              : "bg-emerald-900/5 text-emerald-700/50 border-transparent hover:bg-emerald-900/10 h-8 hover:text-emerald-900/70"
+              ? `bg-white ${folder.activeColor} border-emerald-300/40 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.05)]`
+              : "bg-emerald-900/5 text-emerald-700/50 border-transparent hover:bg-emerald-900/10 hover:text-emerald-900/70"
           }`}
         >
-          <Icon size={12} />
-          {folder.label}
+          <Icon size={17} className="shrink-0" />
+          <span className="min-w-0 break-words">{folder.label}</span>
         </button>
       );
     })}

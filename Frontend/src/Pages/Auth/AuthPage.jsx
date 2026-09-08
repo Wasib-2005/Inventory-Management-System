@@ -57,21 +57,21 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#E4F9F5] via-[#d9f8f3] to-[#c5f3eb] flex items-center justify-center relative px-4 py-10">
-      <div className="absolute top-[-150px] left-[-150px] w-[350px] h-[350px] bg-[#30E3CA]/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-[-150px] right-[-150px] w-[350px] h-[350px] bg-[#11999E]/20 rounded-full blur-3xl" />
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#effcf8] via-[#e8f7f5] to-[#d8eef0] flex items-center justify-center relative px-4 py-10">
+      <div className="absolute top-[-150px] left-[-150px] w-[350px] h-[350px] bg-[#1d9e75]/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-[-150px] right-[-150px] w-[350px] h-[350px] bg-[#287f91]/15 rounded-full blur-3xl" />
       <ToastContainer position="top-right" theme="colored" />
 
-      <div className="w-full max-w-[1150px] min-h-[700px] rounded-[38px] overflow-hidden shadow-2xl shadow-[#11999E]/15 grid lg:grid-cols-2 backdrop-blur-xl bg-white/40 border border-white/40">
+      <div className="w-full max-w-[1150px] min-h-[700px] rounded-[38px] overflow-hidden shadow-2xl shadow-[#287f91]/15 grid lg:grid-cols-2 backdrop-blur-xl bg-white/65 border border-white/80">
         {/* LEFT SIDE - Branding */}
-        <div className="hidden lg:flex flex-col justify-between p-14 bg-gradient-to-br from-[#40514E] to-[#2d3f3c] relative overflow-hidden">
+        <div className="hidden lg:flex flex-col justify-between p-14 bg-gradient-to-br from-[#064e3b] via-[#0f6e56] to-[#155e75] relative overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-10 left-10 w-72 h-72 bg-[#30E3CA] rounded-full blur-3xl" />
             <div className="absolute bottom-10 right-10 w-72 h-72 bg-[#11999E] rounded-full blur-3xl" />
           </div>
           <div className="relative z-10">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#30E3CA] to-[#11999E] flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6ee7b7] to-[#2dd4bf] flex items-center justify-center shadow-lg shadow-black/20">
                 <svg
                   className="w-7 h-7 text-white"
                   viewBox="0 0 24 24"
@@ -84,29 +84,29 @@ const AuthPage = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-[#E4F9F5] text-2xl font-bold tracking-tight">
+                <h2 className="text-white text-2xl font-bold tracking-tight">
                   Inventra
                 </h2>
-                <p className="text-[#E4F9F5]/50 text-sm">
+                <p className="text-emerald-100/70 text-sm">
                   Inventory Management
                 </p>
               </div>
             </div>
           </div>
           <div className="relative z-10">
-            <span className="inline-flex items-center gap-2 text-[#30E3CA] uppercase tracking-[0.2em] text-xs font-semibold mb-7">
-              <span className="w-8 h-[2px] bg-[#30E3CA]" />
+              <span className="inline-flex items-center gap-2 text-emerald-200 uppercase tracking-[0.2em] text-xs font-semibold mb-7">
+              <span className="w-8 h-[2px] bg-emerald-300" />
               Smart Dashboard
             </span>
-            <h1 className="text-[4rem] leading-[1.05] font-bold text-[#E4F9F5] tracking-tight">
+            <h1 className="text-[4rem] leading-[1.05] font-bold text-white tracking-tight">
               Control your stock with clarity.
             </h1>
-            <p className="mt-7 text-[#E4F9F5]/60 text-base leading-relaxed max-w-[420px]">
+            <p className="mt-7 text-emerald-100/75 text-base leading-relaxed max-w-[420px]">
               Manage inventory, monitor sales, and track your entire business
               from one beautiful dashboard.
             </p>
           </div>
-          <p className="relative z-10 text-[#E4F9F5]/30 text-sm">
+          <p className="relative z-10 text-emerald-100/50 text-sm">
             © 2026 Inventra. All rights reserved.
           </p>
         </div>

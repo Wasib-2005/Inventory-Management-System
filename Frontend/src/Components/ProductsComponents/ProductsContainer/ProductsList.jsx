@@ -60,7 +60,7 @@ const ProductsList = ({
   return (
     <div
       onClick={onClick}
-      className={`group w-[calc(100vw-2.5rem)] bg-white hover:bg-slate-50 shadow-sm hover:shadow transition-all duration-200 rounded-xl border p-4 cursor-pointer flex flex-col md:flex-row md:items-center gap-5 ${
+      className={`group w-full min-w-0 max-w-full bg-white hover:bg-slate-50 shadow-sm hover:shadow transition-all duration-200 rounded-xl border p-4 cursor-pointer flex flex-col md:flex-row md:items-center gap-5 ${
         isDeleted 
           ? "border-rose-300 border-l-4 border-l-rose-500 bg-rose-50/10 opacity-80" 
           : "border-slate-200 border-l-transparent"

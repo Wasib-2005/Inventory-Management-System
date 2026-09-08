@@ -23,7 +23,7 @@ const buildShelf = (rackCode, shelfIndex) => {
 
   return {
     id: `${rackCode}-S${shelfIndex + 1}`,
-    name: `Shelf ${shelfIndex + 1}`,
+    name: `Shelve ${shelfIndex + 1}`,
     capacity,
     itemCount,
     maxProducts,

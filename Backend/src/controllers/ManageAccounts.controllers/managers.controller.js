@@ -11,7 +11,7 @@ export const getManagers = async (req, res) => {
       return res.status(404).json({ message: "Manager role not found." });
     }
 
-    const query = { role: managerRole._id };
+    const query = { role: managerRole._id, isDeleted: { $ne: true } };
 
     if (search && search.trim() !== "") {
       query.$or = [

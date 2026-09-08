@@ -19,22 +19,22 @@ export const addShelvesProductStock = async (req, res) => {
   }
 
   try {
-    // 1. Fetch the targeted Shelf document
+    // 1. Fetch the targeted Shelve document
     const shelveDoc = await Shelve.findById(shelfId);
 
     if (!shelveDoc) {
-      logger.warn({ shelfId }, "Add product aborted: Shelf document not found");
-      return res.status(404).json({ message: "Shelf document not found." });
+      logger.warn({ shelfId }, "Add product aborted: Shelve document not found");
+      return res.status(404).json({ message: "Shelve document not found." });
     }
 
-    // 2. Check if this product is already on the shelf to prevent duplicates
+    // 2. Check if this product is already on the shelve to prevent duplicates
     const productExists = shelveDoc.productData.some(
       (item) => item.productInfo?.toString() === productId.toString()
     );
 
     if (productExists) {
       return res.status(400).json({ 
-        message: "This product already exists on the shelf. Use the update route instead." 
+        message: "This product already exists on the shelve. Use the update route instead."
       });
     }
 
@@ -71,12 +71,12 @@ export const addShelvesProductStock = async (req, res) => {
 
     logger.info(
       { _id: shelfId, productId, addedBy: username },
-      "Product added successfully to shelf inventory",
+      "Product added successfully to shelve inventory",
     );
 
     return res.status(201).json({
       success: true,
-      message: "Product added to shelf successfully.",
+      message: "Product added to shelve successfully.",
       data: shelveDoc,
     });
   } catch (error) {

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { commonInputField } from "../../../Theme/commonInputField";
 import { EyeClosedIcon, EyeIcon } from "@animateicons/react/lucide";
+import { FiLock } from "react-icons/fi";
 
 const EyeIconComponent = ({ open }) =>
   open ? (
-    <EyeIcon size={20} duration={1.1} color="#000000" />
+    <EyeIcon size={20} duration={1.1} color="#0f766e" />
   ) : (
-    <EyeClosedIcon size={20} duration={1} color="#000000" />
+    <EyeClosedIcon size={20} duration={1} color="#0f766e" />
   );
 
 /**
@@ -108,15 +109,20 @@ const PasswordInput = ({
             if (onChange) onChange(e);
           }}
           disabled={disabled}
-          className={`${commonInputField} pr-8 w-full ${strengthMeta.border}`}
+          className={`${commonInputField} !rounded-2xl !border-emerald-200 !bg-white/85 !text-emerald-950 !placeholder-emerald-900/40 pl-10 pr-10 w-full ${strengthMeta.border}`}
         />
 
+        <FiLock
+          aria-hidden="true"
+          className="auth-input-icon absolute left-3 w-4 h-4 pointer-events-none"
+          style={{ color: "#0f766e", stroke: "#0f766e" }}
+        />
         <button
           type="button"
           tabIndex={-1}
           aria-label={show ? "Hide password" : "Show password"}
           onClick={() => setShow((s) => !s)}
-          className="absolute right-3 flex items-center text-[#40514E]/35 hover:text-[#11999E] transition-colors"
+          className="absolute right-3 flex items-center text-emerald-700/60 hover:text-emerald-500 transition-colors"
         >
           <EyeIconComponent open={show} />
         </button>

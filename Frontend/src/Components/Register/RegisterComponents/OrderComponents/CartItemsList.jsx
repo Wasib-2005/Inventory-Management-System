@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiTrash2, FiMinus, FiPlus, FiAlertTriangle, FiBox, FiLayers, FiZap } from "react-icons/fi";
 import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
+import { formatNumber } from "../../../../utility/formatNumber";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -82,7 +83,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
       <h4 className="text-xs font-bold text-emerald-800 tracking-wide uppercase mb-1.5">
         Products in Order ({items.length})
       </h4>
-      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto overflow-x-hidden pr-1">
         {items.map((item) => {
           const mrp = Number(item.price) || 0;
           const lineTotal = (Number(item.qty) || 0) * mrp;
@@ -155,7 +156,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                   <p className="text-[9px] font-bold text-emerald-700/50 uppercase">MRP</p>
                   <p className="text-xs font-bold text-emerald-900">
                     {currency}
-                    {mrp.toLocaleString()}
+                    {formatNumber(mrp)}
                   </p>
                 </div>
 
@@ -184,7 +185,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                       <FiZap size={9} /> Lowest stock
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                     <div className="relative">
                       <FiBox
                         size={11}
@@ -219,7 +220,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                           const low = inStock > 0 && warningStock > 0 && inStock <= warningStock;
                           return (
                             <option key={s.shelfId} value={s.shelfId}>
-                              {s.shelfCode} — {inStock} in stock{low ? " (low)" : ""}
+                              {s.shelfCode} — {formatNumber(inStock)} in stock{low ? " (low)" : ""}
                             </option>
                           );
                         })}
@@ -229,7 +230,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                 </div>
               )}
 
-              <div className="grid grid-cols-[auto_1fr_1fr] gap-2 items-end">
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2 items-end min-w-0">
                 <div>
                   <label className="block text-[9px] font-bold text-emerald-700/50 uppercase mb-0.5">
                     Qty
@@ -273,7 +274,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
                       outOfStock ? "text-rose-600" : isLowStock ? "text-amber-600" : "text-emerald-900"
                     }`}
                   >
-                    {item.stock ?? "—"}
+                    {item.stock == null ? "—" : formatNumber(item.stock)}
                   </p>
                 </div>
 
@@ -290,7 +291,7 @@ const CartItemsList = ({ items, onUpdateItem, onRemoveItem }) => {
 
               {overOrdered && (
                 <p className="mt-1.5 text-[10px] font-bold text-rose-600">
-                  ⚠ Quantity exceeds available stock ({item.stock})
+                  ⚠ Quantity exceeds available stock ({formatNumber(item.stock)})
                 </p>
               )}
             </div>
