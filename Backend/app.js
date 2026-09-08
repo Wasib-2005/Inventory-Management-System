@@ -18,11 +18,13 @@ import ShelveRouter from "./src/routes/Warehouse.Routes/Shelves.route.js";
 import OrderRouter from "./src/routes/Order.route.js";
 import OrderServiceClaimRouter from "./src/routes/Warehouse.Routes/OrderServiceClaim.Routes.js";
 import DebtCreditRouter from "./src/routes/debtCredit.route.js";
-
+import MovementRoute from "./src/routes/Task.Route/Movement.route.js";
+import CycleCountRoute from "./src/routes/Task.Route/CycleCount.route.js";
+import EmergencyTaskRoute from "./src/routes/Task.Route/EmergencyTask.route.js";
+import DashboardRoute from "./src/routes/dashboard.route.js";
 
 import { generateImageName } from "./src/utility/image/imageNameGenetator.js";
 import { logger } from "./src/config/logger.js";
-import dashboardSse from "./src/utility/sseManager/dashboardSse.js";
 
 const app = express();
 
@@ -110,8 +112,10 @@ app.use("/api/shelves", ShelveRouter);
 app.use("/api/order", OrderRouter);
 app.use("/api/return-warranty-guarantee", OrderServiceClaimRouter);
 app.use("/api/debt-credit", DebtCreditRouter);
+app.use("/api/movement", MovementRoute);
+app.use("/api/cycle-count", CycleCountRoute);
+app.use("/api/emergency-tasks", EmergencyTaskRoute);
 
-let orderCount = 120;
-let totalRevenue = 14250.5;
+app.use("/api/dashboard", DashboardRoute);
 
 export default app;

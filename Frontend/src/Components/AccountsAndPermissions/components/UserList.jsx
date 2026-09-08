@@ -5,6 +5,7 @@ import { FiFilter, FiX, FiCheck } from "react-icons/fi";
 import UserListItem from "./UserListItem";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { commonInputField } from "../../../Theme/commonInputField";
+import { AnimatePresence, motion } from "framer-motion";
 
 const DEFAULT_FILTERS = { status: "all", type: "all", gender: "all" };
 
@@ -214,9 +215,14 @@ const UserList = ({
       {/* Active filter chips — lets you see + remove filters without reopening the popover */}
       {activeCount > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap px-3 py-2 bg-(--color-background-primary) border-b border-(--color-border-tertiary) shrink-0">
+          <AnimatePresence initial={false}>
           {activeEntries.map(([key, value]) => (
-            <span
+            <motion.span
               key={key}
+              initial={{ opacity: 0, scale: 0.75, y: 4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.75, y: -4 }}
+              transition={{ type: "spring", stiffness: 420, damping: 24 }}
               className="flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-[#1D9E75]/10 border border-[#1D9E75]/40 text-[#1D9E75] text-[11px] font-medium"
             >
               {optionLabel(key, value)}
@@ -227,8 +233,9 @@ const UserList = ({
               >
                 <FiX size={10} />
               </button>
-            </span>
+            </motion.span>
           ))}
+          </AnimatePresence>
         </div>
       )}
 
@@ -248,6 +255,7 @@ const UserList = ({
           </div>
         ) : (
           <>
+            <AnimatePresence initial={false}>
             {users.map((u) => (
               <UserListItem
                 key={u._id}
@@ -256,6 +264,7 @@ const UserList = ({
                 onClick={() => onSelect(u._id)}
               />
             ))}
+            </AnimatePresence>
 
             {/* Sentinel */}
             <div ref={sentinelCb} className="h-px" />

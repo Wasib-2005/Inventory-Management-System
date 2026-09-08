@@ -1,5 +1,6 @@
 import { PackageOpen } from "lucide-react";
 import { occupancyColor, computeShelfStats, isProductLow } from "../utils";
+import { formatNumber } from "../../../utility/formatNumber";
 
 const WarehouseShelfCard = ({ shelf }) => {
   const { itemCount, capacity } = computeShelfStats(shelf);
@@ -17,7 +18,7 @@ const WarehouseShelfCard = ({ shelf }) => {
           className="text-[10px] font-black px-1.5 py-0.5 rounded"
           style={{ backgroundColor: colorSettings.style.backgroundColor }}
         >
-          {itemCount}/{capacity}
+          {formatNumber(itemCount)}/{formatNumber(capacity)}
         </span>
       </div>
 
@@ -31,7 +32,7 @@ const WarehouseShelfCard = ({ shelf }) => {
       {products.length === 0 ? (
         <p className="text-[11px] text-emerald-700/40 font-semibold py-1 text-center flex items-center justify-center gap-1">
           <PackageOpen size={12} />
-          Empty shelf
+          Empty shelve
         </p>
       ) : (
         <div className="flex flex-col gap-1.5">
@@ -58,7 +59,7 @@ const WarehouseShelfCard = ({ shelf }) => {
                     className="text-[10px] font-bold px-1 rounded shrink-0"
                     style={{ backgroundColor: pColor.style.backgroundColor }}
                   >
-                    {inStock}/{maxStock}
+                    {formatNumber(inStock)}/{formatNumber(maxStock)}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">

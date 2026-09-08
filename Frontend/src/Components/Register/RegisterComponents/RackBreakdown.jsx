@@ -13,6 +13,8 @@ export const groupRacksByColumn = (rackdata = []) => {
 };
 
 // Renders "A · 2  B · 1  C · 1" style badges for a warehouse's racks.
+import { formatNumber } from "../../../utility/formatNumber";
+
 const RackBreakdown = ({ rackdata = [] }) => {
   const groups = groupRacksByColumn(rackdata);
 
@@ -35,7 +37,7 @@ const RackBreakdown = ({ rackdata = [] }) => {
           <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[16px] font-black leading-none shrink-0">
             {column}
           </span>
-          {count}
+          {formatNumber(count)}
         </span>
       ))}
     </div>

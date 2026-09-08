@@ -1,5 +1,6 @@
 import express from "express";
 import { verifyAccess } from "../../middlewares/verifyAccess.middleware.js";
+import { checkPermission } from "../../middlewares/checkPermission.middleware.js";
 import {
   createWarehouse,
   getAllWarehouses,
@@ -12,12 +13,12 @@ import {
 
 const router = express.Router();
 
-router.get("/get", getAllWarehouses);
-router.get("/get/:id", getWarehouseById_Stock);
-router.post("/create", verifyAccess, createWarehouse);
-router.put("/update/:id", verifyAccess, updateWarehouse);
-router.delete("/delete/:id", verifyAccess, deleteWarehouse);
-router.patch("/restore/:id", verifyAccess, restoreWarehouse);
-router.patch("/status/:id", verifyAccess, disabledEnabledWarehouse);
+router.get("/get", verifyAccess, checkPermission("hasWarehouseDataReadPermission"), getAllWarehouses);
+router.get("/get/:id", verifyAccess, checkPermission("hasWarehouseDataReadPermission"), getWarehouseById_Stock);
+router.post("/create", verifyAccess, checkPermission("hasWarehouseDataAddPermission"), createWarehouse);
+router.put("/update/:id", verifyAccess, checkPermission("hasWarehouseDataChangePermission"), updateWarehouse);
+router.delete("/delete/:id", verifyAccess, checkPermission("hasWarehouseDataDeletePermission"), deleteWarehouse);
+router.patch("/restore/:id", verifyAccess, checkPermission("hasWarehouseDataChangePermission"), restoreWarehouse);
+router.patch("/status/:id", verifyAccess, checkPermission("hasWarehouseDataChangePermission"), disabledEnabledWarehouse);
 
 export default router;

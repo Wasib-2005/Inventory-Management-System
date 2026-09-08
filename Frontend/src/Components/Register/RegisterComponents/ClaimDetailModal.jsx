@@ -232,7 +232,7 @@ const ClaimDetailModal = ({
                 {product?.name}
               </p>
               <p className="text-base text-emerald-700/60">
-                {product?.displayId} · Qty {claim.qty}
+                {product?.displayId} · Qty {Number(claim.qty || 0).toLocaleString()}
               </p>
             </div>
           </div>

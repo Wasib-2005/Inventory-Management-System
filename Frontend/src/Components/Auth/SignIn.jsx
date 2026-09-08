@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { FiMail } from "react-icons/fi";
 import { useGetName } from "../../Hooks/userGetAppName";
 import PasswordInput from "../Common/Inputs/PasswordInput";
 
@@ -32,10 +33,10 @@ const SignIn = ({  onSubmit, isLoading }) => {
 
       <div className="w-full">
         <div className="mb-7">
-          <h2 className="text-[1.75rem] text-[#40514E] leading-tight mb-1 font-bold">
+          <h2 className="text-[1.75rem] text-emerald-950 leading-tight mb-1 font-bold">
             Welcome back
           </h2>
-          <p className="text-sm text-[#40514E]/50">Sign in to your account</p>
+          <p className="text-sm text-emerald-900/60">Sign in to your account</p>
         </div>
 
         <form
@@ -45,20 +46,15 @@ const SignIn = ({  onSubmit, isLoading }) => {
         >
           {/* Email */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
+            <label className="text-[0.7rem] font-semibold uppercase tracking-widest text-emerald-950">
               Email
             </label>
             <div className="relative flex items-center">
-              <svg
-                className="absolute left-3 w-4 h-4 text-[#40514E]/30 pointer-events-none"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="3" />
-                <path d="m2 7 10 6 10-6" />
-              </svg>
+              <FiMail
+                aria-hidden="true"
+                className="auth-input-icon absolute left-3 w-4 h-4 pointer-events-none"
+                style={{ color: "#0f766e", stroke: "#0f766e" }}
+              />
               <input
                 name="email"
                 type="email"
@@ -67,18 +63,18 @@ const SignIn = ({  onSubmit, isLoading }) => {
                 value={form.email}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-[#11999E]/10 bg-white/75 backdrop-blur-md text-[#40514E] text-sm placeholder:text-[#40514E]/35 outline-none transition-all duration-300 focus:border-[#30E3CA] focus:ring-4 focus:ring-[#30E3CA]/15 focus:bg-white shadow-sm hover:border-[#11999E]/20 disabled:opacity-60"
+                className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-emerald-200 bg-white/85 backdrop-blur-md text-emerald-950 text-sm placeholder:text-emerald-900/40 outline-none transition-all duration-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/25 focus:bg-white shadow-sm hover:border-emerald-400 disabled:opacity-60"
               />
             </div>
           </div>
 
           {/* Password */}
           <div className="flex flex-col gap-1.5">
-            <label className="flex justify-between items-center text-[0.7rem] font-semibold uppercase tracking-widest text-[#40514E]">
+            <label className="flex justify-between items-center text-[0.7rem] font-semibold uppercase tracking-widest text-emerald-950">
               Password
               <a
                 href="#"
-                className="text-[#11999E] text-[0.72rem] font-medium normal-case tracking-normal hover:text-[#30E3CA] transition-colors"
+                className="text-emerald-700 text-[0.72rem] font-medium normal-case tracking-normal hover:text-emerald-500 transition-colors"
               >
                 Forgot?
               </a>
@@ -105,7 +101,7 @@ const SignIn = ({  onSubmit, isLoading }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-1 flex items-center justify-center gap-2.5 py-3.5 bg-[#40514E] text-[#30E3CA] rounded-2xl text-sm font-semibold tracking-wide shadow-lg shadow-[#40514E]/25 hover:bg-[#2d3f3c] hover:-translate-y-px hover:shadow-xl hover:shadow-[#40514E]/30 active:translate-y-0 transition-all duration-200 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="mt-1 flex items-center justify-center gap-2.5 py-3.5 bg-emerald-800 text-white rounded-2xl text-sm font-semibold tracking-wide shadow-lg shadow-emerald-900/25 hover:bg-emerald-700 hover:-translate-y-px hover:shadow-xl hover:shadow-emerald-900/30 active:translate-y-0 transition-all duration-200 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {isLoading ? (
               <>

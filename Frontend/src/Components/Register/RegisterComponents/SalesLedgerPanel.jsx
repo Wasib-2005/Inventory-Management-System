@@ -1,5 +1,6 @@
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import { SALE_STATUS_STYLES } from "./constants";
+import { formatNumber } from "../../../utility/formatNumber";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -44,11 +45,11 @@ const SalesLedgerPanel = ({ sales }) => (
                 </span>
               </td>
               <td className="p-4 text-right text-rose-500 font-medium">
-                {sale.discount > 0 ? `-${currency}${sale.discount}` : "—"}
+                {sale.discount > 0 ? `-${currency}${formatNumber(sale.discount)}` : "—"}
               </td>
               <td className="p-4 text-right font-bold text-emerald-900">
                 {currency}
-                {sale.boughtPrice.toLocaleString()}
+                {formatNumber(sale.boughtPrice)}
               </td>
               <td className="p-4 pr-6 text-right">
                 <span
@@ -89,12 +90,12 @@ const SalesLedgerPanel = ({ sales }) => (
               {sale.discount > 0 && (
                 <span className="block text-rose-500 font-medium">
                   -{currency}
-                  {sale.discount}
+                  {formatNumber(sale.discount)}
                 </span>
               )}
               <span className="font-bold text-emerald-900">
                 {currency}
-                {sale.boughtPrice.toLocaleString()}
+                {formatNumber(sale.boughtPrice)}
               </span>
             </div>
           </div>

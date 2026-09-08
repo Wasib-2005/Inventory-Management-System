@@ -15,10 +15,23 @@ export const verifyAccess = async (req, res, next) => {
 
     const payload = verifyAccessToken(token);
     const userData = await User.findById(payload.sub)
-      .select("_id role username")
+      .select("_id role username isActive isDeleted isVerified employmentStatus")
       .populate("role");
 
-    if (!userData) req.status(404).json({ message: "No user Find" });
+    if (!userData || !userData.role) {
+      return res.status(404).json({ message: "User or role not found" });
+    }
+    if (userData.role.isDeleted) {
+      return res.status(403).json({ message: "Assigned role is no longer active" });
+    }
+    if (
+      !userData.isActive ||
+      userData.isDeleted ||
+      userData.employmentStatus === "suspended" ||
+      userData.employmentStatus === "terminated"
+    ) {
+      return res.status(403).json({ message: "User account is not active" });
+    }
 
     req.userId = userData._id;
     req.username = userData.username;

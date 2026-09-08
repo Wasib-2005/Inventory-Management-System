@@ -6,6 +6,7 @@ dotenv.config();
 
 const MONGO_URI =
   process.env.MONGO_URI ||
+  process.env.MONGOURL ||
   "mongodb://waslla:20050511@localhost:27017/inventory-management-system?authSource=admin&directConnection=true";
 
 // ─── 1. SCHEMAS ──────────────────────────────────────────────────────────────
@@ -162,6 +163,33 @@ async function run() {
           hasCreateOrderDataAddPermission: true,
           hasCreateOrderDataChangePermission: true,
           hasCreateOrderDataDeletePermission: true,
+          hasDashboardReadPermission: true,
+          hasCategoryDataReadPermission: true,
+          hasCategoryDataAddPermission: true,
+          hasCategoryDataChangePermission: true,
+          hasCategoryDataDeletePermission: true,
+          hasSupplierDataReadPermission: true,
+          hasSupplierDataAddPermission: true,
+          hasSupplierDataChangePermission: true,
+          hasSupplierDataDeletePermission: true,
+          hasMovementDataReadPermission: true,
+          hasMovementDataAddPermission: true,
+          hasMovementDataChangePermission: true,
+          hasMovementDataDeletePermission: true,
+          hasCycleCountDataReadPermission: true,
+          hasCycleCountDataAddPermission: true,
+          hasCycleCountDataChangePermission: true,
+          hasEmergencyTaskReadPermission: true,
+          hasEmergencyTaskAddPermission: true,
+          hasEmergencyTaskChangePermission: true,
+          hasOrderDataReadPermission: true,
+          hasOrderDataAddPermission: true,
+          hasOrderDataChangePermission: true,
+          hasDebtCreditReadPermission: true,
+          hasDebtCreditChangePermission: true,
+          hasClaimDataReadPermission: true,
+          hasClaimDataAddPermission: true,
+          hasClaimDataChangePermission: true,
         },
       });
       console.log(" 'admin' role created successfully.");

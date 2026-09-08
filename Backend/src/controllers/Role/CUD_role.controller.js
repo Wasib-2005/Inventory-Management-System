@@ -71,7 +71,10 @@ export const updateRole = async (req, res) => {
   }
 
   try {
-    const roleInDD = await Role.findById(roleData._id);
+    const roleInDD = await Role.findOne({
+      _id: roleData._id,
+      isDeleted: { $ne: true },
+    });
     if (!roleInDD) {
       return res.status(404).json({ message: "Role not found." });
     }
@@ -139,7 +142,10 @@ export const deleteRole = async (req, res) => {
   }
 
   try {
-    const roleToDelete = await Role.findById(id);
+    const roleToDelete = await Role.findOne({
+      _id: id,
+      isDeleted: { $ne: true },
+    });
     if (!roleToDelete) {
       return res
         .status(404)
@@ -160,13 +166,28 @@ export const deleteRole = async (req, res) => {
       });
     }
 
-    await Role.findByIdAndDelete(id);
+    roleToDelete.isDeleted = true;
+    roleToDelete.deletedAt = new Date();
+    roleToDelete.deletedBy = req.userId;
+    roleToDelete.updatedBy = req.userId;
+    await roleToDelete.save();
 
     return res.status(200).json({
-      message: `The "${roleToDelete.roleTitle}" role has been successfully deleted.`,
+      message: `The "${roleToDelete.roleTitle}" role has been moved to the recycle bin.`,
     });
   } catch (error) {
     console.error("Error inside deleteRole controller:", error);
     return res.status(500).json({ message: "Internal server error." });
   }
+};
+
+export const restoreRole = async (req, res) => {
+  const role = await Role.findOne({ _id: req.params.id, isDeleted: true });
+  if (!role) return res.status(404).json({ message: "Deleted role not found." });
+  role.isDeleted = false;
+  role.deletedAt = null;
+  role.deletedBy = null;
+  role.updatedBy = req.userId;
+  await role.save();
+  return res.status(200).json({ message: "Role restored successfully.", role });
 };

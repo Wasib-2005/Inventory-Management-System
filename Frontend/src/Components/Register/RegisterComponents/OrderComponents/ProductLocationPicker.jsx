@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { FiX, FiBox, FiLayers, FiAlertTriangle, FiZap } from "react-icons/fi";
+import { formatNumber } from "../../../../utility/formatNumber";
 
 // Shown when a product's shelveData has more than one entry — forces the
 // user to pick which physical shelf this order line is pulled from, so the
@@ -116,7 +117,7 @@ const ProductLocationPicker = ({ product, onConfirm, onCancel }) => {
 
         <div>
           <label className="block text-[10px] font-bold text-emerald-700/60 uppercase mb-1">
-            Shelf
+            Shelves
           </label>
           <div className="relative">
             <FiLayers
@@ -135,7 +136,7 @@ const ProductLocationPicker = ({ product, onConfirm, onCancel }) => {
                   inStock > 0 && warningStock > 0 && inStock <= warningStock;
                 return (
                   <option key={s.shelfId} value={s.shelfId}>
-                    {s.shelfCode} — {inStock} in stock{lowFlag ? " (low)" : ""}
+                    {s.shelfCode} — {formatNumber(inStock)} in stock{lowFlag ? " (low)" : ""}
                   </option>
                 );
               })}
@@ -153,7 +154,7 @@ const ProductLocationPicker = ({ product, onConfirm, onCancel }) => {
           <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5">
             <FiAlertTriangle size={12} className="shrink-0" />
             This shelf is at or below its warning stock level (
-            {selectedWarningStock}).
+            {formatNumber(selectedWarningStock)}).
           </p>
         )}
 
@@ -178,8 +179,8 @@ const ProductLocationPicker = ({ product, onConfirm, onCancel }) => {
         {isTotalLowStock && (
           <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5">
             <FiAlertTriangle size={12} className="shrink-0" />
-            Total stock ({totalStock}) is at or below the combined warning level
-            ({totalWarningStock}).
+            Total stock ({formatNumber(totalStock)}) is at or below the combined warning level
+            ({formatNumber(totalWarningStock)}).
           </p>
         )}
       </div>

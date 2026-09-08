@@ -2,6 +2,8 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { FiX, FiAlertTriangle, FiPackage } from "react-icons/fi";
 import { completeOrder, payOrder } from "./api";
+import CashMemoModal from "./OrderComponents/Cashmemomodal";
+
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 
@@ -16,6 +18,10 @@ const OrderActionModal = ({ order, onClose, onUpdated }) => {
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Set on success — while this is non-null we render only the receipt,
+  // and only call the real onClose once that's dismissed.
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
   const entered = Number(amount) || 0;
   const change = Math.max(entered - dueAmount, 0);
@@ -41,10 +47,10 @@ const OrderActionModal = ({ order, onClose, onUpdated }) => {
       setIsSubmitting(true);
       try {
         const completeRes = await completeOrder(order._id);
-        onUpdated(order._id, {
-          status: completeRes.data?.data?.status || "complete",
-        });
-        onClose();
+        const nextStatus = completeRes.data?.data?.status || "complete";
+        onUpdated(order._id, { status: nextStatus });
+        // Show the receipt instead of closing straight away.
+        setReceiptOrder({ ...order, status: nextStatus });
       } catch (err) {
         setError(err.response?.data?.message || "Could not confirm order");
       } finally {
@@ -73,7 +79,7 @@ const OrderActionModal = ({ order, onClose, onUpdated }) => {
         nextStatus = completeRes.data?.data?.status || "complete";
       }
 
-      onUpdated(order._id, {
+      const patch = {
         payment: {
           ...order.payment,
           paidAmount: updatedPaid,
@@ -81,14 +87,29 @@ const OrderActionModal = ({ order, onClose, onUpdated }) => {
         },
         dueAmount: stillDue,
         status: nextStatus,
-      });
-      onClose();
+      };
+
+      onUpdated(order._id, patch);
+      // Show the receipt instead of closing straight away.
+      setReceiptOrder({ ...order, ...patch });
     } catch (err) {
       setError(err.response?.data?.message || "Could not record payment");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (receiptOrder) {
+    return (
+      <CashMemoModal
+        order={receiptOrder}
+        onClose={() => {
+          setReceiptOrder(null);
+          onClose();
+        }}
+      />
+    );
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3">
@@ -119,7 +140,7 @@ const OrderActionModal = ({ order, onClose, onUpdated }) => {
                   className="flex items-center justify-between text-xs"
                 >
                   <span className="text-emerald-900 font-medium truncate pr-2">
-                    {item.name || item.product?.name} × {item.quantity || item.qty}
+                    {item.name || item.product?.name} × {Number(item.quantity || item.qty || 0).toLocaleString()}
                   </span>
                   <span className="text-emerald-700/70 font-semibold shrink-0">
                     {currency}

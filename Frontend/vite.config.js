@@ -10,7 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const isHttps = env.VITE_IS_HTTPS === "true";
-  const backendHost = env.VITE_BACKEND_API_HEADER;
+  const configuredBackend = env.VITE_BACKEND_API_HEADER || "localhost:5000";
+  const backendTarget = /^https?:\/\//.test(configuredBackend)
+    ? configuredBackend
+    : `${isHttps ? "https" : "http"}://${configuredBackend}`;
 
   return {
     plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
@@ -28,10 +31,9 @@ export default defineConfig(({ mode }) => {
       }),
       proxy: {
         "/api": {
-          target: `${isHttps ? "https" : "http"}://${backendHost}`,
+          target: backendTarget,
           secure: false,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
         },
       },
     },

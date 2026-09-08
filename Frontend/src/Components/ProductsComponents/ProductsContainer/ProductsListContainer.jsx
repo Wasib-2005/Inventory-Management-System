@@ -96,7 +96,7 @@ const ProductsListContainer = ({
   }
 
   return (
-    <div className="grid gap-3 py-5">
+    <div className="grid min-w-0 max-w-full gap-3 py-5">
       {filteredProducts.map((productData) => (
         <ProductsList
           key={productData._id}

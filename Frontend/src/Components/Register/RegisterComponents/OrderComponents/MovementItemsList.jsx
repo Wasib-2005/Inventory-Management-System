@@ -1,4 +1,6 @@
 import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
+import LocationPicker from "./LocationPicker";
+import { formatNumber } from "../../../../utility/formatNumber";
 
 const QTY_LABELS = {
   inbound: "Qty Received",
@@ -6,7 +8,7 @@ const QTY_LABELS = {
   count: "Counted Qty",
 };
 
-const MovementItemsList = ({ type, items, onUpdateItem, onRemoveItem }) => {
+const MovementItemsList = ({ type, items, onUpdateItem, onRemoveItem, warehouse }) => {
   const isCount = type === "count";
 
   if (items.length === 0) {
@@ -113,7 +115,7 @@ const MovementItemsList = ({ type, items, onUpdateItem, onRemoveItem }) => {
                         outOfStock ? "text-rose-600" : "text-emerald-900"
                       }`}
                     >
-                      {stock}
+                      {formatNumber(stock)}
                     </p>
                   </div>
 
@@ -122,7 +124,7 @@ const MovementItemsList = ({ type, items, onUpdateItem, onRemoveItem }) => {
                       Resulting Stock
                     </label>
                     <p className="text-xs font-black text-emerald-700 py-1">
-                      {type === "inbound" ? stock + qty : stock - qty}
+                      {formatNumber(type === "inbound" ? stock + qty : stock - qty)}
                     </p>
                   </div>
                 </>
@@ -131,8 +133,16 @@ const MovementItemsList = ({ type, items, onUpdateItem, onRemoveItem }) => {
 
             {overDispatch && (
               <p className="mt-1.5 text-[10px] font-bold text-rose-600">
-                ⚠ Dispatch quantity exceeds current stock ({stock})
+                ⚠ Dispatch quantity exceeds current stock ({formatNumber(stock)})
               </p>
+            )}
+            {type === "outbound" && (
+              <LocationPicker
+                warehouse={warehouse}
+                value={item.sourceLocation}
+                onChange={(sourceLocation) => onUpdateItem(item.cartId, { sourceLocation })}
+                label="Pick from source rack and shelves"
+              />
             )}
           </div>
         );

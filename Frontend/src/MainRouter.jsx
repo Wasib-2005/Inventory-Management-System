@@ -1,6 +1,6 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import App from "./App";
-import Home from "./Pages/Home/Home";
 import AuthPage from "./Pages/Auth/AuthPage";
 import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
 import RoleManagement from "./Pages/RolePage/RoleManagement";
@@ -10,6 +10,15 @@ import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
 import Warehouse from "./Pages/Warehouse/Warehouse";
 import Register from "./Pages/Register/Register";
 import ProtectedRouteWarehouse from "./ProtectedRoute/ProtectedRouteWarehouse";
+import RecycleBin from "./Pages/RecycleBin/RecycleBin";
+
+const Home = lazy(() => import("./Pages/Home/Home"));
+
+const dashboardFallback = (
+  <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
+    Loading dashboard...
+  </div>
+);
 
 const MainRouter = createBrowserRouter([
   {
@@ -22,7 +31,11 @@ const MainRouter = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Home />,
+        element: (
+          <Suspense fallback={dashboardFallback}>
+            <Home />
+          </Suspense>
+        ),
       },
       {
         path: "/register/:selection/*",
@@ -45,6 +58,10 @@ const MainRouter = createBrowserRouter([
       {
         path: "/warehouse",
         element: <Warehouse />,
+      },
+      {
+        path: "/recycle-bin",
+        element: <RecycleBin />,
       },
     ],
   },

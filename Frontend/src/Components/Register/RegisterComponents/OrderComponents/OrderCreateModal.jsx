@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
@@ -7,9 +7,16 @@ import CustomerInfoFields from "./CustomerInfoFields";
 import ProductSearchPanel from "./ProductSearchPanel";
 import CartItemsList from "./CartItemsList";
 import CheckoutSummary from "./CheckoutSummary";
-import { createOrder, completeOrder, deliverOrder, confirmOrder, searchProductsByBarcode } from "../api";
+import {
+  createOrder,
+  completeOrder,
+  deliverOrder,
+  confirmOrder,
+  searchProductsByBarcode,
+} from "../api";
 import useBarcodeScanner from "../../../../Hooks/useBarcodeScanner";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
+import CashMemoModal from "./Cashmemomodal";
 
 let cartLineSeq = 0;
 
@@ -29,6 +36,14 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
   const [payAmount, setPayAmount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Receipt shown right after a successful save. Kept as component state
+  // (not gated behind `isOpen`) so it survives handleClose() flipping
+  // isOpen to false — see the guard below.
+  const [receiptOrder, setReceiptOrder] = useState(null);
+  // The delivered/mark-complete follow-up Swal flow runs *after* the
+  // receipt is dismissed, so it's stashed here rather than run inline.
+  const followUpRef = useRef(null);
 
   const { selectedWarehouseId } = useContext(WareHouseContext);
 
@@ -223,7 +238,9 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
 
   useBarcodeScanner(handleBarcodeScanned, isOpen);
 
-  if (!isOpen) return null;
+  // Stays mounted (rendering only the receipt) even after isOpen flips to
+  // false, so the receipt modal isn't unmounted mid-flow by handleClose().
+  if (!isOpen && !receiptOrder) return null;
 
   const subtotal = items.reduce(
     (sum, item) => sum + (Number(item.qty) || 0) * (Number(item.price) || 0),
@@ -235,9 +252,6 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
     subtotal,
   );
   const total = Math.max(subtotal - discountAmount, 0);
-
-  // ⬇️ DELETE the old handleSelectProduct that used to be here (the
-  // duplicate, now that it's moved above)
 
   const handleUpdateItem = (cartId, patch) => {
     setItems((prev) =>
@@ -263,7 +277,17 @@ const OrderCreateModal = ({ isOpen, onClose, onCreated }) => {
     onClose();
   };
 
-const handleSubmit = async () => {
+  // Runs once the receipt modal is dismissed — this is exactly the
+  // delivered/mark-complete logic that used to run right after saving,
+  // just deferred so the receipt appears first.
+  const handleReceiptClose = async () => {
+    setReceiptOrder(null);
+    const followUp = followUpRef.current;
+    followUpRef.current = null;
+    await followUp?.();
+  };
+
+  const handleSubmit = async () => {
     setError("");
 
     // Validation
@@ -340,66 +364,80 @@ const handleSubmit = async () => {
       const res = await createOrder(orderPayload);
       const savedOrder = res.data?.data;
       onCreated?.(savedOrder);
+
+      // Capture these now — resetForm()/handleClose() below zero out the
+      // payAmount state, and the follow-up needs the values as they were
+      // at submit time.
+      const paidAtSubmit = paid;
+      const totalAtSubmit = total;
+
       handleClose();
 
-      // Paid in full (or more) — ask whether it already went out the door.
-      if (paid >= total) {
-        const result = await Swal.fire({
-          icon: "question",
-          title: "Was it delivered?",
-          text: "Have the products already been handed over to the customer?",
-          showCancelButton: true,
-          confirmButtonText: "Yes, delivered",
-          cancelButtonText: "Not yet",
-          confirmButtonColor: "#1D9E75",
-        });
-
-        try {
-          if (result.isConfirmed) {
-            await deliverOrder(savedOrder._id);
-          } else {
-            await confirmOrder(savedOrder._id);
-          }
-        } catch (err) {
-          Swal.fire({
-            icon: "error",
-            title: "Could not update order status",
-            text: err.response?.data?.message || "Please try again.",
+      // Defer the delivered/mark-complete conversation until after the
+      // person has had a chance to print the receipt.
+      followUpRef.current = async () => {
+        // Paid in full (or more) — ask whether it already went out the door.
+        if (paidAtSubmit >= totalAtSubmit) {
+          const result = await Swal.fire({
+            icon: "question",
+            title: "Was it delivered?",
+            text: "Have the products already been handed over to the customer?",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delivered",
+            cancelButtonText: "Not yet",
+            confirmButtonColor: "#1D9E75",
           });
-        }
-        return;
-      }
 
-      // Not fully paid — offer the existing "mark complete later" path.
-      if (savedOrder?.status !== "complete") {
-        const result = await Swal.fire({
-          icon: "warning",
-          title: "Order is pending",
-          text: "This order hasn't been marked complete yet.",
-          showCancelButton: true,
-          confirmButtonText: "Mark Complete",
-          cancelButtonText: "Later",
-          confirmButtonColor: "#1D9E75",
-        });
-
-        if (result.isConfirmed) {
           try {
-            await completeOrder(savedOrder._id);
-            await Swal.fire({
-              icon: "success",
-              title: "Order completed",
-              timer: 1500,
-              showConfirmButton: false,
-            });
+            if (result.isConfirmed) {
+              await deliverOrder(savedOrder._id);
+            } else {
+              await confirmOrder(savedOrder._id);
+            }
           } catch (err) {
             Swal.fire({
               icon: "error",
-              title: "Could not complete order",
+              title: "Could not update order status",
               text: err.response?.data?.message || "Please try again.",
             });
           }
+          return;
         }
-      }
+
+        // Not fully paid — offer the existing "mark complete later" path.
+        if (savedOrder?.status !== "complete") {
+          const result = await Swal.fire({
+            icon: "warning",
+            title: "Order is pending",
+            text: "This order hasn't been marked complete yet.",
+            showCancelButton: true,
+            confirmButtonText: "Mark Complete",
+            cancelButtonText: "Later",
+            confirmButtonColor: "#1D9E75",
+          });
+
+          if (result.isConfirmed) {
+            try {
+              await completeOrder(savedOrder._id);
+              await Swal.fire({
+                icon: "success",
+                title: "Order completed",
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            } catch (err) {
+              Swal.fire({
+                icon: "error",
+                title: "Could not complete order",
+                text: err.response?.data?.message || "Please try again.",
+              });
+            }
+          }
+        }
+      };
+
+      // Show the receipt now — the follow-up above runs once it's closed.
+      setReceiptOrder(savedOrder);
     } catch (err) {
       setError(err.response?.data?.message || "Could not create order");
     } finally {
@@ -407,9 +445,13 @@ const handleSubmit = async () => {
     }
   };
 
+  if (receiptOrder) {
+    return <CashMemoModal order={receiptOrder} onClose={handleReceiptClose} />;
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-2xl min-w-0 bg-white rounded-2xl shadow-xl flex flex-col max-h-[calc(100vh-1.5rem)] sm:max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-emerald-300/30">
           <div className="flex items-center gap-2">
             <FiShoppingCart className="text-emerald-600" size={18} />
@@ -424,7 +466,7 @@ const handleSubmit = async () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-5 flex flex-col gap-4">
           <div>
             <h4 className="text-xs font-bold text-emerald-800 tracking-wide uppercase mb-2">
               Customer Details

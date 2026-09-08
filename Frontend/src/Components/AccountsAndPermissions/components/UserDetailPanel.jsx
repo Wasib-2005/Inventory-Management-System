@@ -5,6 +5,7 @@ import UserAvatar from "./UserAvatar";
 import { InfoTab, AddressTab, EmergencyTab, FlagsTab } from "./DetailTabs";
 import { HiMiniXMark } from "react-icons/hi2";
 import { commonComponentBG } from "../../../Theme/commonComponentBG";
+import { AnimatePresence, motion } from "framer-motion";
 
 const TABS = ["Info", "Address", "Emergency", "Flags"];
 
@@ -44,7 +45,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   };
 
   const handleDelete = () => {
-    if (confirm(`Delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) {
+    if (confirm(`Move ${user.firstName} ${user.lastName} to the recycle bin?`)) {
       onDelete(user._id);
     }
   };
@@ -53,7 +54,12 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
   const tabProps = { user: current, editing, onChange: handleChange };
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")} overflow-auto`}>
+    <motion.div
+      initial={{ opacity: 0, x: -18 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 280, damping: 28 }}
+      className={`flex flex-col h-full overflow-hidden ${commonComponentBG("l")} overflow-auto`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-(--color-border-tertiary) shrink-0 bg-(--color-background-primary)">
         <div className="flex items-center gap-2 text-[13px] font-medium text-(--color-text-secondary)">
@@ -74,23 +80,40 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3.5 py-2 text-[12px] font-medium border-b-2 transition-colors
+            className={`relative px-3.5 py-2 text-[12px] font-medium border-b-2 transition-colors
               ${activeTab === tab
                 ? "text-[#1D9E75] border-[#1D9E75]"
                 : "text-(--color-text-tertiary) border-transparent hover:text-(--color-text-secondary)"
               }`}
           >
             {tab}
+            {activeTab === tab && (
+              <motion.span
+                layoutId="accounts-active-tab"
+                className="absolute inset-x-1 -bottom-px h-0.5 rounded-full bg-[#1D9E75]"
+                transition={{ type: "spring", stiffness: 500, damping: 32 }}
+              />
+            )}
           </button>
         ))}
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {activeTab === "Info" && <InfoTab {...tabProps} />}
-        {activeTab === "Address" && <AddressTab {...tabProps} />}
-        {activeTab === "Emergency" && <EmergencyTab {...tabProps} />}
-        {activeTab === "Flags" && <FlagsTab {...tabProps} />}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+          >
+            {activeTab === "Info" && <InfoTab {...tabProps} />}
+            {activeTab === "Address" && <AddressTab {...tabProps} />}
+            {activeTab === "Emergency" && <EmergencyTab {...tabProps} />}
+            {activeTab === "Flags" && <FlagsTab {...tabProps} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Action bar */}
@@ -130,7 +153,7 @@ const UserDetailPanel = ({ user, onSave, onDelete, setSelectedId }) => {
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiCheck, FiX, FiArrowRight, FiSearch } from "react-icons/fi";
 import { getDebtCredit, payDebtCredit, searchDebtCredit, getTotalDebt } from "./api";
+import { formatNumber } from "../../../utility/formatNumber";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 const LIMIT = 15;
@@ -100,7 +101,7 @@ const LedgerRow = ({ account, onSettled }) => {
         <div className="text-right shrink-0">
           <span className="block font-black text-amber-600 text-lg">
             {currency}
-            {currentDue.toLocaleString()}
+            {formatNumber(currentDue)}
           </span>
           <span
             className={`inline-block text-xs font-bold uppercase px-2 py-0.5 rounded-full border mt-1 ${
@@ -131,7 +132,7 @@ const LedgerRow = ({ account, onSettled }) => {
                   <span className="block text-xs font-bold text-emerald-700/50 uppercase">Due</span>
                   <span className="text-base font-black text-amber-600">
                     {currency}
-                    {currentDue.toLocaleString()}
+                    {formatNumber(currentDue)}
                   </span>
                 </div>
                 <FiArrowRight size={14} className="text-emerald-700/30 shrink-0" />
@@ -145,7 +146,7 @@ const LedgerRow = ({ account, onSettled }) => {
                     }`}
                   >
                     {currency}
-                    {(returnAmount > 0 ? returnAmount : newDue).toLocaleString()}
+                    {formatNumber(returnAmount > 0 ? returnAmount : newDue)}
                   </span>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { commonComponentBG } from "../../../Theme/commonComponentBG";
 import WarehouseGroupToggle from "./WarehouseGroupToggle";
 import WarehouseRackSection from "./WarehouseRackSection";
 import { computeRackStats, groupRacks } from "../utils";
+import { formatNumber } from "../../../utility/formatNumber";
 
 // racks: flat array from warehouse.rackdata (already populated with shelfData/productData)
 const WarehouseRackContainer = ({
@@ -33,7 +34,7 @@ const WarehouseRackContainer = ({
         </h2>
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="text-[11px] font-semibold text-emerald-700/50">
-            {totalItems} items stored
+            {formatNumber(totalItems)} items stored
           </span>
           <WarehouseGroupToggle groupBy={groupBy} onChange={onGroupByChange} />
           <button

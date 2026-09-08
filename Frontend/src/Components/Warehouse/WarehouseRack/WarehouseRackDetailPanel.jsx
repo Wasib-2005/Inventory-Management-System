@@ -26,7 +26,7 @@ const WarehouseRackDetailPanel = ({ selectedRack, onClose, onAddShelf }) => {
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-sm transition-colors"
               >
                 <Plus size={12} />
-                Add Shelf
+                Add Shelve
               </button>
               <button
                 onClick={onClose}

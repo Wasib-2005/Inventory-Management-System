@@ -4,6 +4,7 @@ import { TbSearch, TbPackage, TbBuildingWarehouse, TbX } from "react-icons/tb";
 import { commonComponentBG } from "../../Theme/commonComponentBG";
 import { commonFieldColour } from "../../Theme/commonFieldColour";
 import { commonInputField } from "../../Theme/commonInputField";
+import { formatNumber } from "../../utility/formatNumber";
 
 // racks: flat array from the selected warehouse's rackdata (populated)
 // onLocateRack(rackCode): parent scrolls to + flashes the matching rack
@@ -45,8 +46,8 @@ const WarehouseProductSearch = ({ racks, onLocateRack }) => {
               type: "product",
               label: name || sku,
               sublabel: `Rack ${rack.rackCode} · ${shelf.shelfCode} · ${
-                p.stock?.inStock ?? 0
-              }/${p.stock?.maxStock ?? 0}`,
+                formatNumber(p.stock?.inStock ?? 0)
+              }/${formatNumber(p.stock?.maxStock ?? 0)}`,
               rackCode: rack.rackCode,
             });
           }

@@ -108,9 +108,20 @@ const FilterCreateIndex = () => {
     }
   };
 
-  const handleDelete = (_id) => {
-    setUsers((prev) => prev.filter((u) => u._id !== _id));
-    setSelectedId(null);
+  const handleDelete = async (_id) => {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_API_HEADER}/api/delete_account/${_id}`,
+        { withCredentials: true },
+      );
+      setUsers((prev) => prev.filter((u) => u._id !== _id));
+      setSelectedId(null);
+      toast.success("User moved to the recycle bin");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || error.message || "Failed to delete user",
+      );
+    }
   };
 
   const handleCreate = (formData) => {

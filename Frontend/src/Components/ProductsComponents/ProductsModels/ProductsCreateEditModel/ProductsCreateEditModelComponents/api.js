@@ -13,13 +13,28 @@ export const createCategory = (payload) =>
   axios.post(`${API_BASE}/category`, payload, { withCredentials: true });
 
 export const updateCategory = (id, payload) =>
-  axios.patch(`${API_BASE}/api/category/update/${id}`, payload);
+  axios.patch(`${API_BASE}/category/update/${id}`, payload, {
+    withCredentials: true,
+  });
 
 export const updateSupplier = (id, payload) =>
-  axios.patch(`${API_BASE}/api/supplier/update/${id}`, payload);
+  axios.patch(`${API_BASE}/suppliers/update/${id}`, payload, {
+    withCredentials: true,
+  });
 
 export const deleteCategory = (categoryId) =>
-  axios.delete(`${API_BASE}/category/${categoryId}`, { withCredentials: true });
+  axios.delete(
+    `${API_BASE}/category/${categoryId}`,
+
+    { withCredentials: true },
+  );
+
+export const restoreCategory = (id) =>
+  axios.patch(
+    `${API_BASE}/category/restore/${id}`,
+    {},
+    { withCredentials: true },
+  );
 
 export const searchSuppliers = (search, signal) =>
   axios.get(`${API_BASE}/suppliers`, {
@@ -36,8 +51,19 @@ export const deleteSupplier = (supplierId) =>
     withCredentials: true,
   });
 
+export const restoreSupplier = (id) =>
+  axios.patch(
+    `${API_BASE}/suppliers/restore/${id}`,
+    {},
+    { withCredentials: true },
+  );
+
 export const searchTags = (search, signal) =>
-  axios.get(`${API_BASE}/tags`, { params: { search }, signal });
+  axios.get(`${API_BASE}/product/tags`, {
+    params: { search },
+    signal,
+    withCredentials: true,
+  });
 
 export const getProduct = (productId) =>
   axios.get(`${API_BASE}/product/get/${productId}`, { withCredentials: true });

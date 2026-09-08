@@ -16,7 +16,7 @@ export const createShelves = async (req, res) => {
   if (!shelfCode || !rackId || !warehouse_Id) {
     return res
       .status(400)
-      .json({ message: "Shelf Code, Rack ID and Warehouse Id are required." });
+      .json({ message: "Shelve Code, Rack ID and Warehouse Id are required." });
   }
 
   const session = await mongoose.startSession();
@@ -29,7 +29,7 @@ export const createShelves = async (req, res) => {
       logger.warn({ shelfCode }, "Creation aborted: Shelf code already exists");
       await session.abortTransaction();
       session.endSession();
-      return res.status(400).json({ message: "Shelf code already exists." });
+      return res.status(400).json({ message: "Shelve code already exists." });
     }
 
     const [newShelve] = await Shelve.create(
@@ -61,12 +61,12 @@ export const createShelves = async (req, res) => {
 
     logger.info(
       { _id: newShelve._id, shelfCode },
-      "Shelf created successfully",
+      "Shelve created successfully",
     );
 
     return res.status(201).json({
       success: true,
-      message: "Shelf created successfully.",
+      message: "Shelve created successfully.",
       data: newShelve,
     });
   } catch (error) {

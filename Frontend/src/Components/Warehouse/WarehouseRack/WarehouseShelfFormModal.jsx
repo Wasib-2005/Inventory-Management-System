@@ -66,7 +66,7 @@ const WarehouseShelfFormModal = ({
 
       onClose();
     } catch (err) {
-      setError(err?.message || "Failed to save shelf.");
+      setError(err?.message || "Failed to save shelve.");
       setIsSubmitting(false);
     }
   };
@@ -114,7 +114,7 @@ const WarehouseShelfFormModal = ({
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-900/60 flex items-center gap-1.5">
                 <TbLayersLinked size={14} />
-                {isEdit ? `Edit Shelf in ${rack.rackCode}` : `Add Shelf to ${rack.rackCode}`}
+                {isEdit ? `Edit Shelve in ${rack.rackCode}` : `Add Shelve to ${rack.rackCode}`}
               </h3>
               <button
                 type="button"
@@ -158,7 +158,7 @@ const WarehouseShelfFormModal = ({
                   disabled={isSubmitting}
                   value={shelfCode}
                   onChange={(e) => setShelfCode(e.target.value)}
-                  placeholder="Shelf Code (e.g., SHELF-SECURE-A)"
+                  placeholder="Shelve Code (e.g., SHELVE-SECURE-A)"
                   className={`${commonInputField} pl-8 disabled:opacity-60`}
                 />
               </div>
@@ -213,7 +213,7 @@ const WarehouseShelfFormModal = ({
                   style={{ backgroundColor: PALETTE.mint, color: "#fff" }}
                 >
                   {isEdit ? <TbEdit size={15} /> : <TbPlus size={15} />}
-                  {isSubmitting ? "Saving..." : isEdit ? "Save" : "Add Shelf"}
+                  {isSubmitting ? "Saving..." : isEdit ? "Save" : "Add Shelve"}
                 </button>
               </div>
             </form>

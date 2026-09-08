@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { useGetName } from "../../Hooks/userGetAppName";
 import { Helmet } from "react-helmet-async";
 import { commonInputField } from "../../Theme/commonInputField";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiShield } from "react-icons/fi";
 
 const RoleManagement = () => {
   const pageName = `Role Management | ${useGetName}`;
@@ -107,20 +109,40 @@ const RoleManagement = () => {
 
   return (
     <div
-      className={` ${commonComponentBG("r")} overflow-auto p-6 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
+      className={`role-management-page ${commonComponentBG("r")} overflow-auto p-3 sm:p-5 lg:p-7 rounded-r-2xl ${showRoleModel && "overflow-hidden"} h-full`}
     >
       <Helmet>
         <title>{pageName}</title>
       </Helmet>
       {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Role Management</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Manage roles and their permissions
-        </p>
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 p-5 sm:p-7 mb-5 shadow-lg">
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-emerald-200">
+              <FiShield size={18} />
+              <span className="text-xs font-bold uppercase tracking-[0.2em]">Access control</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white">Role Management</h1>
+            <p className="mt-1 text-sm text-emerald-100/75">
+              Build secure roles and control every permission from one place.
+            </p>
+          </div>
+          <div className="flex gap-2 text-xs font-bold text-emerald-950">
+            <div className="rounded-xl bg-white/90 px-3 py-2 shadow-sm">
+              <span className="block text-lg">{roles.length}</span>
+              <span className="text-emerald-800/60">Roles</span>
+            </div>
+            <div className="rounded-xl bg-emerald-300/90 px-3 py-2 shadow-sm">
+              <span className="block text-lg">{Object.keys(roles[0]?.permissions || {}).length || 0}</span>
+              <span className="text-emerald-950/60">Permission keys</span>
+            </div>
+          </div>
+        </div>
+        <div className="role-hero-orb role-hero-orb-one" aria-hidden="true" />
+        <div className="role-hero-orb role-hero-orb-two" aria-hidden="true" />
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-5">
         {/* Search bar */}
         <div className={`${commonComponentBG()} overflow-visible w-full`}>
           <div className="relative">
@@ -142,11 +164,11 @@ const RoleManagement = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search roles..."
-              className={`${commonInputField} pl-10`}
+              className={`${commonInputField} pl-10 bg-white/80 border-emerald-200 focus:ring-2 focus:ring-emerald-300`}
             />
           </div>
         </div>
-        <div>
+        <div className="sm:shrink-0">
           <CreateRole
             setRoles={setRoles}
             showRoleModel={showRoleModel}
@@ -178,16 +200,26 @@ const RoleManagement = () => {
           No roles found
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {roles.map((role) => (
-            <RoleCard
-              key={role._id}
-              role={role}
-              setRoles={setRoles}
-              onPermissionChange={handlePermissionChange}
-            />
-          ))}
-        </div>
+        <AnimatePresence initial={false}>
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+            {roles.map((role, index) => (
+              <motion.div
+                layout
+                key={role._id}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: -10 }}
+                transition={{ delay: Math.min(index * 0.04, 0.2), type: "spring", stiffness: 280, damping: 25 }}
+              >
+                <RoleCard
+                  role={role}
+                  setRoles={setRoles}
+                  onPermissionChange={handlePermissionChange}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );

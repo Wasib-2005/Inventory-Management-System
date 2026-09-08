@@ -2,6 +2,7 @@ import { FaCartFlatbedSuitcase, FaUsersGear } from "react-icons/fa6";
 import { PiWarehouseBold } from "react-icons/pi";
 import { IoPersonSharp } from "react-icons/io5";
 import { MdSpaceDashboard } from "react-icons/md";
+import { MdDeleteSweep } from "react-icons/md";
 import { FaCashRegister } from "react-icons/fa";
 const icon = 25;
 const NavLinks = [
@@ -29,6 +30,11 @@ const NavLinks = [
     label: <FaUsersGear size={icon} />,
     path: "/role-management",
     name: "Role Control Role Control",
+  },
+  {
+    label: <MdDeleteSweep size={icon} />,
+    path: "/recycle-bin",
+    name: "Recycle Bin",
   },
   {
     label: <IoPersonSharp size={icon} />,

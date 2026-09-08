@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FiTrash2, FiLayers, FiPlus } from "react-icons/fi";
 import ProductSearchPanel from "./ProductSearchPanel";
 import MovementItemsList from "./MovementItemsList";
-
 const CycleCountShelfEntry = ({
   entry,
   index,
@@ -86,7 +85,7 @@ const CycleCountShelfEntry = ({
           type="button"
           onClick={() => onRemoveEntry(entry.id)}
           className="p-1.5 text-purple-700/40 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors shrink-0"
-          title="Remove shelf"
+          title="Remove shelve"
         >
           <FiTrash2 size={13} />
         </button>

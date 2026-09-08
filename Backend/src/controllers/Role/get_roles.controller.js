@@ -5,7 +5,7 @@ import User from "../../models/user.model.js";
 
 export const getRoles = async (req, res) => {
   try {
-    const roles = await Role.find().populate(
+    const roles = await Role.find({ isDeleted: { $ne: true } }).populate(
       "updatedBy",
       "username email displayName",
     );
@@ -22,7 +22,7 @@ export const getRoles = async (req, res) => {
 export const getRolesForEditing = async (req, res) => {
   try {
     console.log("get-role-for-edit");
-    const roles = await Role.find().populate(
+    const roles = await Role.find({ isDeleted: { $ne: true } }).populate(
       "updatedBy",
       "username email displayName",
     );
@@ -31,4 +31,12 @@ export const getRolesForEditing = async (req, res) => {
   } catch (error) {
     res.status(500);
   }
+};
+
+export const getDeletedRoles = async (req, res) => {
+  const roles = await Role.find({ isDeleted: true })
+    .sort({ deletedAt: -1 })
+    .populate("deletedBy", "username displayName email")
+    .lean();
+  return res.status(200).json({ success: true, data: roles });
 };

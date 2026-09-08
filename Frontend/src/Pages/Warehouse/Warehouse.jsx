@@ -375,7 +375,7 @@ const Warehouse = () => {
     } catch (error) {
       console.error("Error creating shelf:", error);
       return {
-        error: error?.response?.data?.message || "Failed to create shelf.",
+        error: error?.response?.data?.message || "Failed to create shelve.",
       };
     }
   };
@@ -390,15 +390,15 @@ const Warehouse = () => {
     } catch (error) {
       console.error("Error updating shelf:", error);
       return {
-        error: error?.response?.data?.message || "Failed to update shelf.",
+        error: error?.response?.data?.message || "Failed to update shelve.",
       };
     }
   };
 
   const handleDeleteShelf = async (shelfId) => {
     const confirmDelete = await sweetalert2.fire({
-      title: "Delete this shelf?",
-      text: "This will remove the shelf and its products.",
+      title: "Delete this shelve?",
+      text: "This will remove the shelve and its products.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
@@ -416,7 +416,7 @@ const Warehouse = () => {
     } catch (error) {
       console.error("Error deleting shelf:", error);
       return {
-        error: error?.response?.data?.message || "Failed to delete shelf.",
+        error: error?.response?.data?.message || "Failed to delete shelve.",
       };
     }
   };
@@ -451,7 +451,7 @@ const Warehouse = () => {
     } catch (error) {
       console.error("Error restoring shelf:", error);
       return {
-        error: error?.response?.data?.message || "Failed to restore shelf.",
+        error: error?.response?.data?.message || "Failed to restore shelve.",
       };
     }
   };
@@ -481,7 +481,7 @@ const Warehouse = () => {
       await loadWarehouseDetail(selectedWarehouseId);
       return {};
     } catch (error) {
-      console.error("Error adding product to shelf:", error);
+      console.error("Error adding product to shelve:", error);
       return {
         error: error?.response?.data?.message || "Failed to add product.",
       };
@@ -490,7 +490,7 @@ const Warehouse = () => {
 
   const handleRemoveProductFromShelf = async (shelfId, productId) => {
     const confirmDelete = await sweetalert2.fire({
-      title: "Remove this product from the shelf?",
+      title: "Remove this product from the shelve?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, remove it",

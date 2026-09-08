@@ -5,6 +5,7 @@ import { searchProductsByName, searchProductsByBarcode } from "../api";
 import { WareHouseContext } from "../../../../Contexts/WareHouseContext/WareHouseContext";
 import ProductLocationPicker from "./ProductLocationPicker";
 import { makeImageUrl } from "../../../../Service/auth/makeImageUrl";
+import { formatNumber } from "../../../../utility/formatNumber";
 
 const currency = import.meta.env.VITE_CURRENCY_SYMBOL;
 const WARN_DURATION = 3000;
@@ -227,8 +228,8 @@ const ProductSearchPanel = ({ onSelectProduct }) => {
                       {outOfStock
                         ? "Out of stock"
                         : shelves.length > 1
-                          ? `${shelves.length} shelves · Stock: ${stock}`
-                          : `Stock: ${stock}`}
+                          ? `${formatNumber(shelves.length)} shelves · Stock: ${formatNumber(stock)}`
+                          : `Stock: ${formatNumber(stock)}`}
                     </span>
                   </div>
                 </button>

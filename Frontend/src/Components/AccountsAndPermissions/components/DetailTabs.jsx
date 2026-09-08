@@ -3,6 +3,16 @@ import Toggle from "./Toggle";
 import StatusBadge from "./StatusBadge";
 import UserAvatar from "./UserAvatar";
 import ManagerField from "./Fields/ManagerField";
+import { PERMISSION_CONFIG } from "../../RoleManagement/PERMISSION_CONFIG";
+
+const GROUPED_PERMISSIONS = Object.entries(PERMISSION_CONFIG).reduce(
+  (groups, [key, config]) => {
+    if (!groups[config.group]) groups[config.group] = [];
+    groups[config.group].push({ key, label: config.label });
+    return groups;
+  },
+  {},
+);
 
 const SectionTitle = ({ children }) => (
   <div className="text-[13px] font-bold text-(--color-text-tertiary) uppercase tracking-widest mt-4 mb-2 pb-1 first:mt-0">
@@ -296,62 +306,19 @@ export const FlagsTab = ({ user, editing, onChange }) => (
     />
 
     <SectionTitle>Permissions</SectionTitle>
-    <p className="text-[14px] text-black font-bold">
-      Product Related Permissions:
-    </p>
-    <PermissionRow
-      label="Read products"
-      value={user.permissions?.hasReadProductPermission}
-    />
-    <PermissionRow
-      label="Add products"
-      value={user.permissions?.hasAddProductPermission}
-    />
-    <PermissionRow
-      label="Change products"
-      value={user.permissions?.hasProductChangePermission}
-    />
-    <PermissionRow
-      label="Delete products"
-      value={user.permissions?.hasProductDeletePermission}
-    />
-    <p className="text-[14px] text-black font-bold">
-      Role Related Permissions:
-    </p>
-    <PermissionRow
-      label="Read roles"
-      value={user.permissions?.hasReadRolePermission}
-    />
-    <PermissionRow
-      label="Add roles"
-      value={user.permissions?.hasNewRoleAddPermission}
-    />
-    <PermissionRow
-      label="Change role "
-      value={user.permissions?.hasRolePermissionsChangePermission}
-    />
-    <PermissionRow
-      label="Delete roles"
-      value={user.permissions?.hasNewRoleDeletePermission}
-    />
-    <p className="text-[14px] text-black font-bold">
-      User Data Related Permissions:
-    </p>
-    <PermissionRow
-      label="Read user data"
-      value={user.permissions?.hasUserDataReadPermission}
-    />
-    <PermissionRow
-      label="Add user data"
-      value={user.permissions?.hasUserDataAddPermission}
-    />
-    <PermissionRow
-      label="Change user data"
-      value={user.permissions?.hasUserDataChangePermission}
-    />
-    <PermissionRow
-      label="Delete user data"
-      value={user.permissions?.hasUserDataDeletePermission}
-    />
+    {Object.entries(GROUPED_PERMISSIONS).map(([group, permissions]) => (
+        <div key={group}>
+          <p className="text-[14px] text-black font-bold capitalize">
+            {group}:
+          </p>
+          {permissions.map(({ key, label }) => (
+            <PermissionRow
+              key={key}
+              label={label}
+              value={user.permissions?.[key]}
+            />
+          ))}
+        </div>
+      ))}
   </div>
 );
