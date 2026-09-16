@@ -163,7 +163,13 @@ const Nav = () => {
                           }`
                         }
                       >
-                        <span className="shrink-0">{link.label}</span>
+                        <motion.span
+                          className="shrink-0"
+                          whileHover={{ scale: 1.15, rotate: -4 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {link.label}
+                        </motion.span>
                         <span className="text-sm font-medium">{link.name}</span>
                       </NavLink>
                     </li>
@@ -285,9 +291,19 @@ const Nav = () => {
                           }}
                         />
                       )}
-                      <span title={link.name} className="shrink-0">
+                      <motion.span
+                        title={link.name}
+                        className="shrink-0"
+                        animate={
+                          isActive
+                            ? { scale: 1.1, rotate: [0, -5, 5, 0] }
+                            : { scale: 1, rotate: 0 }
+                        }
+                        whileHover={{ scale: 1.15 }}
+                        transition={{ duration: 0.3 }}
+                      >
                         {link.label}
-                      </span>
+                      </motion.span>
                       
                       {/* Text links entry */}
                       <AnimatePresence>

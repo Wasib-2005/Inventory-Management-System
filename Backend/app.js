@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -41,7 +42,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error(`CORS Blocked for origin: ${origin}`);
+      logger.warn({ origin }, "CORS request blocked");
       callback(null, false);
     }
   },
@@ -88,6 +89,32 @@ logger.info(`Image probider is ${process.env.UPLOAD_PROVIDER}`);
 
 //   next();
 // });
+
+app.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+  const requestId = crypto.randomUUID();
+  req.requestId = requestId;
+  res.setHeader("X-Request-Id", requestId);
+
+  res.on("finish", () => {
+    logger.info(
+      {
+        requestId,
+        method: req.method,
+        path: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+        ip:
+          req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+          req.socket.remoteAddress,
+        userAgent: req.get("user-agent"),
+      },
+      "HTTP request completed",
+    );
+  });
+
+  next();
+});
 
 // Simulate network delay remove it
 app.use((req, res, next) => {

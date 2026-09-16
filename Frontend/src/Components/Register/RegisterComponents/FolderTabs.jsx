@@ -1,4 +1,5 @@
 import { FiShoppingCart, FiCreditCard, FiGrid, FiClock } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 export const FOLDERS = [
   { id: "products-sell", label: "Products & Sell", icon: FiShoppingCart, activeColor: "text-blue-600" },
@@ -13,19 +14,31 @@ const FolderTabs = ({ activeFolder, onSelect }) => (
       const isActive = activeFolder === folder.id;
       const Icon = folder.icon;
       return (
-        <button
+        <motion.button
           key={folder.id}
           type="button"
           onClick={() => onSelect(folder.id)}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.97 }}
           className={`relative flex min-w-0 w-full sm:w-[160px] h-14 sm:h-10 items-center justify-center gap-1.5 px-2 sm:px-3 text-base font-bold uppercase tracking-wide text-center leading-tight rounded-lg border transition-all duration-150 ${
             isActive
               ? `bg-white ${folder.activeColor} border-emerald-300/40 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.05)]`
               : "bg-emerald-900/5 text-emerald-700/50 border-transparent hover:bg-emerald-900/10 hover:text-emerald-900/70"
           }`}
         >
-          <Icon size={17} className="shrink-0" />
+          <motion.span
+            animate={
+              isActive
+                ? { scale: 1.12, rotate: [0, -8, 8, 0] }
+                : { scale: 1, rotate: 0 }
+            }
+            transition={{ duration: 0.35 }}
+            className="shrink-0"
+          >
+            <Icon size={17} />
+          </motion.span>
           <span className="min-w-0 break-words">{folder.label}</span>
-        </button>
+        </motion.button>
       );
     })}
   </div>

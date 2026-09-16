@@ -8,28 +8,48 @@ import CashMemo from "./Cashmemo";
 // only the receipt comes out of the printer.
 const CashMemoModal = ({ order, onClose }) => {
   const handlePrint = () => window.print();
+  const isMovement = order?._type === "inbound" || order?._type === "outbound";
+  const receiptTitle = isMovement
+    ? `${order._type === "inbound" ? "Inbound" : "Outbound"} Receipt`
+    : "Order Receipt";
 
   return createPortal(
     <>
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #cash-memo-print, #cash-memo-print * { visibility: visible; }
+          @page { size: auto; margin: 10mm; }
+          body { background: #fff !important; }
+          body * { visibility: hidden !important; }
+          #cash-memo-print, #cash-memo-print * { visibility: visible !important; }
           #cash-memo-print {
-            position: fixed;
-            inset: 0;
-            width: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            max-width: 760px !important;
             margin: 0;
-            padding: 24px;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: 0 !important;
+          }
+          #cash-memo-print .receipt-items {
+            page-break-inside: auto;
+          }
+          #cash-memo-print tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          #cash-memo-print .receipt-totals {
+            page-break-inside: avoid;
           }
         }
       `}</style>
 
       <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3">
         <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
-          <div className="flex items-center justify-between p-4 border-b border-emerald-300/30">
+          <div className="no-print flex items-center justify-between p-4 border-b border-emerald-300/30">
             <h3 className="font-bold text-emerald-900 text-[16px]">
-              Order Receipt
+              {receiptTitle}
             </h3>
             <button
               type="button"
@@ -40,13 +60,13 @@ const CashMemoModal = ({ order, onClose }) => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-gray-100 p-4">
+          <div className="no-print flex-1 overflow-y-auto bg-gray-100 p-4">
             <div className="bg-white rounded-lg shadow-sm">
               <CashMemo order={order} />
             </div>
           </div>
 
-          <div className="p-4 border-t border-emerald-300/30 flex gap-2">
+          <div className="no-print p-4 border-t border-emerald-300/30 flex gap-2">
             <button
               type="button"
               onClick={onClose}

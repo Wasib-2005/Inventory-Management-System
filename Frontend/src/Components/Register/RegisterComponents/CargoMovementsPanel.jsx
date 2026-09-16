@@ -3,6 +3,7 @@ import { FiPlus } from "react-icons/fi";
 import StockMovementModal from "./OrderComponents/StockMovementModal";
 import { getCycleCounts, getStockMovements } from "./api";
 import MovementDetailModal from "./MovementDetailModal";
+import CashMemoModal from "./OrderComponents/Cashmemomodal";
 import { MOVEMENT_TYPE_META } from "./OrderComponents/movementConstants";
 
 const FILTERS = [
@@ -24,6 +25,7 @@ const CargoMovementsPanel = () => {
   // Detail + edit
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
+  const [receiptRecord, setReceiptRecord] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -158,11 +160,21 @@ const CargoMovementsPanel = () => {
         isOpen={isCreateOpen}
         initialType={createType}
         onClose={() => setIsCreateOpen(false)}
-        onCreated={() => {
+        onCreated={(createdMovement) => {
           setIsCreateOpen(false);
           setReloadKey((k) => k + 1);
+          if (createdMovement?._type || createType === "inbound" || createType === "outbound") {
+            setReceiptRecord({ ...createdMovement, _type: createType });
+          }
         }}
       />
+
+      {receiptRecord && (
+        <CashMemoModal
+          order={receiptRecord}
+          onClose={() => setReceiptRecord(null)}
+        />
+      )}
 
       <MovementDetailModal
         record={selectedRecord}
