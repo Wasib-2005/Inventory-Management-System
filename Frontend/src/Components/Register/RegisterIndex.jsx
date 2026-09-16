@@ -5,6 +5,7 @@ import SubTabs, { SUB_FOLDERS } from "./RegisterComponents/SubTabs";
 import FolderPanel from "./RegisterComponents/FolderPanel";
 import HeaderActions from "./RegisterComponents/HeaderActions";
 import { FiActivity } from "react-icons/fi";
+import { AnimatePresence, motion } from "framer-motion";
 
 const VALID_FOLDER_IDS = FOLDERS.map((f) => f.id);
 const DEFAULT_FOLDER = "products-sell";
@@ -72,17 +73,26 @@ const RegisterIndex = () => {
           activeSub={activeSub}
           onSelect={(sub) => navigate(`/register/${activeFolder}/${sub}`)}
         />
-        <div className="mt-3 sm:mt-4 min-w-0">
-          <FolderPanel
-            activeFolder={activeFolder}
-            activeSub={activeSub}
-            typeSegment={typeSegment}
-            onTypeChange={(type) =>
-              navigate(`/register/${activeFolder}/${activeSub}/${type}`)
-            }
-            sales={sales}
-          />
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${activeFolder}-${activeSub}-${typeSegment || ""}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="mt-3 sm:mt-4 min-w-0"
+          >
+            <FolderPanel
+              activeFolder={activeFolder}
+              activeSub={activeSub}
+              typeSegment={typeSegment}
+              onTypeChange={(type) =>
+                navigate(`/register/${activeFolder}/${activeSub}/${type}`)
+              }
+              sales={sales}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -24,10 +24,12 @@ const SubTabs = ({ folder, activeSub, onSelect }) => {
   return (
     <div className="flex p-1 rounded-xl bg-emerald-900/5 border border-emerald-300/30 gap-1 overflow-x-auto">
       {subs.map((sub) => (
-        <button
+        <motion.button
           key={sub.id}
           type="button"
           onClick={() => onSelect(sub.id)}
+          whileHover={{ y: -1 }}
+          whileTap={{ scale: 0.98 }}
           className={`flex-1 min-w-[150px] whitespace-nowrap text-base font-bold uppercase tracking-wide py-2.5 px-3 rounded-lg transition-colors ${
             activeSub === sub.id
               ? "bg-white text-emerald-700 shadow-sm"
@@ -35,10 +37,11 @@ const SubTabs = ({ folder, activeSub, onSelect }) => {
           }`}
         >
           {sub.label}
-        </button>
+        </motion.button>
       ))}
     </div>
   );
 };
 
 export default SubTabs;
+import { motion } from "framer-motion";

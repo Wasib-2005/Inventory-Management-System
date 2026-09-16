@@ -1,23 +1,31 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
-import App from "./App";
-import AuthPage from "./Pages/Auth/AuthPage";
-import AccountsAndPermissions from "./Pages/AccountsAndPermissions/AccountsAndPermissions";
-import RoleManagement from "./Pages/RolePage/RoleManagement";
-import Products from "./Pages/Products/Products";
-import UserProfile from "./Pages/UserProfile/UserProfile";
 import ProtectedRouteUser from "./ProtectedRoute/ProtectedRouteUser";
-import Warehouse from "./Pages/Warehouse/Warehouse";
-import Register from "./Pages/Register/Register";
 import ProtectedRouteWarehouse from "./ProtectedRoute/ProtectedRouteWarehouse";
-import RecycleBin from "./Pages/RecycleBin/RecycleBin";
 
+const App = lazy(() => import("./App"));
 const Home = lazy(() => import("./Pages/Home/Home"));
+const AuthPage = lazy(() => import("./Pages/Auth/AuthPage"));
+const AccountsAndPermissions = lazy(() =>
+  import("./Pages/AccountsAndPermissions/AccountsAndPermissions"),
+);
+const RoleManagement = lazy(() => import("./Pages/RolePage/RoleManagement"));
+const Products = lazy(() => import("./Pages/Products/Products"));
+const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile"));
+const Warehouse = lazy(() => import("./Pages/Warehouse/Warehouse"));
+const Register = lazy(() => import("./Pages/Register/Register"));
+const RecycleBin = lazy(() => import("./Pages/RecycleBin/RecycleBin"));
 
-const dashboardFallback = (
+const pageFallback = (
   <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
-    Loading dashboard...
+    Loading page...
   </div>
+);
+
+const lazyPage = (Page) => (
+  <Suspense fallback={pageFallback}>
+    <Page />
+  </Suspense>
 );
 
 const MainRouter = createBrowserRouter([
@@ -25,49 +33,45 @@ const MainRouter = createBrowserRouter([
     path: "/",
     element: (
       <ProtectedRouteUser>
-        <App />
+        {lazyPage(App)}
       </ProtectedRouteUser>
     ),
     children: [
       {
         path: "/",
-        element: (
-          <Suspense fallback={dashboardFallback}>
-            <Home />
-          </Suspense>
-        ),
+        element: lazyPage(Home),
       },
       {
         path: "/register/:selection/*",
         element: (
           <ProtectedRouteWarehouse>
-            <Register />
+            {lazyPage(Register)}
           </ProtectedRouteWarehouse>
         ),
       },
-      { path: "/products", element: <Products /> },
-      { path: "/role-management", element: <RoleManagement /> },
+      { path: "/products", element: lazyPage(Products) },
+      { path: "/role-management", element: lazyPage(RoleManagement) },
       {
         path: "/accounts-and-permissions",
-        element: <AccountsAndPermissions />,
+        element: lazyPage(AccountsAndPermissions),
       },
       {
         path: "/user",
-        element: <UserProfile />,
+        element: lazyPage(UserProfile),
       },
       {
         path: "/warehouse",
-        element: <Warehouse />,
+        element: lazyPage(Warehouse),
       },
       {
         path: "/recycle-bin",
-        element: <RecycleBin />,
+        element: lazyPage(RecycleBin),
       },
     ],
   },
   {
     path: "/auth",
-    element: <AuthPage />,
+    element: lazyPage(AuthPage),
   },
 ]);
 
